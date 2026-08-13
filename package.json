@@ -1,0 +1,34 @@
+{
+	"name": "site",
+	"version": "0.0.0",
+	"private": true,
+	"scripts": {
+		"deploy": "wrangler deploy",
+		"dev": "wrangler dev",
+		"start": "wrangler dev"
+	},
+	"devDependencies": {
+		"@cloudflare/workers-types": "^4.20260702.1",
+		"@hono/vite-build": "^1.11.1",
+		"@hono/vite-dev-server": "^0.26.1",
+		"@types/node": "^26.1.1",
+		"@types/validator": "^13.15.10",
+		"vite": "^8.1.5",
+		"wrangler": "^4.103.0"
+	},
+	"dependencies": {
+		"@codemirror/lang-markdown": "^6.5.1",
+		"@hono/zod-validator": "^0.8.0",
+		"@panva/jose": "^1.9.3",
+		"bcryptjs": "^3.0.3",
+		"crypto": "^1.0.1",
+		"dompurify": "^3.4.12",
+		"hono": "^4.12.28",
+		"jose": "^6.2.3",
+		"jsx": "^0.9.89",
+		"temml": "^0.13.3",
+		"typescript": "^6.0.3",
+		"validator": "^13.15.35",
+		"zod": "^4.4.3"
+	}
+}

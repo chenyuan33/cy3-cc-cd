@@ -1,0 +1,2 @@
+import type { CSSProperties, FC, PropsWithChildren } from "hono/jsx";
+export const Card: FC<PropsWithChildren<{ style?: string | CSSProperties | undefined }>> = ({ style = {}, children }) => <div class='card' style={style}>{children}</div>;

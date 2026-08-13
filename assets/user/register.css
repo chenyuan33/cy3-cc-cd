@@ -1,0 +1,11 @@
+.check-success {
+	color: green;
+}
+
+.check-failed {
+	color: red;
+}
+
+.check-loading {
+	color: gray;
+}

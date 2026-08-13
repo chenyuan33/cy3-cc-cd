@@ -1,0 +1,103 @@
+.mdeditor-div {
+	display: flex;
+	border: solid 3px;
+	border-radius: 5px;
+}
+
+.mdeditor-input-cell, .mdeditor-output {
+	flex: 1;
+}
+
+.mdeditor-output {
+	overflow: auto;
+	padding: 0 5px;
+}
+
+.mdeditor-button, .mdeditor-button-name {
+	background-color: inherit;
+}
+
+.mdeditor-buttondiv {
+	display: none;
+	position: relative;
+}
+
+.mdeditor-button {
+	position: relative;
+	color: inherit;
+}
+
+.mdeditor-close-doc-button {
+	background-color: unset;
+}
+
+.mdeditor-button, .mdeditor-close-doc-button {
+	border: none;
+	font: inherit;
+}
+
+.mdeditor-button:hover, .mdeditor-close-doc-button:hover {
+	cursor: pointer;
+}
+
+.mdeditor-button-name {
+	position: absolute;
+	top: -40px;
+	border: solid;
+	border-radius: 5px;
+	padding: 5px;
+	left: 50%;
+	transform: translateX(-50%);
+	opacity: 0;
+	transition: opacity 0.2s ease;
+	pointer-events: none;
+	white-space: nowrap;
+}
+
+.mdeditor-button-name::after {
+	content: '';
+	position: absolute;
+	top: 110%;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 5px solid transparent;
+	border-top-color: inherit;
+}
+
+.mdeditor-doc {
+	display: none;
+	position: fixed;
+	left: 10%;
+	right: 10%;
+	top: 10%;
+	bottom: 10%;
+}
+
+.mdeditor-doc-background {
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	background-color: black;
+	opacity: 50%;
+}
+
+.mdeditor-close-doc-button {
+	position: absolute;
+	right: 5%;
+	top: 5%;
+}
+
+.mdeditor-doc-content {
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	border: solid;
+	border-radius: 10px;
+	overflow: auto;
+	padding: 10px;
+	background-color: white;
+}

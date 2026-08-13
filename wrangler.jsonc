@@ -1,0 +1,43 @@
+{
+	"name": "site",
+	"main": "src/worker.tsx",
+	"workers_dev": true,
+	"preview_urls": true,
+	"compatibility_date": "2026-06-13",
+	"routes": [
+		{
+			"pattern": "cy3.cc.cd",
+			"zone_name": "cy3.cc.cd",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false
+		},
+		{
+			"pattern": "www.cy3.cc.cd",
+			"zone_name": "cy3.cc.cd",
+			"custom_domain": true,
+			"enabled": true,
+			"previews_enabled": false
+		}
+	],
+	"d1_databases": [
+		{
+			"binding": "db",
+			"database_name": "cy3",
+			"database_id": "4f4f7505-ad2f-4a85-ae23-00a5012e2b6f"
+		}
+	],
+	"vars": {
+		"DNSHE_API_KEY": "cfsd_e3e7df615a4499ecbe44170636766b42",
+		"DNSHE_SUBDOMAIN_ID": "1544844327"
+	},
+	"observability": {
+		"logs": {
+			"enabled": true,
+			"invocation_logs": true
+		}
+	},
+	"assets": {
+		"directory": "./assets"
+	}
+}
