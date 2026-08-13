@@ -239,7 +239,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
                     <span class='sidebarTitle' style={{ fontSize: '18px', marginLeft: '5px' }}>{getText(locale, 'userNotification')}</span>
                 </a>
 
-                {/* 用户名：使用 <User> 组件保留自定义颜色，去掉固定 color */}
+                {/* 用户名：使用 <User> 组件保留自定义颜色 */}
                 <a
                     href={`https://cy3.cc.cd/user/${currentUser.id}`}
                     style={{ fontWeight: 'bold', textDecoration: 'none' }}
@@ -270,9 +270,9 @@ app.use(jsxRenderer(async ({ children, title }) => {
     {/* 侧边栏 */}
     <nav style={{
         position: 'fixed',
-        top: '50px',
+        top: '50px',                      // 避开顶部导航栏
         left: '-10px',
-        height: 'calc(100% - 50px)',
+        height: 'calc(100% - 50px)',      // 高度减去顶部导航栏高度
         padding: '10px',
         'padding-left': '20px',
         'overflow-x': 'hidden',
@@ -320,7 +320,9 @@ app.use(jsxRenderer(async ({ children, title }) => {
             <span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
         </a></p>
     </nav>
-    <main>{children}</main>
+
+    {/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
+    <main style={{ paddingTop: '50px' }}>{children}</main>
 </body>
 </html>;
 }));
