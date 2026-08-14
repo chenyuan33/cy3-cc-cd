@@ -248,11 +248,6 @@ app.get('/uidToHtml', async c => {
 	if (!id) {
 		return notFound(c);
 	}
-	const result = await (c.env as any).db.prepare('SELECT id, name, created_at, username_violation FROM users WHERE id = ?').bind(id).first();
-	console.log(c.get('reqBody'), id, result);
-	if (result) {
-		return c.html(<User c={c} user={result} />);
-	}
-	return notFound(c);
+	return c.html(<User c={c} user={parseInt(id)} />);
 });
 export default app;
