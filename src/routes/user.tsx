@@ -182,7 +182,7 @@ app.get('/notification', async c => {
 			case 'discussion-reply-replied':
 				return renderTemplate(getText(locale, 'userNotificationDiscussionReplyReplied'), {
 					__USER__: <User c={c} user={payload.uid} />,
-					__DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'userNotificationYourDiscussion')}</a>,
+					__DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
 					__PARENT_REPLY__: payload.parent_id ? <a href={'/discussion/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourDiscussion')}</>,
 					__REPLY__: <a href={'/discussion/reply/' + payload.id}>{getText(locale, 'reply')}</a>
 				});
@@ -196,7 +196,7 @@ app.get('/notification', async c => {
 			case 'ticket-reply-replied':
 				return renderTemplate(getText(locale, 'userNotificationTicketReplyReplied'), {
 					__USER__: <User c={c} user={payload.uid} />,
-					__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'userNotificationYourTicket')}</a>,
+					__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
 					__PARENT_REPLY__: payload.parent_id ? <a href={'/ticket/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourTicket')}</>,
 					__REPLY__: <a href={'/ticket/reply/' + payload.id}>{getText(locale, 'reply')}</a>
 				});

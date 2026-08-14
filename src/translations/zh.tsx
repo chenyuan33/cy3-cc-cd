@@ -3,7 +3,6 @@ export default {
 	navTheme: '切换浅色/深色模式',
 	goToPage: '跳转到页码',
 	go: '跳转',
-	logout: '登出',
 	admin: '管理',
 	post: '发布',
 	postAfterLogin: '<a href="/user/login">登录</a>后发布',

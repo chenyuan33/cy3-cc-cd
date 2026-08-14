@@ -3,7 +3,6 @@ export default {
 	navTheme: 'Switch Light Mode',
 	goToPage: 'Go to page',
 	go: 'Go',
-	logout: 'Logout',
 	admin: 'Admin',
 	post: 'Post',
 	postAfterLogin: 'Post after <a href="/user/login">logging in</a>',
