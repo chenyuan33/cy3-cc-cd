@@ -97,7 +97,7 @@ export default {
 	userNotificationDiscussionReplyDeletedByDiscussionOwner: '__USER__ deleted your reply in __DISCUSSION__ created at __REPLY_CREATED_AT__ with content: __REPLY_CONTENT__.',
 	userNotificationTicketReplyReplied: '__USER__\'s __REPLY__ replied to __PARENT_REPLY__ in __TICKET__.',
 	userNotificationTicketReplyDeletedByTicketOwner: '__USER__ deleted your reply in __TICKET__ created at __REPLY_CREATED_AT__ with content: __REPLY_CONTENT__.',
-	userNotificationTicketStatusChanged: 'Your ticket __TICKET__\'s status has been changed to __STATUS__.',
+	userNotificationTicketStatusChanged: '__TICKET__\'s status has been changed to __STATUS__.',
 	userNotificationPermissionChanged: 'Your permissions have been changed for the following reasons:',
 	userNotificationAt: '__USER__ mentioned you __LINK__',
 	userNotificationAtHere: 'here',
