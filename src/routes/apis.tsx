@@ -26,8 +26,8 @@ app.post('/check-in', async c => {
 	const checkin_today_status = Math.floor(Math.random() * 7) - 3;
 	const { results: checkin_today_goods } = checkin_today_status > -3 ? await env.db.prepare('SELECT id FROM checkin_texts WHERE bad_en IS NULL AND bad_zh IS NULL ORDER BY RANDOM() LIMIT 2').bind().all() : { results: [{ id: null }, { id: null }] };
 	const { results: checkin_today_bads } = checkin_today_status < 3 ? await env.db.prepare('SELECT id FROM checkin_texts WHERE good_en IS NULL AND good_zh IS NULL ORDER BY RANDOM() LIMIT 2').bind().all() : { results: [{ id: null }, { id: null }] };
-	await env.db.prepare('UPDATE users SET checkin_date = CURRENT_TIMESTAMP, checkin_count = ?, checkin_today_status = ?, checkin_today_good1 = ?, checkin_today_good2 = ?, checkin_today_bad1 = ?, checkin_today_bad2 = ?')
-		.bind(lastCheckInCount ? Math.max(lastCheckInCount - Math.floor(Math.pow(2, dateDistance - 2)) + 1, 1) : 1, checkin_today_status, checkin_today_goods[0].id, checkin_today_goods[1].id, checkin_today_bads[0].id, checkin_today_bads[1].id).run();
+	await env.db.prepare('UPDATE users SET checkin_date = CURRENT_TIMESTAMP, checkin_count = ?, checkin_today_status = ?, checkin_today_good1 = ?, checkin_today_good2 = ?, checkin_today_bad1 = ?, checkin_today_bad2 = ? WHERE id = ?')
+		.bind(lastCheckInCount ? Math.max(lastCheckInCount - Math.floor(Math.pow(2, dateDistance - 2)) + 1, 1) : 1, checkin_today_status, checkin_today_goods[0].id, checkin_today_goods[1].id, checkin_today_bads[0].id, checkin_today_bads[1].id, currentUser.id).run();
 	return c.redirect('/');
 });
 export default app;
