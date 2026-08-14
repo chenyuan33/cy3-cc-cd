@@ -224,18 +224,25 @@ app.use(jsxRenderer(async ({ children, title }) => {
     }}>
         {currentUser ? (
             <>
-                {/* 通知项（原样迁移，保留图标、角标、文字） */}
-                <a href='/user/notification' style={{ position: 'relative', textDecoration: 'none', color: 'var(--text)' }}>
-                    <i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
-                    {notificationCount ? <sup style={{
-                        padding: '1px 5px',
-                        'background-color': 'red',
-                        color: 'white',
-                        'border-radius': '5px',
-                        position: 'absolute',
-                        left: '32px',
-                        'font-size': '10px'
-                    }}>{notificationCount}</sup> : <></>}
+                {/* 通知项（角标已修正，覆盖在铃铛右上角） */}
+                <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+                    <span style={{ position: 'relative', display: 'inline-block' }}>
+                        <i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
+                        {notificationCount ? (
+                            <sup style={{
+                                padding: '1px 5px',
+                                backgroundColor: 'red',
+                                color: 'white',
+                                borderRadius: '5px',
+                                position: 'absolute',
+                                top: '-5px',
+                                right: '-10px',
+                                fontSize: '10px'
+                            }}>
+                                {notificationCount}
+                            </sup>
+                        ) : null}
+                    </span>
                     <span class='sidebarTitle' style={{ fontSize: '18px', marginLeft: '5px' }}>{getText(locale, 'userNotification')}</span>
                 </a>
 
@@ -301,6 +308,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
 
         {
             currentUser ? <>
+                {/* 用户设置保留（顶部导航栏没有此项） */}
                 <p><a href='/user/settings'>
                     <i class='fa-solid fa-user-gear'></i>
                     <span class='sidebarTitle'>{getText(locale, 'userSettings')}</span>
