@@ -4,7 +4,7 @@ import { permissionAdmin, permissionCount } from "../settings";
 import { accessDenied, notFound } from "./errorPages";
 import { Card } from "../components/card";
 const app = new Hono<AppEnv>();
-app.use('/admin/*', async (c, next) => {
+app.use('/*', async (c, next) => {
 	if (!c.get('currentUser') || !(c.get('currentUser')!.permission & permissionAdmin)) {
 		return accessDenied(c);
 	}
