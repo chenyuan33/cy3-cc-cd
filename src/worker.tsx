@@ -100,111 +100,18 @@ app.use(jsxRenderer(async ({ children, title }) => {
 	const c = useRequestContext();
 	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any;
 	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
-	// return <html lang={locale}>
-	// 	<head>
-	// 		<meta charset='UTF-8' />
-	// 		<meta name='viewport' content='width=device-width, initial-scale=1.0' />
-	// 		<script src="https://kit.fontawesome.com/49ad5e587e.js" integrity="sha384-JS66aVpuIs3f5V8MeNv+Anch7nVGy/Qlr+74+ZDHJw70V3FGV8vjgiVhfmgJ+r6d" crossorigin="anonymous"></script>
-	// 		<link rel='stylesheet' type='text/css' href='/style.css' />
-	// 		<link rel='icon' type='image/x-icon' href='/favicon.ico' />
-	// 		<script src='/helper.js'></script>
-	// 		<title>{title} - cy3's site</title>
-	// 	</head>
-	// 	<body>
-	// 		<noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
-	// 		<nav style={{
-	// 			position: 'fixed',
-	// 			top: 0,
-	// 			left: '-10px',
-	// 			height: '100%',
-	// 			padding: '10px',
-	// 			'padding-left': '20px',
-	// 			'overflow-x': 'hidden',
-	// 			'overflow-y': 'auto',
-	// 			'white-space': 'nowrap',
-	// 			transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-	// 			'border-radius': '10px',
-	// 			'z-index': 1
-	// 		}}>
-	// 			<p><a href='/'>
-	// 				<i class='fa-solid fa-house'></i>
-	// 				<span class='sidebarTitle'>{getText(locale, 'home')}</span>
-	// 			</a></p>
-	// 			<p><a href='/feed'>
-	// 				<i class='fa-solid fa-rss'></i>
-	// 				<span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
-	// 			</a></p>
-	// 			<p><a href='/discussion'>
-	// 				<i class='fa-solid fa-comments'></i>
-	// 				<span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
-	// 			</a></p>
-	// 			<p><a href='/ticket'>
-	// 				<i class='fa-solid fa-ticket'></i>
-	// 				<span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
-	// 			</a></p>
-	// 			{
-	// 				currentUser ? <>
-	// 					<p>
-	// 						<i class='fa-solid fa-user'></i>
-	// 						<span class='sidebarTitle'><User user={currentUser} c={c} /></span>
-	// 					</p>
-	// 					<p><a href='/user/notification'>
-	// 						<i class='fa-solid fa-bell'></i>{notificationCount ? <sup style={{
-	// 							padding: '1px 5px',
-	// 							'background-color': 'red',
-	// 							color: 'white',
-	// 							'border-radius': '5px',
-	// 							position: 'absolute',
-	// 							left: '32px',
-	// 							'font-size': '10px'
-	// 						}}>{notificationCount}</sup> : <></>}
-	// 						<span class='sidebarTitle'>{getText(locale, 'userNotification')}</span>
-	// 					</a></p>
-	// 					<p><a href='/user/settings'>
-	// 						<i class='fa-solid fa-user-gear'></i>
-	// 						<span class='sidebarTitle'>{getText(locale, 'userSettings')}</span>
-	// 					</a></p>
-	// 					<p><a href='/api/user/logout'>
-	// 						<i class='fa-solid fa-sign-out-alt'></i>
-	// 						<span class='sidebarTitle'>{getText(locale, 'logout')}</span>
-	// 					</a></p>
-	// 				</> : <>
-	// 					<p><a href='/user/register'>
-	// 						<i class='fa-solid fa-user-plus'></i>
-	// 						<span class='sidebarTitle'>{getText(locale, 'register')}</span>
-	// 					</a></p>
-	// 					<p><a href='/user/login'>
-	// 						<i class='fa-solid fa-sign-in-alt'></i>
-	// 						<span class='sidebarTitle'>{getText(locale, 'login')}</span>
-	// 					</a></p>
-	// 				</>
-	// 			}
-	// 			{
-	// 				currentUser && (c.get('currentUser').permission & permissionAdmin) ? <p><a href='/admin'>
-	// 					<i class='fa-solid fa-user-shield'></i>
-	// 					<span class='sidebarTitle'>{getText(locale, 'admin')}</span>
-	// 				</a></p> : <></>
-	// 			}
-	// 			<p><a href='javascript:void(0)' onclick='switchLight()'>
-	// 				<i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
-	// 				<span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
-	// 			</a></p>
-	// 		</nav>
-	// 		<main>{children}</main>
-	// 	</body>
-	// </html>
 	return <html lang={locale}>
-<head>
-    <meta charset='UTF-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-    <script src="https://kit.fontawesome.com/49ad5e587e.js" integrity="sha384-JS66aVpuIs3f5V8MeNv+Anch7nVGy/Qlr+74+ZDHJw70V3FGV8vjgiVhfmgJ+r6d" crossorigin="anonymous"></script>
-    <link rel='stylesheet' type='text/css' href='/style.css' />
-    <link rel='icon' type='image/x-icon' href='/favicon.ico' />
-    <script src='/helper.js'></script>
-    <title>{title} - cy3's site</title>
-</head>
-<body>
-    <noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
+		<head>
+			<meta charset='UTF-8' />
+			<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
+			<link rel='stylesheet' type='text/css' href='/style.css' />
+			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
+			<script src='/helper.js'></script>
+			<title>{title} - cy3's site</title>
+		</head>
+		<body>
+			<noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
 
     {/* 顶部导航栏 */}
     <header style={{
@@ -246,65 +153,65 @@ app.use(jsxRenderer(async ({ children, title }) => {
                     <span class='sidebarTitle' style={{ fontSize: '18px', marginLeft: '5px' }}>{getText(locale, 'userNotification')}</span>
                 </a>
 
-                {/* 用户名：使用 <User> 组件保留自定义颜色 */}
-                <a
-                    href={`https://cy3.cc.cd/user/${currentUser.id}`}
-                    style={{ fontWeight: 'bold', textDecoration: 'none' }}
-                >
-                    <User user={currentUser} c={c} />
-                </a>
+						{/* 用户名：使用 <User> 组件保留自定义颜色 */}
+						<a
+							href={`https://cy3.cc.cd/user/${currentUser.id}`}
+							style={{ fontWeight: 'bold', textDecoration: 'none' }}
+						>
+							<User user={currentUser} c={c} />
+						</a>
 
-                {/* 登出（仅图标） */}
-                <a
-                    href='/api/user/logout'
-                    style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
-                >
-                    <i class='fa-solid fa-sign-out-alt'></i>
-                </a>
-            </>
-        ) : (
-            <>
-                <a href='/user/login' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-                    <i class='fa-solid fa-sign-in-alt'></i> {getText(locale, 'login')}
-                </a>
-                <a href='/user/register' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-                    <i class='fa-solid fa-user-plus'></i> {getText(locale, 'register')}
-                </a>
-            </>
-        )}
-    </header>
+						{/* 登出（仅图标） */}
+						<a
+							href='/api/user/logout'
+							style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
+						>
+							<i class='fa-solid fa-sign-out-alt'></i>
+						</a>
+					</>
+				) : (
+					<>
+						<a href='/user/login' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
+							<i class='fa-solid fa-sign-in-alt'></i> {getText(locale, 'login')}
+						</a>
+						<a href='/user/register' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
+							<i class='fa-solid fa-user-plus'></i> {getText(locale, 'register')}
+						</a>
+					</>
+				)}
+			</header>
 
-    {/* 侧边栏 */}
-    <nav style={{
-        position: 'fixed',
-        top: '50px',                      // 避开顶部导航栏
-        left: '-10px',
-        height: 'calc(100% - 50px)',      // 高度减去顶部导航栏高度
-        padding: '10px',
-        'padding-left': '20px',
-        'overflow-x': 'hidden',
-        'overflow-y': 'auto',
-        'white-space': 'nowrap',
-        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-        'border-radius': '10px',
-        'z-index': 1
-    }}>
-        <p><a href='/'>
-            <i class='fa-solid fa-house'></i>
-            <span class='sidebarTitle'>{getText(locale, 'home')}</span>
-        </a></p>
-        <p><a href='/feed'>
-            <i class='fa-solid fa-rss'></i>
-            <span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
-        </a></p>
-        <p><a href='/discussion'>
-            <i class='fa-solid fa-comments'></i>
-            <span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
-        </a></p>
-        <p><a href='/ticket'>
-            <i class='fa-solid fa-ticket'></i>
-            <span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
-        </a></p>
+			{/* 侧边栏 */}
+			<nav style={{
+				position: 'fixed',
+				top: '50px',                      // 避开顶部导航栏
+				left: '-10px',
+				height: 'calc(100% - 50px)',      // 高度减去顶部导航栏高度
+				padding: '10px',
+				'padding-left': '20px',
+				'overflow-x': 'hidden',
+				'overflow-y': 'auto',
+				'white-space': 'nowrap',
+				transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+				'border-radius': '10px',
+				'z-index': 1
+			}}>
+				<p><a href='/'>
+					<i class='fa-solid fa-house'></i>
+					<span class='sidebarTitle'>{getText(locale, 'home')}</span>
+				</a></p>
+				<p><a href='/feed'>
+					<i class='fa-solid fa-rss'></i>
+					<span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
+				</a></p>
+				<p><a href='/discussion'>
+					<i class='fa-solid fa-comments'></i>
+					<span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
+				</a></p>
+				<p><a href='/ticket'>
+					<i class='fa-solid fa-ticket'></i>
+					<span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
+				</a></p>
 
         {
             currentUser ? <>
@@ -316,23 +223,23 @@ app.use(jsxRenderer(async ({ children, title }) => {
             </> : null
         }
 
-        {
-            currentUser && (c.get('currentUser').permission & permissionAdmin) ? <p><a href='/admin'>
-                <i class='fa-solid fa-user-shield'></i>
-                <span class='sidebarTitle'>{getText(locale, 'admin')}</span>
-            </a></p> : <></>
-        }
+				{
+					currentUser && (c.get('currentUser').permission & permissionAdmin) ? <p><a href='/admin'>
+						<i class='fa-solid fa-user-shield'></i>
+						<span class='sidebarTitle'>{getText(locale, 'admin')}</span>
+					</a></p> : <></>
+				}
 
-        <p><a href='javascript:void(0)' onclick='switchLight()'>
-            <i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
-            <span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
-        </a></p>
-    </nav>
+				<p><a href='javascript:void(0)' onclick='switchLight()'>
+					<i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
+					<span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
+				</a></p>
+			</nav>
 
-    {/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
-    <main style={{ paddingTop: '50px' }}>{children}</main>
-</body>
-</html>;
+			{/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
+			<main style={{ paddingTop: '50px' }}>{children}</main>
+		</body>
+	</html>;
 }));
 app.use(async (c, next) => {
 	if (c.get('currentUser') && !(c.get('currentUser')!.permission & permissionVisit)) {

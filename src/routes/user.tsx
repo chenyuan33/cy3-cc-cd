@@ -183,8 +183,8 @@ app.get('/notification', async c => {
 				return renderTemplate(getText(locale, 'userNotificationDiscussionReplyReplied'), {
 					__USER__: <User c={c} user={payload.uid} />,
 					__DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
-					__PARENT_REPLY__: <a href={'/discussion/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a>,
-					__REPLY__: <a href={'/discussion/reply/' + payload.id}>{getText(locale, 'userNotificationYourReply')}</a>
+					__PARENT_REPLY__: payload.parent_id ? <a href={'/discussion/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourDiscussion')}</>,
+					__REPLY__: <a href={'/discussion/reply/' + payload.id}>{getText(locale, 'reply')}</a>
 				});
 			case 'discussion-reply-deleted-by-discussion-owner':
 				return renderTemplate(getText(locale, 'userNotificationDiscussionReplyDeletedByDiscussionOwner'), {
@@ -197,8 +197,8 @@ app.get('/notification', async c => {
 				return renderTemplate(getText(locale, 'userNotificationTicketReplyReplied'), {
 					__USER__: <User c={c} user={payload.uid} />,
 					__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
-					__PARENT_REPLY__: <a href={'/ticket/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a>,
-					__REPLY__: <a href={'/ticket/reply/' + payload.id}>{getText(locale, 'userNotificationYourReply')}</a>
+					__PARENT_REPLY__: payload.parent_id ? <a href={'/ticket/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourTicket')}</>,
+					__REPLY__: <a href={'/ticket/reply/' + payload.id}>{getText(locale, 'reply')}</a>
 				});
 			case 'ticket-reply-deleted-by-ticket-owner':
 				return renderTemplate(getText(locale, 'userNotificationTicketReplyDeletedByTicketOwner'), {
@@ -209,7 +209,7 @@ app.get('/notification', async c => {
 				});
 			case 'ticket-status-changed':
 				return renderTemplate(getText(locale, 'userNotificationTicketStatusChanged'), {
-					__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
+					__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'userNotificationYourTicket')}</a>,
 					__STATUS__: <TicketStatus c={c} status={payload.status} />
 				});
 			case 'permission-changed':

@@ -6,6 +6,7 @@
 
 .mdeditor-input-cell, .mdeditor-output {
 	flex: 1;
+	width: 50%;
 }
 
 .mdeditor-output {

@@ -28,16 +28,20 @@ export const User: FC<{ user: userInfo | number | null, c: ContextType }> = asyn
 		const resolvedUser = await userQuery(user, c);
 		return resolvedUser ? <User user={resolvedUser} c={c} /> : <span>{getText(locale, 'userUnknown')}</span>;
 	}
-	const tag = !(user.permission & permissionVisit) ? getText(locale, 'userTagBanned') : user.permission & permissionAdmin ? getText(locale, 'userTagAdmin') : null;
-	return <a href={'/user/' + user.id}>
+	const tag = user.permission & permissionAdmin ? getText(locale, 'userTagAdmin') : null;
+	return <a href={'/user/' + user.id} style={user.permission & permissionVisit ? {} : {
+		'text-decoration-line': 'line-through',
+		opacity: '60%',
+		'text-decoration-color': 'red'
+	}}>
+		{user.permission & permissionVisit ? <></> : <i class='fa-solid fa-ban' style={{ color: 'red' }}></i>}
 		<strong style={{ color: `light-dark(#${user.name_color_light}, #${user.name_color_dark})` }}>{getDisplayUsername(user, locale)}</strong>
-		&nbsp;
-		{tag ? <span style={{
+		{tag ? <>&nbsp;<span style={{
 			color: 'white',
 			padding: '0.3em',
 			'font-size': '60%',
 			'border-radius': '10%',
 			'background-color': `light-dark(#${user.name_color_light}, #${user.name_color_dark})`
-		}}>{tag}</span> : <></>}
+		}}>{tag}</span></> : <></>}
 	</a>;
 };
