@@ -113,38 +113,45 @@ app.use(jsxRenderer(async ({ children, title }) => {
 		<body>
 			<noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
 
-			{/* 顶部导航栏 */}
-			<header style={{
-				position: 'fixed',
-				top: 0,
-				left: 0,
-				right: 0,
-				height: '50px',
-				display: 'flex',
-				justifyContent: 'flex-end',
-				alignItems: 'center',
-				padding: '0 30px',
-				backgroundColor: 'var(--background)',
-				boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-				zIndex: 2,
-				gap: '20px'
-			}}>
-				{currentUser ? (
-					<>
-						{/* 通知项（原样迁移，保留图标、角标、文字） */}
-						<a href='/user/notification' style={{ position: 'relative', textDecoration: 'none', color: 'var(--text)' }}>
-							<i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
-							{notificationCount ? <sup style={{
-								padding: '1px 5px',
-								'background-color': 'red',
-								color: 'white',
-								'border-radius': '5px',
-								position: 'absolute',
-								left: '32px',
-								'font-size': '10px'
-							}}>{notificationCount}</sup> : <></>}
-							<span class='sidebarTitle' style={{ fontSize: '18px', marginLeft: '5px' }}>{getText(locale, 'userNotification')}</span>
-						</a>
+    {/* 顶部导航栏 */}
+    <header style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '50px',
+        display: 'flex',
+        justifyContent: 'flex-end',
+        alignItems: 'center',
+        padding: '0 30px',
+        backgroundColor: 'var(--background)',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+        zIndex: 2,
+        gap: '20px'
+    }}>
+        {currentUser ? (
+            <>
+                {/* 通知项（角标已修正，覆盖在铃铛右上角） */}
+                <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+                    <span style={{ position: 'relative', display: 'inline-block' }}>
+                        <i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
+                        {notificationCount ? (
+                            <sup style={{
+                                padding: '1px 5px',
+                                backgroundColor: 'red',
+                                color: 'white',
+                                borderRadius: '5px',
+                                position: 'absolute',
+                                top: '-5px',
+                                right: '-10px',
+                                fontSize: '10px'
+                            }}>
+                                {notificationCount}
+                            </sup>
+                        ) : null}
+                    </span>
+                    <span class='sidebarTitle' style={{ fontSize: '18px', marginLeft: '5px' }}>{getText(locale, 'userNotification')}</span>
+                </a>
 
 						{/* 用户名：使用 <User> 组件保留自定义颜色 */}
 						<a
@@ -206,14 +213,15 @@ app.use(jsxRenderer(async ({ children, title }) => {
 					<span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
 				</a></p>
 
-				{
-					currentUser ? <>
-						<p><a href='/user/settings'>
-							<i class='fa-solid fa-user-gear'></i>
-							<span class='sidebarTitle'>{getText(locale, 'userSettings')}</span>
-						</a></p>
-					</> : null
-				}
+        {
+            currentUser ? <>
+                {/* 用户设置保留（顶部导航栏没有此项） */}
+                <p><a href='/user/settings'>
+                    <i class='fa-solid fa-user-gear'></i>
+                    <span class='sidebarTitle'>{getText(locale, 'userSettings')}</span>
+                </a></p>
+            </> : null
+        }
 
 				{
 					currentUser && (c.get('currentUser').permission & permissionAdmin) ? <p><a href='/admin'>
