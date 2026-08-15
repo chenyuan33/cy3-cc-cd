@@ -214,7 +214,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
         </div>
     </header>
 
-    {/* 侧边栏（用户设置已移除） */}
+    {/* 侧边栏 */}
     <nav style={{
         position: 'fixed',
         top: '50px',
