@@ -154,6 +154,21 @@ app.use(jsxRenderer(async ({ children, title }) => {
                         </a>
                     ) : null}
 
+                    {/* 私信图标（位于管理面板右侧、铃铛左侧） */}
+                    <a
+                        href='/private-message'
+                        style={{
+                            textDecoration: 'none',
+                            color: 'var(--text)',
+                            fontSize: '20px',
+                            display: 'inline-flex',
+                            alignItems: 'center'
+                        }}
+                        title={getText(locale, 'privateMessage')}
+                    >
+                        <i class='fa-solid fa-envelope'></i>
+                    </a>
+
                     {/* 通知项（铃铛） */}
                     <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
                         <span style={{ position: 'relative', display: 'inline-block' }}>
