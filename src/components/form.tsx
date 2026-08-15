@@ -1,4 +1,4 @@
-import type { FC } from "hono/jsx";
+import type { CSSProperties, FC } from "hono/jsx";
 import { MdEditor } from "./mdeditor";
 import type { JSX } from "hono/jsx/jsx-runtime";
 
@@ -7,6 +7,7 @@ export const Form: FC<{ action: string, method: 'get' | 'post', onsubmit?: strin
 	{
 		type: 'input',
 		inputType: 'button' | 'checkbox' | 'color' | 'date' | 'datetime-local' | 'email' | 'file' | 'hidden' | 'image' | 'month' | 'number' | 'password' | 'radio' | 'range' | 'reset' | 'search' | 'submit' | 'tel' | 'text' | 'time' | 'url' | 'week',
+		placeHolder?: string,
 		autocomplete?: AutoFill,
 		oninput?: string,
 		value?: string,
@@ -18,7 +19,7 @@ export const Form: FC<{ action: string, method: 'get' | 'post', onsubmit?: strin
 		optionGroups?: { group: string, options: { value: string, label: string, selected?: boolean, disabled?: boolean }[] }[],
 		options?: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[]
 	}
-}[], submit: { content: string, disabled?: boolean } | JSX.Element, locale?: string }> = ({ action, method, onsubmit, inputs, submit, locale }) => <form action={action} method={method} onsubmit={createSubmitHandler(onsubmit)}>
+}[], submit: { content: string, disabled?: boolean } | JSX.Element, locale?: string, style?: CSSProperties | string | undefined }> = ({ action, method, onsubmit, inputs, submit, locale, style }) => <form action={action} method={method} onsubmit={createSubmitHandler(onsubmit)} style={style}>
 	{inputs.map(({ id, name, label, main, required = false }) => 
 		main.type === 'input' ? main.inputType === 'checkbox' ? <div>
 			<input id={id} type='checkbox' name={name} oninput={main.oninput} required={required} autocomplete={main.autocomplete || 'off'} value={main.value} checked={main.checked} />
@@ -26,7 +27,7 @@ export const Form: FC<{ action: string, method: 'get' | 'post', onsubmit?: strin
 		</div>
 		: <div style={{ height: main.inputType === 'hidden' ? '0px' : '50px' }}>
 			{label && <label for={id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
-			<input id={id} type={main.inputType} name={name} oninput={main.oninput} required={required} style={{ position: 'absolute', right: '10px' }} autocomplete={main.autocomplete || 'off'} value={main.value} />
+			<input id={id} type={main.inputType} name={name} oninput={main.oninput} required={required} style={label ? { position: 'absolute', right: '10px' } : {}} autocomplete={main.autocomplete || 'off'} value={main.value} placeholder={main.placeHolder} />
 		</div>
 		: main.type === 'mdeditor' ? <div style={{ height: `calc(${main.mdeditorHeight || '300px'} + 10px)` }}>
 			{label && <label for={'mdeditor-input-' + id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}

@@ -4,7 +4,7 @@ import feedRoutes from './api/feed';
 import discussionRoutes from './api/discussion';
 import ticketRoutes from './api/ticket';
 import type { AppEnv } from '../types';
-import { loginRequired } from './errorPages';
+import { loginRequired, notFound } from './errorPages';
 const app = new Hono<AppEnv>();
 app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
@@ -29,5 +29,17 @@ app.post('/check-in', async c => {
 	await env.db.prepare('UPDATE users SET checkin_date = CURRENT_TIMESTAMP, checkin_count = ?, checkin_today_status = ?, checkin_today_good1 = ?, checkin_today_good2 = ?, checkin_today_bad1 = ?, checkin_today_bad2 = ? WHERE id = ?')
 		.bind(lastCheckInCount ? Math.max(lastCheckInCount - Math.floor(Math.pow(2, dateDistance - 2)) + 1, 1) : 1, checkin_today_status, checkin_today_goods[0].id, checkin_today_goods[1].id, checkin_today_bads[0].id, checkin_today_bads[1].id, currentUser.id).run();
 	return c.redirect('/');
+});
+app.post('/private-message/send', async c => {
+	const env = c.env as any, currentUser = c.get('currentUser');
+	if (!currentUser) {
+		return loginRequired(c);
+	}
+	const { uid, content } = c.get('reqBody');
+	if (!uid || !content) {
+		return notFound(c);
+	}
+	await env.db.prepare('INSERT INTO private_messages (sender, receiver, content) VALUES (?, ?, ?)').bind(currentUser.id, uid, content).run();
+	return c.redirect('/private-message?uid=' + uid);
 });
 export default app;

@@ -52,17 +52,6 @@ app.get('/', c => c.render(<>
 </>, { title: 'Admin' }));
 app.get('/init', async c => {
 	const env: any = c.env;
-	// await env.db.prepare(`CREATE TABLE IF NOT EXISTS private_messages (
-	// 	id INTEGER PRIMARY KEY AUTOINCREMENT,
-	// 	from INTEGER NOT NULL,
-	// 	to INTEGER NOT NULL,
-	// 	content TEXT NOT NULL,
-	// 	read INTEGER NOT NULL DEFAULT 0,
-	// 	created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-	// 	FOREIGN KEY (from) REFERENCES users (id),
-	// 	FOREIGN KEY (to) REFERENCES users (id)
-	// )`).bind().run();
-	// await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_private_messages_from_to_created_at (from, to, created_at DESC)').bind().run();
 	return c.render(<Card><p>Init Successfully.</p></Card>, { title: 'Init - Admin' });
 });
 app.get('/domain/cy3.cc.cd/renew', async c => {
