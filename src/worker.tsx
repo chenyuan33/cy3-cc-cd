@@ -122,7 +122,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
         height: '50px',
         display: 'flex',
         alignItems: 'center',
-        justifyContent: 'space-between', // 左右两端对齐
+        justifyContent: 'space-between',
         padding: '0 30px',
         zIndex: 2
     }}>
@@ -135,7 +135,26 @@ app.use(jsxRenderer(async ({ children, title }) => {
         <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
             {currentUser ? (
                 <>
-                    {/* 通知项（角标已修正） */}
+                    {/* 管理面板（仅管理员可见，只显示图标，位于铃铛左边） */}
+                    {c.get('currentUser').permission & permissionAdmin ? (
+                        <a
+                            href='/admin'
+                            style={{
+                                textDecoration: 'none',
+                                color: 'var(--text)',
+                                fontSize: '20px',
+                                display: 'inline-flex',
+                                alignItems: 'center',
+                                position: 'relative',
+                                top: '-1px'
+                            }}
+                            title={getText(locale, 'admin')}
+                        >
+                            <i class='fa-solid fa-user-shield'></i>
+                        </a>
+                    ) : null}
+
+                    {/* 通知项（铃铛） */}
                     <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
                         <span style={{ position: 'relative', display: 'inline-block' }}>
                             <i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
@@ -157,7 +176,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
                         <span class='sidebarTitle' style={{ fontSize: '18px', marginLeft: '5px' }}>{getText(locale, 'userNotification')}</span>
                     </a>
 
-                    {/* 用户名：使用 <User> 组件保留自定义颜色 */}
+                    {/* 用户名 */}
                     <a
                         href={`https://cy3.cc.cd/user/${currentUser.id}`}
                         style={{ fontWeight: 'bold', textDecoration: 'none' }}
@@ -165,7 +184,16 @@ app.use(jsxRenderer(async ({ children, title }) => {
                         <User user={currentUser} c={c} />
                     </a>
 
-                    {/* 登出（仅图标） */}
+                    {/* 用户设置（仅图标，位于用户名右侧） */}
+                    <a
+                        href='/user/settings'
+                        style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px', display: 'inline-flex', alignItems: 'center' }}
+                        title={getText(locale, 'userSettings')}
+                    >
+                        <i class='fa-solid fa-gear'></i>
+                    </a>
+
+                    {/* 登出 */}
                     <a
                         href='/api/user/logout'
                         style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
@@ -186,7 +214,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
         </div>
     </header>
 
-    {/* 侧边栏（保持原样，背景由 CSS 中的 nav 选择器定义） */}
+    {/* 侧边栏 */}
     <nav style={{
         position: 'fixed',
         top: '50px',
@@ -217,22 +245,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
             <i class='fa-solid fa-ticket'></i>
             <span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
         </a></p>
-
-        {
-            currentUser ? <>
-                <p><a href='/user/settings'>
-                    <i class='fa-solid fa-user-gear'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'userSettings')}</span>
-                </a></p>
-            </> : null
-        }
-
-        {
-            currentUser && (c.get('currentUser').permission & permissionAdmin) ? <p><a href='/admin'>
-                <i class='fa-solid fa-user-shield'></i>
-                <span class='sidebarTitle'>{getText(locale, 'admin')}</span>
-            </a></p> : <></>
-        }
 
         <p><a href='javascript:void(0)' onclick='switchLight()'>
             <i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
