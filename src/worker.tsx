@@ -156,7 +156,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
                     ) : null}
 
                     {/* 私信图标（位于管理面板右侧、铃铛左侧） */}
-                    <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+                    <a href='/private-message' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
                         <span style={{ position: 'relative', display: 'inline-block' }}>
                             <i class='fa-solid fa-envelope' style={{ fontSize: '20px' }}></i>
                             {privateMessageCount ? (
