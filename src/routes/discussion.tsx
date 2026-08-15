@@ -151,7 +151,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 				__USER__: <User c={c} user={uid} />,
 				__CREATED_AT__: <Time c={c} time={created_at} />
 			})}</p>
-			{parent_id !== null ? (({ uid, content, created_at }: { uid: number, content: string, created_at: string }) => <blockquote>
+			{parent_id !== null ? (x => x ? (({ uid, content, created_at }: { uid: number, content: string, created_at: string }) => <blockquote>
 				{getText(c.get('locale'), 'reply')}:&nbsp;
 				<a href={parent_id ? `/discussion/reply/${parent_id}` : '#'}>{getText(c.get('locale'), 'viewDetail')}</a>
 				<p style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }}>{renderTemplate(getText(c.get('locale'), 'discussionReplyItemDescription'), {
@@ -159,7 +159,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 					__CREATED_AT__: <Time c={c} time={created_at} />
 				})}</p>
 				<div><MdRender markdown={content} /></div>
-			</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, created_at FROM discussion_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM discussion WHERE id = ?').bind(parent_id || discussion_id).first()) : <></>}
+			</blockquote>)(x) : <blockquote>[{getText(c.get('locale'), 'deleted')}]</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, created_at FROM discussion_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM discussion WHERE id = ?').bind(parent_id || discussion_id).first()) : <></>}
 			<div id={`discussion-reply${id}-content`}><MdRender markdown={content} /></div>
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'discussion-reply-edit-' + id} data-vis='-1' method='post' action='/api/discussion/reply/edit' onsubmit={createSubmitHandler()}>
 				<input type='hidden' name='discussion_id' value={c.req.param('discussion_id')} />

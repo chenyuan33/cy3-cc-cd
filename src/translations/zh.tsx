@@ -176,5 +176,6 @@ export default {
 	uid: '用户编号',
 	createdAt: '创建时间',
 	registeredAt: '注册时间',
-	setPin: '设置置顶量'
+	setPin: '设置置顶量',
+	deleted: '已删除'
 } as Record<string, string>;

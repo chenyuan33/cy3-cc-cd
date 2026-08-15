@@ -176,5 +176,6 @@ export default {
 	uid: 'User ID',
 	createdAt: 'Created At',
 	registeredAt: 'Registered At',
-	setPin: 'Set the pinning value'
+	setPin: 'Set the pinning value',
+	deleted: 'Deleted'
 } as Record<string, string>;

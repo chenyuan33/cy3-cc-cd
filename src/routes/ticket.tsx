@@ -188,7 +188,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				{set_status ? <p>{renderTemplate(getText(c.get('locale'), 'ticketSetStatusTo'), { __STATUS__: <TicketStatus c={c} status={set_status} /> })}</p> : <></>}
 				{set_assignee ? <p>{renderTemplate(getText(c.get('locale'), 'ticketSetAssigneeTo'), { __ASSIGNEE__: <User c={c} user={set_assignee} /> })}</p> : <></>}
 			</div>
-			{parent_id !== null ? (({ uid, content, set_status, set_assignee, created_at }: { uid: number, content: string, set_status: string, set_assignee: number, created_at: string }) => <blockquote>
+			{parent_id !== null ? (x => x ? (({ uid, content, set_status, set_assignee, created_at }: { uid: number, content: string, set_status: string, set_assignee: number, created_at: string }) => <blockquote>
 				{getText(c.get('locale'), 'reply')}:&nbsp;
 				<a href={parent_id ? `/ticket/reply/${parent_id}` : '#'}>{getText(c.get('locale'), 'viewDetail')}</a>
 				<div style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }}>
@@ -200,7 +200,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 					{set_assignee ? <p>{renderTemplate(getText(c.get('locale'), 'ticketSetAssigneeTo'), { __ASSIGNEE__: <User c={c} user={set_assignee} /> })}</p> : <></>}
 				</div>
 				<div><MdRender markdown={content} /></div>
-			</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, set_status, set_assignee, created_at FROM ticket_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM ticket WHERE id = ?').bind(parent_id || ticket_id).first()) : <></>}
+			</blockquote>)(x) : <blockquote>[{getText(c.get('locale'), 'deleted')}]</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, set_status, set_assignee, created_at FROM ticket_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM ticket WHERE id = ?').bind(parent_id || ticket_id).first()) : <></>}
 			<div id={`ticket-reply${id}-content`}><MdRender markdown={content} /></div>
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'ticket-reply-edit-' + id} data-vis='-1' method='post' action='/api/ticket/reply/edit' onsubmit={createSubmitHandler()}>
 				<input type='hidden' name='ticket_id' value={c.req.param('ticket_id')} />
