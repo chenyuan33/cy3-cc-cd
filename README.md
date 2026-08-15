@@ -1,5 +1,7 @@
 # cy3's site
 
+[English](/README.md) | [Chinese](/README_zh.md)
+
 [![GitHub License](https://img.shields.io/github/license/chenyuan33/cy3-cc-cd)](/LICENSE)
 
 ![Star History](https://www.star-history.com/?repos=chenyuan33%2Fcy3-cc-cd&type=date&legend=top-left)
