@@ -177,5 +177,6 @@ export default {
 	createdAt: 'Created At',
 	registeredAt: 'Registered At',
 	setPin: 'Set the pinning value',
-	deleted: 'Deleted'
+	deleted: 'Deleted',
+    judgement: 'Ostracism'
 } as Record<string, string>;

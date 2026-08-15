@@ -79,6 +79,15 @@ CREATE TABLE IF NOT EXISTS private_messages (
 		FOREIGN KEY (sender) REFERENCES users (id),
 		FOREIGN KEY (receiver) REFERENCES users (id)
 	);
+DROP TABLE IF EXISTS judgement;
+CREATE TABLE judgement (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  uid INTEGER NOT NULL,
+  type TEXT NOT NULL,
+  payload TEXT,
+  read INTEGER DEFAULT 0,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
 CREATE INDEX idx_ticket_created_at ON ticket(created_at DESC);
 CREATE INDEX idx_ticket_uid_created_at ON ticket(uid, created_at DESC);
 CREATE INDEX idx_ticket_category_created_at ON ticket(category, created_at DESC);

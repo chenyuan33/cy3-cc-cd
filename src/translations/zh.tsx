@@ -66,8 +66,8 @@ export default {
 	login: '登录',
 	registerToLogin: '已有账号？<a href="/user/login">前往登录！</a>',
 	loginToRegister: '没有账号？<a href="/user/register">注册一个！</a>',
-	permissionLost: '失去权限：',
-	permissionGot: '获得权限：',
+	permissionLost: '取消权限：',
+	permissionGot: '授予权限：',
 	permission1: '进入主站',
 	permission2: '自由发言',
 	permission4: '管理员',
@@ -177,5 +177,6 @@ export default {
 	createdAt: '创建时间',
 	registeredAt: '注册时间',
 	setPin: '设置置顶量',
-	deleted: '已删除'
+	deleted: '已删除',
+    judgement: '陶片放逐'
 } as Record<string, string>;
