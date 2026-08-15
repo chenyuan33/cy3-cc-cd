@@ -69,6 +69,16 @@ CREATE TABLE checkin_texts (
 		title_en TEXT, good_en TEXT, bad_en TEXT,
 		title_zh TEXT, good_zh TEXT, bad_zh TEXT
 	);
+CREATE TABLE IF NOT EXISTS private_messages (
+		id INTEGER PRIMARY KEY AUTOINCREMENT,
+		sender INTEGER NOT NULL,
+		receiver INTEGER NOT NULL,
+		content TEXT NOT NULL,
+		read INTEGER NOT NULL DEFAULT 0,
+		created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY (sender) REFERENCES users (id),
+		FOREIGN KEY (receiver) REFERENCES users (id)
+	);
 CREATE INDEX idx_ticket_created_at ON ticket(created_at DESC);
 CREATE INDEX idx_ticket_uid_created_at ON ticket(uid, created_at DESC);
 CREATE INDEX idx_ticket_category_created_at ON ticket(category, created_at DESC);
@@ -81,3 +91,4 @@ CREATE INDEX idx_ticket_status_created_at ON ticket(status, created_at DESC);
 CREATE INDEX idx_ticket_status_uid_created_at ON ticket(status, uid, created_at DESC);
 CREATE INDEX idx_ticket_status_category_created_at ON ticket(status, category, created_at DESC);
 CREATE INDEX idx_ticket_status_uid_category_created_at ON ticket(status, uid, category, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_private_messages_sender_receiver_created_at ON private_messages (sender, receiver, created_at DESC);

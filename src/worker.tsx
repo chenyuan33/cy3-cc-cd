@@ -100,150 +100,170 @@ app.use(jsxRenderer(async ({ children, title }) => {
 	const c = useRequestContext();
 	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any;
 	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
+	const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0;').bind(currentUser.id).first() : { privateMessageCount: 0 };
 	return <html lang={locale}>
-<head>
-    <meta charset='UTF-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-    <link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
-    <link rel='stylesheet' type='text/css' href='/style.css' />
-    <link rel='icon' type='image/x-icon' href='/favicon.ico' />
-    <script src='/helper.js'></script>
-    <title>{title} - cy3's site</title>
-</head>
-<body>
-    <noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
+		<head>
+			<meta charset='UTF-8' />
+			<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
+			<link rel='stylesheet' type='text/css' href='/style.css' />
+			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
+			<script src='/helper.js'></script>
+			<title>{title} - cy3's site</title>
+		</head>
+		<body>
+			<noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
 
-    {/* 顶部导航栏 */}
-    <header style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '50px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between', // 左右两端对齐
-        padding: '0 30px',
-        zIndex: 2
-    }}>
-        {/* 最左侧网站图标，点击跳转首页 */}
-        <a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
-            <img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
-        </a>
+			{/* 顶部导航栏 */}
+			<header style={{
+				position: 'fixed',
+				top: 0,
+				left: 0,
+				right: 0,
+				height: '50px',
+				display: 'flex',
+				alignItems: 'center',
+				justifyContent: 'space-between', // 左右两端对齐
+				padding: '0 30px',
+				zIndex: 2
+			}}>
+				{/* 最左侧网站图标，点击跳转首页 */}
+				<a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
+					<img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
+				</a>
 
-        {/* 右侧用户相关元素 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            {currentUser ? (
-                <>
-                    {/* 通知项（角标已修正） */}
-                    <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
-                        <span style={{ position: 'relative', display: 'inline-block' }}>
-                            <i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
-                            {notificationCount ? (
-                                <sup style={{
-                                    padding: '1px 5px',
-                                    backgroundColor: 'red',
-                                    color: 'white',
-                                    borderRadius: '5px',
-                                    position: 'absolute',
-                                    top: '-5px',
-                                    right: '-10px',
-                                    fontSize: '10px'
-                                }}>
-                                    {notificationCount}
-                                </sup>
-                            ) : null}
-                        </span>
-                        <span class='sidebarTitle' style={{ fontSize: '18px', marginLeft: '5px' }}>{getText(locale, 'userNotification')}</span>
-                    </a>
+				{/* 右侧用户相关元素 */}
+				<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+					{currentUser ? (
+						<>
+							<a href='/private-message' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+								<span style={{ position: 'relative', display: 'inline-block' }}>
+									<i class='fa-solid fa-envelope' style={{ fontSize: '20px' }}></i>
+									{privateMessageCount ? (
+										<sup style={{
+											padding: '1px 5px',
+											backgroundColor: 'red',
+											color: 'white',
+											borderRadius: '5px',
+											position: 'absolute',
+											top: '-5px',
+											right: '-10px',
+											fontSize: '10px'
+										}}>
+											{privateMessageCount}
+										</sup>
+									) : null}
+								</span>
+							</a>
 
-                    {/* 用户名：使用 <User> 组件保留自定义颜色 */}
-                    <a
-                        href={`https://cy3.cc.cd/user/${currentUser.id}`}
-                        style={{ fontWeight: 'bold', textDecoration: 'none' }}
-                    >
-                        <User user={currentUser} c={c} />
-                    </a>
+							{/* 通知项（角标已修正） */}
+							<a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+								<span style={{ position: 'relative', display: 'inline-block' }}>
+									<i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
+									{notificationCount ? (
+										<sup style={{
+											padding: '1px 5px',
+											backgroundColor: 'red',
+											color: 'white',
+											borderRadius: '5px',
+											position: 'absolute',
+											top: '-5px',
+											right: '-10px',
+											fontSize: '10px'
+										}}>
+											{notificationCount}
+										</sup>
+									) : null}
+								</span>
+							</a>
 
-                    {/* 登出（仅图标） */}
-                    <a
-                        href='/api/user/logout'
-                        style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
-                    >
-                        <i class='fa-solid fa-sign-out-alt'></i>
-                    </a>
-                </>
-            ) : (
-                <>
-                    <a href='/user/login' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-                        <i class='fa-solid fa-sign-in-alt'></i> {getText(locale, 'login')}
-                    </a>
-                    <a href='/user/register' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-                        <i class='fa-solid fa-user-plus'></i> {getText(locale, 'register')}
-                    </a>
-                </>
-            )}
-        </div>
-    </header>
+							{/* 用户名：使用 <User> 组件保留自定义颜色 */}
+							<a
+								href={`https://cy3.cc.cd/user/${currentUser.id}`}
+								style={{ fontWeight: 'bold', textDecoration: 'none' }}
+							>
+								<User user={currentUser} c={c} />
+							</a>
 
-    {/* 侧边栏（保持原样，背景由 CSS 中的 nav 选择器定义） */}
-    <nav style={{
-        position: 'fixed',
-        top: '50px',
-        left: '-10px',
-        height: 'calc(100% - 50px)',
-        padding: '10px',
-        'padding-left': '20px',
-        'overflow-x': 'hidden',
-        'overflow-y': 'auto',
-        'white-space': 'nowrap',
-        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-        'border-radius': '10px',
-        'z-index': 1
-    }}>
-        <p><a href='/'>
-            <i class='fa-solid fa-house'></i>
-            <span class='sidebarTitle'>{getText(locale, 'home')}</span>
-        </a></p>
-        <p><a href='/feed'>
-            <i class='fa-solid fa-rss'></i>
-            <span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
-        </a></p>
-        <p><a href='/discussion'>
-            <i class='fa-solid fa-comments'></i>
-            <span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
-        </a></p>
-        <p><a href='/ticket'>
-            <i class='fa-solid fa-ticket'></i>
-            <span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
-        </a></p>
+							{/* 登出（仅图标） */}
+							<a
+								href='/api/user/logout'
+								style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
+							>
+								<i class='fa-solid fa-sign-out-alt'></i>
+							</a>
+						</>
+					) : (
+						<>
+							<a href='/user/login' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
+								<i class='fa-solid fa-sign-in-alt'></i> {getText(locale, 'login')}
+							</a>
+							<a href='/user/register' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
+								<i class='fa-solid fa-user-plus'></i> {getText(locale, 'register')}
+							</a>
+						</>
+					)}
+				</div>
+			</header>
 
-        {
-            currentUser ? <>
-                <p><a href='/user/settings'>
-                    <i class='fa-solid fa-user-gear'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'userSettings')}</span>
-                </a></p>
-            </> : null
-        }
+			{/* 侧边栏（保持原样，背景由 CSS 中的 nav 选择器定义） */}
+			<nav style={{
+				position: 'fixed',
+				top: '50px',
+				left: '-10px',
+				height: 'calc(100% - 50px)',
+				padding: '10px',
+				'padding-left': '20px',
+				'overflow-x': 'hidden',
+				'overflow-y': 'auto',
+				'white-space': 'nowrap',
+				transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+				'border-radius': '10px',
+				'z-index': 1
+			}}>
+				<p><a href='/'>
+					<i class='fa-solid fa-house'></i>
+					<span class='sidebarTitle'>{getText(locale, 'home')}</span>
+				</a></p>
+				<p><a href='/feed'>
+					<i class='fa-solid fa-rss'></i>
+					<span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
+				</a></p>
+				<p><a href='/discussion'>
+					<i class='fa-solid fa-comments'></i>
+					<span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
+				</a></p>
+				<p><a href='/ticket'>
+					<i class='fa-solid fa-ticket'></i>
+					<span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
+				</a></p>
 
-        {
-            currentUser && (c.get('currentUser').permission & permissionAdmin) ? <p><a href='/admin'>
-                <i class='fa-solid fa-user-shield'></i>
-                <span class='sidebarTitle'>{getText(locale, 'admin')}</span>
-            </a></p> : <></>
-        }
+				{
+					currentUser ? <>
+						<p><a href='/user/settings'>
+							<i class='fa-solid fa-user-gear'></i>
+							<span class='sidebarTitle'>{getText(locale, 'userSettings')}</span>
+						</a></p>
+					</> : null
+				}
 
-        <p><a href='javascript:void(0)' onclick='switchLight()'>
-            <i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
-            <span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
-        </a></p>
-    </nav>
+				{
+					currentUser && (c.get('currentUser').permission & permissionAdmin) ? <p><a href='/admin'>
+						<i class='fa-solid fa-user-shield'></i>
+						<span class='sidebarTitle'>{getText(locale, 'admin')}</span>
+					</a></p> : <></>
+				}
 
-    {/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
-    <main style={{ paddingTop: '50px' }}>{children}</main>
-</body>
-</html>;
+				<p><a href='javascript:void(0)' onclick='switchLight()'>
+					<i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
+					<span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
+				</a></p>
+			</nav>
+
+			{/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
+			<main style={{ paddingTop: '50px' }}>{children}</main>
+		</body>
+	</html>;
 }));
 app.use(async (c, next) => {
 	if (c.get('currentUser') && !(c.get('currentUser')!.permission & permissionVisit)) {
