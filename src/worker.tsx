@@ -100,6 +100,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
 	const c = useRequestContext();
 	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any;
 	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
+	const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0;').bind(currentUser.id).first() : { privateMessageCount: 0 };
 	return <html lang={locale}>
 <head>
     <meta charset='UTF-8' />
@@ -155,18 +156,24 @@ app.use(jsxRenderer(async ({ children, title }) => {
                     ) : null}
 
                     {/* 私信图标（位于管理面板右侧、铃铛左侧） */}
-                    <a
-                        href='/private-message'
-                        style={{
-                            textDecoration: 'none',
-                            color: 'var(--text)',
-                            fontSize: '20px',
-                            display: 'inline-flex',
-                            alignItems: 'center'
-                        }}
-                        title={getText(locale, 'privateMessage')}
-                    >
-                        <i class='fa-solid fa-envelope'></i>
+                    <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+                        <span style={{ position: 'relative', display: 'inline-block' }}>
+                            <i class='fa-solid fa-envelope' style={{ fontSize: '20px' }}></i>
+                            {privateMessageCount ? (
+                                <sup style={{
+                                    padding: '1px 5px',
+                                    backgroundColor: 'red',
+                                    color: 'white',
+                                    borderRadius: '5px',
+                                    position: 'absolute',
+                                    top: '-5px',
+                                    right: '-10px',
+                                    fontSize: '10px'
+                                }}>
+                                    {privateMessageCount}
+                                </sup>
+                            ) : null}
+                        </span>
                     </a>
 
                     {/* 通知项（铃铛） */}
