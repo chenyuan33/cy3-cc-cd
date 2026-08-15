@@ -194,3 +194,13 @@ input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [t
 	border-color: light-dark(#dddddd, #333333);
 	cursor: not-allowed;
 }
+
+/* Top Header (顶部导航栏) */
+header {
+	color: light-dark(#333333, #e0e0e0);
+	background-color: light-dark(#ffffff26, #14141e99);
+	backdrop-filter: blur(20px) saturate(180%);
+	-webkit-backdrop-filter: blur(20px) saturate(180%);
+	border-bottom: 1px solid light-dark(#ffffff60, #ffffff14); /* 使用底部边框，与侧边栏右边框对应 */
+	box-shadow: 0 8px 32px light-dark(#00000019, #00000066);  /* 与侧边栏阴影一致 */
+}
