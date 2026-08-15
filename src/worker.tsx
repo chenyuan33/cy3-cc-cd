@@ -100,19 +100,18 @@ app.use(jsxRenderer(async ({ children, title }) => {
 	const c = useRequestContext();
 	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any;
 	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
-	const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0;').bind(currentUser.id).first() : { privateMessageCount: 0 };
 	return <html lang={locale}>
-		<head>
-			<meta charset='UTF-8' />
-			<meta name='viewport' content='width=device-width, initial-scale=1.0' />
-			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
-			<link rel='stylesheet' type='text/css' href='/style.css' />
-			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
-			<script src='/helper.js'></script>
-			<title>{title} - cy3's site</title>
-		</head>
-		<body>
-			<noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
+<head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
+    <link rel='stylesheet' type='text/css' href='/style.css' />
+    <link rel='icon' type='image/x-icon' href='/favicon.ico' />
+    <script src='/helper.js'></script>
+    <title>{title} - cy3's site</title>
+</head>
+<body>
+    <noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
 
     {/* 顶部导航栏 */}
     <header style={{
@@ -154,25 +153,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
                             <i class='fa-solid fa-user-shield'></i>
                         </a>
                     ) : null}
-                    <a href='/private-message' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
-                      <span style={{ position: 'relative', display: 'inline-block' }}>
-                        <i class='fa-solid fa-envelope' style={{ fontSize: '20px' }}></i>
-                        {privateMessageCount ? (
-                          <sup style={{
-                            padding: '1px 5px',
-                            backgroundColor: 'red',
-                            color: 'white',
-                            borderRadius: '5px',
-                            position: 'absolute',
-                            top: '-5px',
-                            right: '-10px',
-                            fontSize: '10px'
-                          }}>
-                            {privateMessageCount}
-                          </sup>
-                        ) : null}
-                      </span>
-                    </a>
 
                     {/* 通知项（铃铛） */}
                     <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
@@ -193,7 +173,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
                                 </sup>
                             ) : null}
                         </span>
-                        <span class='sidebarTitle' style={{ fontSize: '18px', marginLeft: '5px' }}>{getText(locale, 'userNotification')}</span>
                     </a>
 
                     {/* 用户名 */}
@@ -234,7 +213,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
         </div>
     </header>
 
-    {/* 侧边栏 */}
+    {/* 侧边栏（用户设置已移除） */}
     <nav style={{
         position: 'fixed',
         top: '50px',
@@ -272,10 +251,10 @@ app.use(jsxRenderer(async ({ children, title }) => {
         </a></p>
     </nav>
 
-			{/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
-			<main style={{ paddingTop: '50px' }}>{children}</main>
-		</body>
-	</html>;
+    {/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
+    <main style={{ paddingTop: '50px' }}>{children}</main>
+</body>
+</html>;
 }));
 app.use(async (c, next) => {
 	if (c.get('currentUser') && !(c.get('currentUser')!.permission & permissionVisit)) {
