@@ -196,7 +196,7 @@ app.post('/change-email/verify', async c => {
 	if (!time || new Date().getTime() - new Date(time + 'Z').getTime() > 10 * 60 * 1000) {
 		return c.redirect('/');
 	}
-	const { status } = await (await fetch(`https://api.verify.mail.cqiming.com/verify?sender=${encodeURIComponent(reqBody.email)}&code=${code}&token=cv3sitetovy&tokenuser=cy3`)).json() as { status: string };
+	const { status } = await (await fetch(`https://api.verify.mail.cqiming.com/verify?sender=${encodeURIComponent(reqBody.email)}&code=${code}&token=${env.EMAIL_VERIFY_TOKEN}&tokenuser=${env.EMAIL_VERIFY_TOKEN_USER}`)).json() as { status: string };
 	if (status === 'PASS') {
 		await env.db.prepare('UPDATE users SET email = ? WHERE id = ?').bind(reqBody.email, currentUser.id).run();
 		return c.render(<Card><h1>{getText(locale, 'userSettingsChangeEmailVerifySuccessfully')}</h1></Card>, { title: getText(locale, 'userSettingsChangeEmailVerifySuccessfully') });

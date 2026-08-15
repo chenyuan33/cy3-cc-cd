@@ -251,7 +251,7 @@ app.get('/', async c => {
 	const locale = c.get('locale'), env = c.env as any, nextDay = new Date();
 	nextDay.setDate(nextDay.getDate() + 1);
 	nextDay.setHours(0, 0, 0, 0);
-	const { results: discussions } = await env.db.prepare('SELECT id, uid, category, title, created_at, pin FROM discussion ORDER BY pin DESC, created_at DESC LIMIT 5').bind().all();
+	const { results: discussions } = await env.db.prepare('SELECT id, uid, category, title, created_at, pin FROM discussion ORDER BY pin DESC, created_at DESC LIMIT 10').bind().all();
 	return c.render(<>
 		<Card>
 			<h1>{getText(locale, 'home')}</h1>
