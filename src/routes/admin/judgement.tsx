@@ -163,16 +163,21 @@ app.post('/toggle', async (c) => {
 
     const permName = PERMISSIONS.find(p => p.bit === bit)?.label || '未知权限';
     const payload = JSON.stringify({
-      comment: comment || '无',
-      oldPermission: permission,
-      newPermission: newPermission
+        comment: comment || '无',
+        oldPermission: permission,
+        newPermission: newPermission
     });
-    // 记录操作日志，目标用户为被修改的用户
+    // 插入 judgement（公开记录）
     await env.db
-      .prepare('INSERT INTO judgement (uid, type, payload) VALUES (?, "permission-changed", ?)')
-      .bind(targetId, payload)
-      .run();
+        .prepare('INSERT INTO judgement (uid, type, payload) VALUES (?, "permission-changed", ?)')
+        .bind(targetId, payload)
+        .run();
 
+    // 插入 notification（用户通知）
+    await env.db
+        .prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)')
+        .bind(targetId, payload)
+        .run();
     return c.json({ success: true });
   } catch (e) {
     return c.json({ success: false, error: String(e) }, 500);
