@@ -31,7 +31,7 @@ app.get('/', async (c) => {
   return c.render(
     <Card style={{ padding: '20px' }}>
       <h1>{getText(c.get('locale'), 'judgement')}</h1>
-      <p>点击权限状态（✔ / ✘），填写{getText(c.get('locale'), 'reason')}后即可授予或取消权限。（你可以修改自己的权限）</p>
+      <p>点击权限状态（✔ / ✘），填写{getText(c.get('locale'), 'reason')}后即可授予或取消权限。</p>
 
       <div style={{ marginBottom: '20px' }}>
         <input
@@ -144,7 +144,6 @@ app.post('/toggle', async (c) => {
     return c.json({ success: false, error: '参数缺失' }, 400);
   }
   const targetId = parseInt(userId);
-  // 移除了禁止修改自己的判断，允许修改自己
   const env = c.env as any;
   const { permission } = await env.db
     .prepare('SELECT permission FROM users WHERE id = ?')
@@ -168,7 +167,7 @@ app.post('/toggle', async (c) => {
       oldPermission: permission,
       newPermission: newPermission
     });
-    // 记录操作日志，目标用户为被修改的用户（可以是自己）
+    // 记录操作日志，目标用户为被修改的用户
     await env.db
       .prepare('INSERT INTO judgement (uid, type, payload) VALUES (?, "permission-changed", ?)')
       .bind(targetId, payload)
