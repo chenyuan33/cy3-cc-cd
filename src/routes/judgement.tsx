@@ -124,7 +124,7 @@ app.get('/', async (c) => {
               </ul>
 
               <div style={{ color: 'light-dark(black, #e0e0e0)', fontSize: '0.95em' }}>
-                {record.comment && record.comment !== '无' ? record.comment : <span style={{ color: 'light-dark(#999, #666)' }}>未填写理由</span>}
+                {record.comment && record.comment !== '无' ? record.comment : <span style={{ color: 'light-dark(#999, #666)' }}>未填写{getText(c.get('locale'), 'reason')}</span>}
               </div>
 
               <div style={{ marginTop: '10px', fontSize: '0.8em', color: 'light-dark(#666, #aaa)' }}>

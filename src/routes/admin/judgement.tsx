@@ -31,7 +31,7 @@ app.get('/', async (c) => {
   return c.render(
     <Card style={{ padding: '20px' }}>
       <h1>{getText(c.get('locale'), 'judgement')}</h1>
-      <p>点击权限状态（✔ / ✘），填写理由后即可授予或取消权限。（你可以修改自己的权限）</p>
+      <p>点击权限状态（✔ / ✘），填写{getText(c.get('locale'), 'reason')}后即可授予或取消权限。（你可以修改自己的权限）</p>
 
       <div style={{ marginBottom: '20px' }}>
         <input
