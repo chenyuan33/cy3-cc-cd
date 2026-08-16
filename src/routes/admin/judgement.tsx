@@ -5,6 +5,7 @@ import { Card } from '../../components/card';
 import { accessDenied } from '../errorPages';
 import { permissionAdmin, permissionVisit, permissionSpeak } from '../../settings';
 import { User } from '../../components/user';
+import { getText } from "../../translations";
 
 const app = new Hono<AppEnv>();
 
@@ -22,14 +23,14 @@ app.get('/', async (c) => {
   }
 
   const env = c.env as any;
-  // 查询所有用户（包括当前管理员自己）
+  // 查询所有用户
   const { results: users } = await env.db
     .prepare('SELECT id, name, permission, name_color_light, name_color_dark FROM users ORDER BY id')
     .all();
 
   return c.render(
     <Card style={{ padding: '20px' }}>
-      <h1>陶片放逐</h1>
+      <h1>{getText(c.get('locale'), 'judgement')}</h1>
       <p>点击权限状态（✔ / ✘），填写理由后即可授予或取消权限。（你可以修改自己的权限）</p>
 
       <div style={{ marginBottom: '20px' }}>
@@ -128,11 +129,11 @@ app.get('/', async (c) => {
         }}
       />
     </Card>,
-    { title: '陶片放逐' }
+    { title: getText(c.get('locale'), 'judgement') }
   );
 });
 
-// API：切换某个权限位，并记录理由（允许修改自己）
+// API：切换某个权限位，并记录理由
 app.post('/toggle', async (c) => {
   const currentUser = c.get('currentUser');
   if (!currentUser || !(currentUser.permission & permissionAdmin)) {

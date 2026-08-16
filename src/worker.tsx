@@ -103,178 +103,178 @@ app.use(jsxRenderer(async ({ children, title }) => {
 	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
 	return <html lang={locale}>
 <head>
-    <meta charset='UTF-8' />
-    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
-    <link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
-    <link rel='stylesheet' type='text/css' href='/style.css' />
-    <link rel='icon' type='image/x-icon' href='/favicon.ico' />
-    <script src='/helper.js'></script>
-    <title>{title} - cy3's site</title>
+	<meta charset='UTF-8' />
+	<meta name='viewport' content='width=device-width, initial-scale=1.0' />
+	<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
+	<link rel='stylesheet' type='text/css' href='/style.css' />
+	<link rel='icon' type='image/x-icon' href='/favicon.ico' />
+	<script src='/helper.js'></script>
+	<title>{title} - cy3's site</title>
 </head>
 <body>
-    <noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
+	<noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
 
-    {/* 顶部导航栏 */}
-    <header style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '50px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '0 30px',
-        zIndex: 2
-    }}>
-        {/* 最左侧网站图标，点击跳转首页 */}
-        <a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
-            <img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
-        </a>
+	{/* 顶部导航栏 */}
+	<header style={{
+		position: 'fixed',
+		top: 0,
+		left: 0,
+		right: 0,
+		height: '50px',
+		display: 'flex',
+		alignItems: 'center',
+		justifyContent: 'space-between',
+		padding: '0 30px',
+		zIndex: 2
+	}}>
+		{/* 最左侧网站图标，点击跳转首页 */}
+		<a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
+			<img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
+		</a>
 
-        {/* 右侧用户相关元素 */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-            {currentUser ? (
-                <>
-                    {/* 管理面板（仅管理员可见，只显示图标，位于铃铛左边） */}
-                    {c.get('currentUser').permission & permissionAdmin ? (
-                        <a
-                            href='/admin'
-                            style={{
-                                textDecoration: 'none',
-                                color: 'var(--text)',
-                                fontSize: '20px',
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                position: 'relative',
-                                top: '-1px'
-                            }}
-                            title={getText(locale, 'admin')}
-                        >
-                            <i class='fa-solid fa-user-shield'></i>
-                        </a>
-                    ) : null}
+		{/* 右侧用户相关元素 */}
+		<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+			{currentUser ? (
+				<>
+					{/* 管理面板（仅管理员可见，只显示图标，位于铃铛左边） */}
+					{c.get('currentUser').permission & permissionAdmin ? (
+						<a
+							href='/admin'
+							style={{
+								textDecoration: 'none',
+								color: 'var(--text)',
+								fontSize: '20px',
+								display: 'inline-flex',
+								alignItems: 'center',
+								position: 'relative',
+								top: '-1px'
+							}}
+							title={getText(locale, 'admin')}
+						>
+							<i class='fa-solid fa-user-shield'></i>
+						</a>
+					) : null}
 
-                    {/* 私信图标（位于管理面板右侧、铃铛左侧） */}
-                    <a
-                        href='/private-message'
-                        style={{
-                            textDecoration: 'none',
-                            color: 'var(--text)',
-                            fontSize: '20px',
-                            display: 'inline-flex',
-                            alignItems: 'center'
-                        }}
-                        title={getText(locale, 'privateMessage')}
-                    >
-                        <i class='fa-solid fa-envelope'></i>
-                    </a>
+					{/* 私信图标（位于管理面板右侧、铃铛左侧） */}
+					<a
+						href='/private-message'
+						style={{
+							textDecoration: 'none',
+							color: 'var(--text)',
+							fontSize: '20px',
+							display: 'inline-flex',
+							alignItems: 'center'
+						}}
+						title={getText(locale, 'privateMessage')}
+					>
+						<i class='fa-solid fa-envelope'></i>
+					</a>
 
-                    {/* 通知项（铃铛） */}
-                    <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
-                        <span style={{ position: 'relative', display: 'inline-block' }}>
-                            <i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
-                            {notificationCount ? (
-                                <sup style={{
-                                    padding: '1px 5px',
-                                    backgroundColor: 'red',
-                                    color: 'white',
-                                    borderRadius: '5px',
-                                    position: 'absolute',
-                                    top: '-5px',
-                                    right: '-10px',
-                                    fontSize: '10px'
-                                }}>
-                                    {notificationCount}
-                                </sup>
-                            ) : null}
-                        </span>
-                    </a>
+					{/* 通知项（铃铛） */}
+					<a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+						<span style={{ position: 'relative', display: 'inline-block' }}>
+							<i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
+							{notificationCount ? (
+								<sup style={{
+									padding: '1px 5px',
+									backgroundColor: 'red',
+									color: 'white',
+									borderRadius: '5px',
+									position: 'absolute',
+									top: '-5px',
+									right: '-10px',
+									fontSize: '10px'
+								}}>
+									{notificationCount}
+								</sup>
+							) : null}
+						</span>
+					</a>
 
-                    {/* 用户名 */}
-                    <a
-                        href={`https://cy3.cc.cd/user/${currentUser.id}`}
-                        style={{ fontWeight: 'bold', textDecoration: 'none' }}
-                    >
-                        <User user={currentUser} c={c} />
-                    </a>
+					{/* 用户名 */}
+					<a
+						href={`https://cy3.cc.cd/user/${currentUser.id}`}
+						style={{ fontWeight: 'bold', textDecoration: 'none' }}
+					>
+						<User user={currentUser} c={c} />
+					</a>
 
-                    {/* 用户设置（仅图标，位于用户名右侧） */}
-                    <a
-                        href='/user/settings'
-                        style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px', display: 'inline-flex', alignItems: 'center' }}
-                        title={getText(locale, 'userSettings')}
-                    >
-                        <i class='fa-solid fa-gear'></i>
-                    </a>
+					{/* 用户设置（仅图标，位于用户名右侧） */}
+					<a
+						href='/user/settings'
+						style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px', display: 'inline-flex', alignItems: 'center' }}
+						title={getText(locale, 'userSettings')}
+					>
+						<i class='fa-solid fa-gear'></i>
+					</a>
 
-                    {/* 登出 */}
-                    <a
-                        href='/api/user/logout'
-                        style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
-                    >
-                        <i class='fa-solid fa-sign-out-alt'></i>
-                    </a>
-                </>
-            ) : (
-                <>
-                    <a href='/user/login' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-                        <i class='fa-solid fa-sign-in-alt'></i> {getText(locale, 'login')}
-                    </a>
-                    <a href='/user/register' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-                        <i class='fa-solid fa-user-plus'></i> {getText(locale, 'register')}
-                    </a>
-                </>
-            )}
-        </div>
-    </header>
+					{/* 登出 */}
+					<a
+						href='/api/user/logout'
+						style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
+					>
+						<i class='fa-solid fa-sign-out-alt'></i>
+					</a>
+				</>
+			) : (
+				<>
+					<a href='/user/login' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
+						<i class='fa-solid fa-sign-in-alt'></i> {getText(locale, 'login')}
+					</a>
+					<a href='/user/register' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
+						<i class='fa-solid fa-user-plus'></i> {getText(locale, 'register')}
+					</a>
+				</>
+			)}
+		</div>
+	</header>
 
-    {/* 侧边栏（新增“陶片放逐”导航项） */}
-    <nav style={{
-        position: 'fixed',
-        top: '50px',
-        left: '-10px',
-        height: 'calc(100% - 50px)',
-        padding: '10px',
-        'padding-left': '20px',
-        'overflow-x': 'hidden',
-        'overflow-y': 'auto',
-        'white-space': 'nowrap',
-        transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-        'border-radius': '10px',
-        'z-index': 1
-    }}>
-        <p><a href='/'>
-            <i class='fa-solid fa-house'></i>
-            <span class='sidebarTitle'>{getText(locale, 'home')}</span>
-        </a></p>
-        <p><a href='/feed'>
-            <i class='fa-solid fa-rss'></i>
-            <span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
-        </a></p>
-        <p><a href='/discussion'>
-            <i class='fa-solid fa-comments'></i>
-            <span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
-        </a></p>
-        <p><a href='/ticket'>
-            <i class='fa-solid fa-ticket'></i>
-            <span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
-        </a></p>
+	{/* 侧边栏 */}
+	<nav style={{
+		position: 'fixed',
+		top: '50px',
+		left: '-10px',
+		height: 'calc(100% - 50px)',
+		padding: '10px',
+		'padding-left': '20px',
+		'overflow-x': 'hidden',
+		'overflow-y': 'auto',
+		'white-space': 'nowrap',
+		transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
+		'border-radius': '10px',
+		'z-index': 1
+	}}>
+		<p><a href='/'>
+			<i class='fa-solid fa-house'></i>
+			<span class='sidebarTitle'>{getText(locale, 'home')}</span>
+		</a></p>
+		<p><a href='/feed'>
+			<i class='fa-solid fa-rss'></i>
+			<span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
+		</a></p>
+		<p><a href='/discussion'>
+			<i class='fa-solid fa-comments'></i>
+			<span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
+		</a></p>
+		<p><a href='/ticket'>
+			<i class='fa-solid fa-ticket'></i>
+			<span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
+		</a></p>
 
-        {/* 新增：陶片放逐 */}
-        <p><a href='/judgement'>
-            <i class='fa-solid fa-user'></i>
-            <span class='sidebarTitle'>{getText(locale, 'judgement')}</span>
-        </a></p>
+		{/* 权限更新 */}
+		<p><a href='/judgement'>
+			<i class='fa-solid fa-user'></i>
+			<span class='sidebarTitle'>{getText(locale, 'judgement')}</span>
+		</a></p>
 
-        <p><a href='javascript:void(0)' onclick='switchLight()'>
-            <i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
-            <span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
-        </a></p>
-    </nav>
+		<p><a href='javascript:void(0)' onclick='switchLight()'>
+			<i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
+			<span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
+		</a></p>
+	</nav>
 
-    {/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
-    <main style={{ paddingTop: '50px' }}>{children}</main>
+	{/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
+	<main style={{ paddingTop: '50px' }}>{children}</main>
 </body>
 </html>;
 }));

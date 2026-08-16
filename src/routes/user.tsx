@@ -219,8 +219,8 @@ app.get('/notification', async c => {
 					<ul>
 						{Array.from({ length: permissionCount }, (_, i) => i).map(x => 1 << x).map(permissionId => (payload.oldPermission ^ payload.newPermission) & permissionId ? <li>
 							{payload.newPermission & permissionId
-								? <span style={{ color: 'green' }}>{getText(locale, 'permissionGot')}</span>
-								: <span style={{ color: 'red' }}>{getText(locale, 'permissionLost')}</span>}
+								? <span style={{ color: 'green' }}>{getText(locale, 'permissionGot')}：</span>
+								: <span style={{ color: 'red' }}>{getText(locale, 'permissionLost')}：</span>}
 							&nbsp;
 							<span style={{ 'border': 'solid 1px', 'border-radius': '5px', 'padding': '3px', 'background-color': '#77777777' }}>{getText(locale, 'permission' + permissionId)}</span>
 						</li> : <></>)}

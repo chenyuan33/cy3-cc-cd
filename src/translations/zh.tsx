@@ -48,7 +48,7 @@ export default {
 	homeCheckInEverythingGood: '万事皆宜',
 	homeCheckInEverythingBad: '万事不顺',
 	homeCheckInCount: '你已经签到了 __COUNT__ 次。',
-	homeCheckInReferenceOnly: '仅供参考',
+	homeCheckInReferenceOnly: '仅供娱乐',
 	'homeCheckInStatus_-3': '大凶',
 	'homeCheckInStatus_-2': '凶',
 	'homeCheckInStatus_-1': '小凶',
@@ -66,8 +66,8 @@ export default {
 	login: '登录',
 	registerToLogin: '已有账号？<a href="/user/login">前往登录！</a>',
 	loginToRegister: '没有账号？<a href="/user/register">注册一个！</a>',
-	permissionLost: '取消权限：',
-	permissionGot: '授予权限：',
+	permissionLost: '撤销权限',
+	permissionGot: '授予权限',
 	permission1: '进入主站',
 	permission2: '自由发言',
 	permission4: '管理员',
@@ -178,5 +178,5 @@ export default {
 	registeredAt: '注册时间',
 	setPin: '设置置顶量',
 	deleted: '已删除',
-    judgement: '陶片放逐'
+    judgement: '权限更新'
 } as Record<string, string>;

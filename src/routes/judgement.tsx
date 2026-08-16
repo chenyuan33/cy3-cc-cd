@@ -10,7 +10,6 @@ import { permissionAdmin, permissionVisit, permissionSpeak } from '../settings';
 
 const app = new Hono<AppEnv>();
 
-// 只显示“进入主站”和“自由发言”
 const PERMISSION_BITS = [
   { bit: permissionVisit, label: '进入主站' },
   { bit: permissionSpeak, label: '自由发言' },
@@ -78,7 +77,7 @@ app.get('/', async (c) => {
   return c.render(
     <>
       <Card>
-        <h1>陶片放逐</h1>
+        <h1>{getText(c.get('locale'), 'judgement')}</h1>
         <p>此处展示所有用户的权限变更记录。</p>
       </Card>
 
@@ -136,7 +135,7 @@ app.get('/', async (c) => {
         })
       )}
     </>,
-    { title: '陶片放逐' }
+    { title: getText(c.get('locale'), 'judgement') }
   );
 });
 
