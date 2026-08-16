@@ -128,7 +128,7 @@ app.get('/', async (c) => {
                 {record.comment && record.comment !== '无' ? record.comment : <span style={{ color: 'light-dark(#999, #666)' }}>未填写{getText(c.get('locale'), 'reason')}</span>}
               </div>
 
-              <div style={{ marginTop: '10px', fontSize: '0.8em', color: 'light-dark(#666, #aaa)' }}>
+              <div style={{ marginTop: '10px', fontSize: '0.8em', color: 'light-dark(#666, #e0e0e0)' }}>
                 <Time c={c} time={record.createdAt} />
               </div>
             </Card>
