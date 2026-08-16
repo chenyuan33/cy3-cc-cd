@@ -108,7 +108,15 @@ app.post('/user/permission/set', async c => {
 		}
 	}
 	await env.db.prepare('UPDATE users SET permission = ? WHERE id = ?').bind(newPermission, uid).run();
-	await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)').bind(uid, JSON.stringify({ comment: reqBody.comment, oldPermission, newPermission })).run();
+	// 插入 judgement 表（用于公开显示）
+    await env.db.prepare('INSERT INTO judgement (uid, type, payload) VALUES (?, "permission-changed", ?)')
+        .bind(uid, JSON.stringify({ comment: reqBody.comment, oldPermission, newPermission }))
+        .run();
+
+    // 插入 notification 表（用于用户通知）
+    await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)')
+        .bind(uid, JSON.stringify({ comment: reqBody.comment, oldPermission, newPermission }))
+        .run();
 	return c.redirect('/user/' + uid, 303);
 });
 app.post('/discussion/set-pin', async c => {

@@ -70,7 +70,7 @@ export default {
 	permissionGot: '授予权限',
 	permission1: '进入主站',
 	permission2: '自由发言',
-	permission4: '管理员',
+	permission4: '进入后台',
 	userTagBanned: '封禁用户',
 	userTagAdmin: '管理员',
 	userSettings: '用户设置',

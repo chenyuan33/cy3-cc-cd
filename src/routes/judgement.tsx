@@ -13,6 +13,7 @@ const app = new Hono<AppEnv>();
 const PERMISSION_BITS = [
   { bit: permissionVisit, label: '进入主站' },
   { bit: permissionSpeak, label: '自由发言' },
+  { bit: permissionAdmin, label: '进入后台' },
 ];
 
 function parsePermissionChange(payload: any) {

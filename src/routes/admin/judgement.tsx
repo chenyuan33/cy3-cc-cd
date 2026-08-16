@@ -13,7 +13,7 @@ const app = new Hono<AppEnv>();
 const PERMISSIONS = [
   { bit: permissionVisit, label: '进入主站' },
   { bit: permissionSpeak, label: '自由发言' },
-//   { bit: permissionAdmin, label: '管理员' },
+//   { bit: permissionAdmin, label: '进入后台' },
 ];
 
 app.get('/', async (c) => {
