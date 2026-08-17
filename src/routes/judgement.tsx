@@ -10,7 +10,6 @@ import { permissionAdmin, permissionVisit, permissionSpeak } from '../settings';
 
 const app = new Hono<AppEnv>();
 
-// 权限位映射
 const PERMISSION_MAP = [
   { bit: permissionVisit, key: 'permission1' },
   { bit: permissionSpeak, key: 'permission2' },
