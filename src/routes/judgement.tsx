@@ -10,21 +10,22 @@ import { permissionAdmin, permissionVisit, permissionSpeak } from '../settings';
 
 const app = new Hono<AppEnv>();
 
-const PERMISSION_BITS = [
-  { bit: permissionVisit, label: '进入主站' },
-  { bit: permissionSpeak, label: '自由发言' },
-  { bit: permissionAdmin, label: '进入后台' },
+// 权限位映射
+const PERMISSION_MAP = [
+  { bit: permissionVisit, key: 'permission1' },
+  { bit: permissionSpeak, key: 'permission2' },
+  { bit: permissionAdmin, key: 'permission4' },
 ];
 
-function parsePermissionChange(payload: any) {
+function parsePermissionChange(payload: any, locale: string) {
   const { oldPermission, newPermission, comment } = payload;
   const changedBit = oldPermission ^ newPermission;
   if (changedBit === 0) return null;
-  const perm = PERMISSION_BITS.find(p => p.bit === changedBit);
+  const perm = PERMISSION_MAP.find(p => p.bit === changedBit);
   if (!perm) return null;
   const isGrant = !!(newPermission & changedBit);
   return {
-    permName: perm.label,
+    permName: getText(locale, perm.key),
     isGrant,
     comment: comment || '',
   };
@@ -36,6 +37,7 @@ app.get('/', async (c) => {
     return loginRequired(c);
   }
 
+  const locale = c.get('locale');
   const env = c.env as any;
 
   const { results } = await env.db
@@ -60,7 +62,7 @@ app.get('/', async (c) => {
   for (const row of results) {
     try {
       const payload = JSON.parse(row.payload);
-      const info = parsePermissionChange(payload);
+      const info = parsePermissionChange(payload, locale);
       if (!info) continue;
       records.push({
         id: row.id,
@@ -78,17 +80,19 @@ app.get('/', async (c) => {
   return c.render(
     <>
       <Card>
-        <h1>{getText(c.get('locale'), 'judgement')}</h1>
-        <p>此处展示所有用户的权限变更记录。</p>
+        <h1>{getText(locale, 'judgement')}</h1>
+        <p>{getText(locale, 'judgementDescription')}</p>
       </Card>
 
       {records.length === 0 ? (
         <Card>
-          <p>暂无权限变更记录。</p>
+          <p>{getText(locale, 'noRecords')}</p>
         </Card>
       ) : (
         records.map((record) => {
-          const actionText = record.isGrant ? '授予权限' : '撤销权限';
+          const actionText = record.isGrant
+            ? getText(locale, 'grantPermission')
+            : getText(locale, 'revokePermission');
           const color = record.isGrant ? '#52c41a' : '#e74c3c';
           return (
             <Card key={record.id} style={{ marginBottom: '16px' }}>
@@ -116,19 +120,21 @@ app.get('/', async (c) => {
 
               <ul style={{ margin: '0 0 8px 0', paddingLeft: '20px' }}>
                 <li>
-                  <span style={{ color }}>{record.isGrant ? '授予' : '撤销'}</span>
+                  <span style={{ color }}>{record.isGrant ? getText(locale, 'grant') : getText(locale, 'revoke')}</span>
                   {' '}
                   <code>{record.permName}</code>
                   {' '}
-                  权限
+                  {getText(locale, 'permissionLabel')}
                 </li>
               </ul>
 
               <div style={{ color: 'light-dark(black, #e0e0e0)', fontSize: '0.95em' }}>
-                {record.comment && record.comment !== '无' ? record.comment : <span style={{ color: 'light-dark(#999, #666)' }}>未填写{getText(c.get('locale'), 'reason')}</span>}
+                {record.comment && record.comment !== '无'
+                  ? record.comment
+                  : <span style={{ color: 'light-dark(#999, #666)' }}>{getText(locale, 'unfilledReason')}</span>}
               </div>
 
-              <div style={{ marginTop: '10px', fontSize: '0.8em', color: 'light-dark(#666, #e0e0e0)' }}>
+              <div style={{ marginTop: '10px', fontSize: '0.8em', color: 'light-dark(#666, #aaa)' }}>
                 <Time c={c} time={record.createdAt} />
               </div>
             </Card>
@@ -136,7 +142,7 @@ app.get('/', async (c) => {
         })
       )}
     </>,
-    { title: getText(c.get('locale'), 'judgement') }
+    { title: getText(locale, 'judgement') }
   );
 });
 

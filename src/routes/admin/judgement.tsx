@@ -9,11 +9,9 @@ import { getText } from "../../translations";
 
 const app = new Hono<AppEnv>();
 
-// 权限列表
 const PERMISSIONS = [
-  { bit: permissionVisit, label: '进入主站' },
-  { bit: permissionSpeak, label: '自由发言' },
-//   { bit: permissionAdmin, label: '进入后台' },
+  { bit: permissionVisit, labelKey: 'permission1' },
+  { bit: permissionSpeak, labelKey: 'permission2' },
 ];
 
 app.get('/', async (c) => {
@@ -22,22 +20,38 @@ app.get('/', async (c) => {
     return accessDenied(c);
   }
 
+  const locale = c.get('locale');
   const env = c.env as any;
-  // 查询所有用户
+
+  // 构建带翻译的权限列表
+  const permLabels = PERMISSIONS.map(p => ({
+    bit: p.bit,
+    label: getText(locale, p.labelKey)
+  }));
+
   const { results: users } = await env.db
     .prepare('SELECT id, name, permission, name_color_light, name_color_dark FROM users ORDER BY id')
     .all();
 
+  // 准备前端翻译变量
+  const promptReason = getText(locale, 'promptReason');
+  const confirmGrant = getText(locale, 'confirmGrant');
+  const confirmRevoke = getText(locale, 'confirmRevoke');
+  const successMsg = getText(locale, 'operationSuccess');
+  const failedMsg = getText(locale, 'operationFailed');
+  const grant = getText(locale, 'grant');
+  const revoke = getText(locale, 'revoke');
+
   return c.render(
     <Card style={{ padding: '20px' }}>
-      <h1>{getText(c.get('locale'), 'judgement')}</h1>
-      <p>点击权限状态（✔ / ✘），填写{getText(c.get('locale'), 'reason')}后即可授予或取消权限。</p>
+      <h1>{getText(locale, 'judgement')}</h1>
+      <p>{getText(locale, 'adminJudgementDescription')}</p>
 
       <div style={{ marginBottom: '20px' }}>
         <input
           id="searchInput"
           type="text"
-          placeholder="搜索用户名或 ID..."
+          placeholder={getText(locale, 'searchPlaceholder')}
           style={{ padding: '8px', width: '300px', border: '1px solid #ccc', borderRadius: '4px' }}
         />
       </div>
@@ -46,8 +60,8 @@ app.get('/', async (c) => {
         <thead>
           <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
             <th style={{ padding: '8px' }}>ID</th>
-            <th style={{ padding: '8px' }}>用户名</th>
-            {PERMISSIONS.map(p => <th key={p.bit} style={{ padding: '8px' }}>{p.label}</th>)}
+            <th style={{ padding: '8px' }}>{getText(locale, 'username')}</th>
+            {permLabels.map(p => <th key={p.bit} style={{ padding: '8px' }}>{p.label}</th>)}
           </tr>
         </thead>
         <tbody id="userTableBody">
@@ -57,7 +71,7 @@ app.get('/', async (c) => {
               <td style={{ padding: '8px' }}>
                 <User user={user} c={c} />
               </td>
-              {PERMISSIONS.map(p => {
+              {permLabels.map(p => {
                 const has = !!(user.permission & p.bit);
                 return (
                   <td key={p.bit} style={{ padding: '8px', cursor: 'pointer' }}>
@@ -101,15 +115,18 @@ app.get('/', async (c) => {
                 const userId = this.dataset.userid;
                 const bit = parseInt(this.dataset.bit);
                 const currentHas = this.textContent.trim() === '✔';
-                const action = currentHas ? '取消' : '授予';
+                const action = currentHas ? '${revoke}' : '${grant}';
                 const ths = document.querySelectorAll('thead th');
                 const idx = Array.from(this.parentElement.parentElement.children).indexOf(this.parentElement);
-                const permName = ths[idx]?.textContent || '权限';
+                const permName = ths[idx]?.textContent || '';
 
-                const reason = prompt('请输入操作理由（可选）：');
+                const reason = prompt('${promptReason}');
                 if (reason === null) return;
 
-                if (!confirm('确定要' + action + '用户 ID ' + userId + ' 的 "' + permName + '" 权限吗？')) return;
+                const confirmMsg = currentHas
+                  ? '${confirmRevoke}'.replace('{userId}', userId).replace('{permName}', permName)
+                  : '${confirmGrant}'.replace('{userId}', userId).replace('{permName}', permName);
+                if (!confirm(confirmMsg)) return;
 
                 const response = await fetch('/admin/judgement/toggle', {
                   method: 'POST',
@@ -118,10 +135,10 @@ app.get('/', async (c) => {
                 });
                 const result = await response.json();
                 if (result.success) {
-                  alert('操作成功！');
+                  alert('${successMsg}');
                   location.reload();
                 } else {
-                  alert('操作失败：' + (result.error || '未知错误'));
+                  alert('${failedMsg}' + (result.error || ''));
                 }
               });
             });
@@ -129,7 +146,7 @@ app.get('/', async (c) => {
         }}
       />
     </Card>,
-    { title: getText(c.get('locale'), 'judgement') }
+    { title: getText(locale, 'judgement') }
   );
 });
 
@@ -161,23 +178,22 @@ app.post('/toggle', async (c) => {
       .bind(newPermission, targetId)
       .run();
 
-    const permName = PERMISSIONS.find(p => p.bit === bit)?.label || '未知权限';
+    // 直接使用翻译键，不再依赖 PERMISSIONS 数组
     const payload = JSON.stringify({
-        comment: comment || '无',
-        oldPermission: permission,
-        newPermission: newPermission
+      comment: comment || '无',
+      oldPermission: permission,
+      newPermission: newPermission
     });
-    // 插入 judgement（公开记录）
     await env.db
-        .prepare('INSERT INTO judgement (uid, type, payload) VALUES (?, "permission-changed", ?)')
-        .bind(targetId, payload)
-        .run();
+      .prepare('INSERT INTO judgement (uid, type, payload) VALUES (?, "permission-changed", ?)')
+      .bind(targetId, payload)
+      .run();
 
-    // 插入 notification（用户通知）
     await env.db
-        .prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)')
-        .bind(targetId, payload)
-        .run();
+      .prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)')
+      .bind(targetId, payload)
+      .run();
+
     return c.json({ success: true });
   } catch (e) {
     return c.json({ success: false, error: String(e) }, 500);
