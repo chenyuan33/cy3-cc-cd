@@ -6,9 +6,11 @@ import { accessDenied } from '../errorPages';
 import { permissionAdmin, permissionVisit, permissionSpeak } from '../../settings';
 import { User } from '../../components/user';
 import { getText } from "../../translations";
+import { html } from 'hono/html';
 
 const app = new Hono<AppEnv>();
 
+// 权限列表
 const PERMISSIONS = [
   { bit: permissionVisit, labelKey: 'permission1' },
   { bit: permissionSpeak, labelKey: 'permission2' },
@@ -23,7 +25,7 @@ app.get('/', async (c) => {
   const locale = c.get('locale');
   const env = c.env as any;
 
-  // 构建带翻译的权限列表
+  // 构建带翻译的权限列
   const permLabels = PERMISSIONS.map(p => ({
     bit: p.bit,
     label: getText(locale, p.labelKey)
@@ -33,14 +35,16 @@ app.get('/', async (c) => {
     .prepare('SELECT id, name, permission, name_color_light, name_color_dark FROM users ORDER BY id')
     .all();
 
-  // 准备前端翻译变量
-  const promptReason = getText(locale, 'promptReason');
-  const confirmGrant = getText(locale, 'confirmGrant');
-  const confirmRevoke = getText(locale, 'confirmRevoke');
-  const successMsg = getText(locale, 'operationSuccess');
-  const failedMsg = getText(locale, 'operationFailed');
-  const grant = getText(locale, 'grant');
-  const revoke = getText(locale, 'revoke');
+  // 翻译变量（注入到前端）
+  const t = {
+    promptReason: getText(locale, 'promptReason'),
+    confirmGrant: getText(locale, 'confirmGrant'),
+    confirmRevoke: getText(locale, 'confirmRevoke'),
+    operationSuccess: getText(locale, 'operationSuccess'),
+    operationFailed: getText(locale, 'operationFailed'),
+    grant: getText(locale, 'grant'),
+    revoke: getText(locale, 'revoke'),
+  };
 
   return c.render(
     <Card style={{ padding: '20px' }}>
@@ -98,59 +102,25 @@ app.get('/', async (c) => {
         </tbody>
       </table>
 
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `
-            document.getElementById('searchInput').addEventListener('input', function() {
-              const keyword = this.value.toLowerCase();
-              const rows = document.querySelectorAll('#userTableBody tr');
-              rows.forEach(row => {
-                const text = row.textContent.toLowerCase();
-                row.style.display = text.includes(keyword) ? '' : 'none';
-              });
-            });
-
-            document.querySelectorAll('.perm-toggle').forEach(el => {
-              el.addEventListener('click', async function() {
-                const userId = this.dataset.userid;
-                const bit = parseInt(this.dataset.bit);
-                const currentHas = this.textContent.trim() === '✔';
-                const action = currentHas ? '${revoke}' : '${grant}';
-                const ths = document.querySelectorAll('thead th');
-                const idx = Array.from(this.parentElement.parentElement.children).indexOf(this.parentElement);
-                const permName = ths[idx]?.textContent || '';
-
-                const reason = prompt('${promptReason}');
-                if (reason === null) return;
-
-                const confirmMsg = currentHas
-                  ? '${confirmRevoke}'.replace('{userId}', userId).replace('{permName}', permName)
-                  : '${confirmGrant}'.replace('{userId}', userId).replace('{permName}', permName);
-                if (!confirm(confirmMsg)) return;
-
-                const response = await fetch('/admin/judgement/toggle', {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ userId, bit, enable: !currentHas, comment: reason.trim() })
-                });
-                const result = await response.json();
-                if (result.success) {
-                  alert('${successMsg}');
-                  location.reload();
-                } else {
-                  alert('${failedMsg}' + (result.error || ''));
-                }
-              });
-            });
-          `
-        }}
-      />
+      {/* 注入全局翻译变量并加载外部脚本 */}
+      {html`
+        <script>
+          window.__promptReason = ${JSON.stringify(t.promptReason)};
+          window.__confirmGrant = ${JSON.stringify(t.confirmGrant)};
+          window.__confirmRevoke = ${JSON.stringify(t.confirmRevoke)};
+          window.__operationSuccess = ${JSON.stringify(t.operationSuccess)};
+          window.__operationFailed = ${JSON.stringify(t.operationFailed)};
+          window.__grant = ${JSON.stringify(t.grant)};
+          window.__revoke = ${JSON.stringify(t.revoke)};
+        </script>
+        <script src="/js/admin-judgement.js"></script>
+      `}
     </Card>,
     { title: getText(locale, 'judgement') }
   );
 });
 
-// API：切换某个权限位，并记录理由
+// API：切换权限位
 app.post('/toggle', async (c) => {
   const currentUser = c.get('currentUser');
   if (!currentUser || !(currentUser.permission & permissionAdmin)) {
@@ -178,17 +148,17 @@ app.post('/toggle', async (c) => {
       .bind(newPermission, targetId)
       .run();
 
-    // 直接使用翻译键，不再依赖 PERMISSIONS 数组
     const payload = JSON.stringify({
       comment: comment || '无',
       oldPermission: permission,
       newPermission: newPermission
     });
+    // 插入 judgement 表（公开记录）
     await env.db
       .prepare('INSERT INTO judgement (uid, type, payload) VALUES (?, "permission-changed", ?)')
       .bind(targetId, payload)
       .run();
-
+    // 插入 notification 表（用户通知）
     await env.db
       .prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)')
       .bind(targetId, payload)

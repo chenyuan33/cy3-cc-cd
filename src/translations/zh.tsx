@@ -178,5 +178,20 @@ export default {
 	registeredAt: '注册时间',
 	setPin: '设置置顶量',
 	deleted: '已删除',
-    judgement: '权限更新'
+    judgement: '权限更新',
+	judgementDescription: '此处展示所有用户的权限变更记录。',
+	noRecords: '暂无权限变更记录。',
+	grantPermission: '授予权限',
+	revokePermission: '撤销权限',
+	grant: '授予',
+	revoke: '撤销',
+	permissionLabel: '权限',
+	unfilledReason: '未填写理由',
+	adminJudgementDescription: '点击权限状态（✔ / ✘），填写理由后即可授予或取消权限。',
+	searchPlaceholder: '搜索用户名或 ID...',
+	promptReason: '请输入操作理由（可选）：',
+	confirmGrant: '确定要授予用户 {userId} 的 “{permName}” 权限吗？',
+	confirmRevoke: '确定要撤销用户 {userId} 的 “{permName}” 权限吗？',
+	operationSuccess: '操作成功！',
+	operationFailed: '操作失败：'
 } as Record<string, string>;
