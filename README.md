@@ -37,7 +37,7 @@ A website deployed on Cloudflare Workers.
    npm run start
    ```
 6. Register an admin account
-   After registering the first user, run `UPDATE users SET permission = permission & 4 WHERE id = 1` to grant admin privileges to the user with `uid = 1`.
+   After registering the first user, run `UPDATE users SET permission = permission | 4 WHERE id = 1` to grant admin privileges to the user with `uid = 1`.
 
 ## Cloud Deployment
 
