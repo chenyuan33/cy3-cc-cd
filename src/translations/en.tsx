@@ -193,5 +193,8 @@ export default {
 	confirmGrant: 'Are you sure you want to grant user {userId} the “{permName}” permission?',
 	confirmRevoke: 'Are you sure you want to revoke user {userId} the “{permName}” permission?',
 	operationSuccess: 'Operation successful!',
-	operationFailed: 'Operation failed:'
+	operationFailed: 'Operation failed:',
+    apiPermissionDenied: 'Permission denied',
+    apiMissingParams: 'Missing parameters',
+    colon: ':'
 } as Record<string, string>;

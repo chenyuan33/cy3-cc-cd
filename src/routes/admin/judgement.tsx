@@ -92,7 +92,7 @@ app.get('/', async (c) => {
                         fontSize: '14px',
                       }}
                     >
-                      {has ? '✔' : '✘'}
+                      <i class={`fa-solid ${has ? 'fa-check' : 'fa-xmark'}`}></i>
                     </span>
                   </td>
                 );
@@ -124,11 +124,11 @@ app.get('/', async (c) => {
 app.post('/toggle', async (c) => {
   const currentUser = c.get('currentUser');
   if (!currentUser || !(currentUser.permission & permissionAdmin)) {
-    return c.json({ success: false, error: '无权限' }, 403);
+    return c.json({ success: false, error: getText(c.get('locale'), 'apiPermissionDenied') }, 403);
   }
   const { userId, bit, enable, comment } = await c.req.json();
   if (!userId || bit === undefined) {
-    return c.json({ success: false, error: '参数缺失' }, 400);
+    return c.json({ success: false, error: getText(c.get('locale'), 'apiMissingParams') }, 400);
   }
   const targetId = parseInt(userId);
   const env = c.env as any;

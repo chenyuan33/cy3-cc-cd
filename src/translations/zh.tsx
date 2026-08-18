@@ -193,5 +193,8 @@ export default {
 	confirmGrant: '确定要授予用户 {userId} 的 “{permName}” 权限吗？',
 	confirmRevoke: '确定要撤销用户 {userId} 的 “{permName}” 权限吗？',
 	operationSuccess: '操作成功！',
-	operationFailed: '操作失败：'
+	operationFailed: '操作失败：',
+    apiPermissionDenied: '无权限',
+    apiMissingParams: '参数缺失',
+    colon: '：'
 } as Record<string, string>;
