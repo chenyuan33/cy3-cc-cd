@@ -1,7 +1,10 @@
-const DOMPurifyFragment = document.createRange().createContextualFragment('<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js" integrity="sha384-rneZSW/1QE+3/U5/u+/7eRNi/tRc+SzS+yXy36fltr1tDN9EHaVo1Bwz2Z8o8DA4" crossorigin="anonymous"></script>')
+// ===== 加载 DOMPurify（自托管） =====
+const DOMPurifyFragment = document.createRange().createContextualFragment('<script src="/js/purify.min.js"></script>');
 const DOMPurifyLoaded = new Promise(resolve => DOMPurifyFragment.querySelector('script').onload = () => resolve());
 document.head.append(DOMPurifyFragment);
-const KaTeXFragment = document.createRange().createContextualFragment('<script src="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.js" integrity="sha384-AtrdNsnxl/75rvBneBVH7DtOvCxSVahR2zWqle1coBKd8DEmLoviqNeJSx64gNAs" crossorigin="anonymous"></script>')
+
+// ===== 加载 KaTeX（自托管） =====
+const KaTeXFragment = document.createRange().createContextualFragment('<script src="/js/katex.min.js"></script>');
 const KaTeXLoaded = new Promise(resolve => KaTeXFragment.querySelector('script').onload = () => resolve());
 document.head.append(KaTeXFragment);
 

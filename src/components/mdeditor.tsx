@@ -2,12 +2,14 @@ import { html } from 'hono/html';
 import { type CSSProperties, type FC } from 'hono/jsx';
 
 export const MdInit: FC<{}> = () => <>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-	<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css' />
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
-	<link rel='stylesheet' type='text/css' href='/md/editor.css' />
-	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.17.0/dist/katex.min.css" integrity="sha384-vlBdW0r3AcZO/HboRPznQNowvexd3fY8qHOWkBi5q7KGgqJ+F48+DceybYmrVbmB" crossorigin="anonymous" />
-	<script src='/md/md.js'></script>
+  {/* CodeMirror 核心（如需要也可自托管，当前暂用 CDN） */}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <link rel="stylesheet" href="/md/editor.css" />
+  {/* KaTeX CSS（自托管） */}
+  <link rel="stylesheet" href="/css/katex.min.css" />
+  <script src="/md/md.js"></script>
 </>;
 
 export const MdEditor: FC<{
