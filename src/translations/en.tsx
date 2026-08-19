@@ -196,5 +196,6 @@ export default {
 	operationFailed: 'Operation failed:',
     apiPermissionDenied: 'Permission denied',
     apiMissingParams: 'Missing parameters',
-    colon: ':'
+    colon: ':',
+    noReason: 'None'
 } as Record<string, string>;

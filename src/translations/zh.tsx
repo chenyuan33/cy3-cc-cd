@@ -196,5 +196,6 @@ export default {
 	operationFailed: '操作失败：',
     apiPermissionDenied: '无权限',
     apiMissingParams: '参数缺失',
-    colon: '：'
+    colon: '：',
+    noReason: '无'
 } as Record<string, string>;
