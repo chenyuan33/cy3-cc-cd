@@ -1,5 +1,6 @@
 // src/routes/admin/judgement.tsx
 import { Hono } from 'hono';
+import { raw } from 'hono/html';
 import type { AppEnv } from '../../types';
 import { Card } from '../../components/card';
 import { accessDenied } from '../errorPages';
@@ -51,7 +52,7 @@ app.get('/', async (c) => {
     return c.render(
         <Card style={{ padding: '20px' }}>
             <h1>{getText(locale, 'judgement')}</h1>
-            <p>{getText(locale, 'adminJudgementDescription')}</p>
+            <p>{raw(getText(locale, 'adminJudgementDescription'))}</p>
 
             <div style={{ marginBottom: '20px' }}>
                 <input
