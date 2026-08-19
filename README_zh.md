@@ -37,7 +37,7 @@
 	npm run start
 	```
 6. 注册管理员账号
-	注册完第一个用户后，运行 `UPDATE users SET permission = permission & 4 WHERE id = 1` 给 uid 为 1 的用户管理员权限。
+	注册完第一个用户后，运行 `UPDATE users SET permission = permission | 4 WHERE id = 1` 给 uid 为 1 的用户管理员权限。
 
 ## 云端部署
 
