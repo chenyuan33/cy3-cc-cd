@@ -1,10 +1,10 @@
-// ===== 加载 DOMPurify（自托管） =====
-const DOMPurifyFragment = document.createRange().createContextualFragment('<script src="/js/purify.min.js"></script>');
+// ===== 加载 DOMPurify（cdnjs） =====
+const DOMPurifyFragment = document.createRange().createContextualFragment('<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js" integrity="sha384-rneZSW/1QE+3/U5/u+/7eRNi/tRc+SzS+yXy36fltr1tDN9EHaVo1Bwz2Z8o8DA4" crossorigin="anonymous"></script>');
 const DOMPurifyLoaded = new Promise(resolve => DOMPurifyFragment.querySelector('script').onload = () => resolve());
 document.head.append(DOMPurifyFragment);
 
-// ===== 加载 KaTeX =====
-const KaTeXFragment = document.createRange().createContextualFragment('<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js" integrity="sha384-V7JOWfEfZ8C8fxUOjBp60F2YyK1Fpl1Hc8pnNWnVWtNkH0ghlj9m+C4a1sZdxwHc" crossorigin="anonymous"></script>')
+// ===== 加载 KaTeX（cdnjs） =====
+const KaTeXFragment = document.createRange().createContextualFragment('<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js" integrity="sha384-V7JOWfEfZ8C8fxUOjBp60F2YyK1Fpl1Hc8pnNWnVWtNkH0ghlj9m+C4a1sZdxwHc" crossorigin="anonymous"></script>');
 const KaTeXLoaded = new Promise(resolve => KaTeXFragment.querySelector('script').onload = () => resolve());
 document.head.append(KaTeXFragment);
 

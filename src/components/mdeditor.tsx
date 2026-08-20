@@ -2,16 +2,16 @@ import { html } from 'hono/html';
 import { type CSSProperties, type FC } from 'hono/jsx';
 
 export const MdInit: FC<{}> = () => <>
-  {/* CodeMirror 核心（自托管） */}
-  <script src="/js/codemirror.min.js"></script>
-  <link rel="stylesheet" href="/css/codemirror.min.css" />
-  {/* CodeMirror Markdown 模式（自托管） */}
-  <script src="/js/mode/markdown/markdown.min.js"></script>
+  {/* CodeMirror 核心（cdnjs） */}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  {/* CodeMirror Markdown 模式（cdnjs） */}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
   {/* 自定义编辑器样式 */}
   <link rel="stylesheet" href="/md/editor.css" />
-  {/* KaTeX CSS*/}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha384-vlBdW0r3AcZO/HboRPznQNowvexd3fY8qHOWkBi5q7KGgqJ+F48+DceybYmrVbmB" crossorigin="anonymous" />
-  {/* 主渲染脚本（自托管加载 KaTeX、DOMPurify） */}
+  {/* KaTeX CSS（cdnjs） */}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css" />
+  {/* 主渲染脚本（内部） */}
   <script src="/md/md.js"></script>
 </>;
 
