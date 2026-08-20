@@ -3,14 +3,17 @@ import { type CSSProperties, type FC } from 'hono/jsx';
 
 export const MdInit: FC<{}> = () => <>
   {/* CodeMirror 核心（cdnjs） */}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.js"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/codemirror.min.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/codemirror.min.js" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/codemirror.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
   {/* CodeMirror Markdown 模式（cdnjs） */}
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.16/mode/markdown/markdown.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/mode/markdown/markdown.min.js"></script>
   {/* 自定义编辑器样式 */}
   <link rel="stylesheet" href="/md/editor.css" />
-  {/* KaTeX CSS（cdnjs） */}
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.css" />
+  {/* KaTeX */}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.18.4/katex.min.js" referrerpolicy="no-referrer"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.18.4/katex.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  {/* DOMPurify */}
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.4.13/purify.min.js" referrerpolicy="no-referrer"></script>
   {/* 主渲染脚本（内部） */}
   <script src="/md/md.js"></script>
 </>;

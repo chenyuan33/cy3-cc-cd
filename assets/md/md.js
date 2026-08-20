@@ -1,13 +1,3 @@
-// ===== 加载 DOMPurify（cdnjs） =====
-const DOMPurifyFragment = document.createRange().createContextualFragment('<script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js" integrity="sha384-rneZSW/1QE+3/U5/u+/7eRNi/tRc+SzS+yXy36fltr1tDN9EHaVo1Bwz2Z8o8DA4" crossorigin="anonymous"></script>');
-const DOMPurifyLoaded = new Promise(resolve => DOMPurifyFragment.querySelector('script').onload = () => resolve());
-document.head.append(DOMPurifyFragment);
-
-// ===== 加载 KaTeX（cdnjs） =====
-const KaTeXFragment = document.createRange().createContextualFragment('<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js" integrity="sha384-V7JOWfEfZ8C8fxUOjBp60F2YyK1Fpl1Hc8pnNWnVWtNkH0ghlj9m+C4a1sZdxwHc" crossorigin="anonymous"></script>');
-const KaTeXLoaded = new Promise(resolve => KaTeXFragment.querySelector('script').onload = () => resolve());
-document.head.append(KaTeXFragment);
-
 const inlineMdToHtml = async (md, options) => {
     options ??= {};
     options.safe ??= true;
@@ -68,7 +58,6 @@ const inlineMdToHtml = async (md, options) => {
     if (!options.allowHtml) {
         html = html.replaceAll(/&/g, '&amp;').replaceAll(/</g, '&lt;').replaceAll(/>/g, '&gt;').replaceAll(/"/g, '&quot;');
     }
-    await KaTeXLoaded;
     html = html
         .replaceAll(/\x00CODE_(\d+)\x00/g, (_, idx) => `<code>${codes[parseInt(idx)]}</code>`)
         .replaceAll(/\x00MATH_(\d+)\x00/g, (_, idx) => {
@@ -82,7 +71,6 @@ const inlineMdToHtml = async (md, options) => {
         .replaceAll(/\x00SIGN_(\d+)\x00/g, (_, idx) => signs[idx])
         .replaceAll(/\x00USER_(\d+)\x00/g, (_, uid) => usersObject[uid]);
     if (options.safe) {
-        await DOMPurifyLoaded;
         html = DOMPurify.sanitize(html);
     }
     return html;
@@ -323,7 +311,6 @@ const mdToHtml = async (md, options) => {
     await endMarker();
 
     if (options.safe) {
-        await DOMPurifyLoaded;
         html = DOMPurify.sanitize(html);
     }
     return html;
