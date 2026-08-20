@@ -9,8 +9,8 @@ export const MdInit: FC<{}> = () => <>
   <script src="/js/mode/markdown/markdown.min.js"></script>
   {/* 自定义编辑器样式 */}
   <link rel="stylesheet" href="/md/editor.css" />
-  {/* KaTeX CSS（自托管） */}
-  <link rel="stylesheet" href="/css/katex.min.css" />
+  {/* KaTeX CSS*/}
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css" integrity="sha384-vlBdW0r3AcZO/HboRPznQNowvexd3fY8qHOWkBi5q7KGgqJ+F48+DceybYmrVbmB" crossorigin="anonymous" />
   {/* 主渲染脚本（自托管加载 KaTeX、DOMPurify） */}
   <script src="/md/md.js"></script>
 </>;

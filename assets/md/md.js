@@ -3,8 +3,8 @@ const DOMPurifyFragment = document.createRange().createContextualFragment('<scri
 const DOMPurifyLoaded = new Promise(resolve => DOMPurifyFragment.querySelector('script').onload = () => resolve());
 document.head.append(DOMPurifyFragment);
 
-// ===== 加载 KaTeX（自托管） =====
-const KaTeXFragment = document.createRange().createContextualFragment('<script src="/js/katex.min.js"></script>');
+// ===== 加载 KaTeX =====
+const KaTeXFragment = document.createRange().createContextualFragment('<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.11/katex.min.js" integrity="sha384-V7JOWfEfZ8C8fxUOjBp60F2YyK1Fpl1Hc8pnNWnVWtNkH0ghlj9m+C4a1sZdxwHc" crossorigin="anonymous"></script>')
 const KaTeXLoaded = new Promise(resolve => KaTeXFragment.querySelector('script').onload = () => resolve());
 document.head.append(KaTeXFragment);
 
