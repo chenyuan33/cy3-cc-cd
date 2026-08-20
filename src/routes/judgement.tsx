@@ -112,9 +112,9 @@ app.get('/', async (c) => {
                             <ul style={{ margin: '0 0 8px 0', paddingLeft: '20px' }}>
                                 <li>
                                     <span style={{ color }}>{record.isGrant ? getText(locale, 'grant') : getText(locale, 'revoke')}</span>
-                                    {' '}
+                                    &nbsp;
                                     <code>{record.permName}</code>
-                                    {' '}
+                                    &nbsp;
                                     {getText(locale, 'permissionLabel')}
                                 </li>
                             </ul>
