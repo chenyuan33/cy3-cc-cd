@@ -200,5 +200,6 @@ export default {
     noReason: '无',
     multipleChanges: '多项变更',
     apiCannotModifyAdmin: '不能修改管理员权限',
-    onlySuperAdmin: '只有超级管理员可以修改此权限'
+    onlySuperAdmin: '只有超级管理员可以修改此权限',
+    cannotModify: '此权限不可修改'
 } as Record<string, string>;

@@ -200,5 +200,6 @@ export default {
     noReason: 'None',
     multipleChanges: 'Multiple changes',
     apiCannotModifyAdmin: 'Cannot modify admin permission',
-    onlySuperAdmin: 'Only the super administrator can modify this permission'
+    onlySuperAdmin: 'Only the super administrator can modify this permission',
+    cannotModify: 'This permission cannot be modified'
 } as Record<string, string>;
