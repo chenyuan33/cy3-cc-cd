@@ -3,6 +3,8 @@ import type { AppEnv } from "../types";
 import { permissionAdmin, permissionCount } from "../settings";
 import { accessDenied, notFound } from "./errorPages";
 import { Card } from "../components/card";
+import judgementRoutes from './admin/judgement';
+import { getText } from "../translations";
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
 	if (!c.get('currentUser') || !(c.get('currentUser')!.permission & permissionAdmin)) {
@@ -10,6 +12,8 @@ app.use('/*', async (c, next) => {
 	}
 	await next();
 });
+// 挂载权限更新子路由
+app.route('/judgement', judgementRoutes);
 app.get('/', c => c.render(<>
 	<Card>
 		<h1>Admin</h1>
@@ -18,6 +22,7 @@ app.get('/', c => c.render(<>
 			<p><a href='https://dash.cloudflare.com/5168c05171e882fb497107a7fe5d332e/workers/services/view/site/production/observability/events?filterCombination=%22and%22&calculations=%5B%7B%22operator%22%3A%22count%22%7D%5D&timeframe=24h&conditions=%7B%7D&conditionCombination=%22and%22&alertTiming=%7B%22interval%22%3A300%2C%22window%22%3A900%2C%22timeBeforeFiring%22%3A600%2C%22timeBeforeResolved%22%3A600%7D&orderBy=%7B%22value%22%3A%22count%22%2C%22limit%22%3A10%2C%22order%22%3A%22desc%22%7D&filters=%5B%7B%22key%22%3A%22customLog.logType%22%2C%22operation%22%3A%22eq%22%2C%22type%22%3A%22string%22%2C%22value%22%3A%22Custom+Log%22%7D%5D'>Log</a></p>
 			<p><a href='/admin/domain/cy3.cc.cd/renew'>Domain cy3.cc.cd Renew</a></p>
 		</> : <></>}
+        <p><a href='/admin/judgement'>{getText(c.get('locale'), 'judgement')}</a></p>
 	</Card>
 	<Card>
 		<h2>Add a check-in type</h2>
@@ -103,7 +108,15 @@ app.post('/user/permission/set', async c => {
 		}
 	}
 	await env.db.prepare('UPDATE users SET permission = ? WHERE id = ?').bind(newPermission, uid).run();
-	await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)').bind(uid, JSON.stringify({ comment: reqBody.comment, oldPermission, newPermission })).run();
+	// 插入 judgement 表（用于公开显示）
+    await env.db.prepare('INSERT INTO judgement (uid, type, payload) VALUES (?, "permission-changed", ?)')
+        .bind(uid, JSON.stringify({ comment: reqBody.comment, oldPermission, newPermission }))
+        .run();
+
+    // 插入 notification 表（用于用户通知）
+    await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)')
+        .bind(uid, JSON.stringify({ comment: reqBody.comment, oldPermission, newPermission }))
+        .run();
 	return c.redirect('/user/' + uid, 303);
 });
 app.post('/discussion/set-pin', async c => {
