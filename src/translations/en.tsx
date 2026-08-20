@@ -197,5 +197,8 @@ export default {
     apiPermissionDenied: 'Permission denied',
     apiMissingParams: 'Missing parameters',
     colon: ':',
-    noReason: 'None'
+    noReason: 'None',
+    multipleChanges: 'Multiple changes',
+    apiCannotModifyAdmin: 'Cannot modify admin permission',
+    onlySuperAdmin: 'Only the super administrator can modify this permission'
 } as Record<string, string>;
