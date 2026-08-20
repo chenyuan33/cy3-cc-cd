@@ -201,5 +201,16 @@ export default {
     multipleChanges: '多项变更',
     apiCannotModifyAdmin: '不能修改管理员权限',
     onlySuperAdmin: '只有超级管理员可以修改此权限',
-    cannotModify: '此权限不可修改'
+    cannotModify: '此权限不可修改',
+    batchOperation: '批量操作',
+    batchSelectUsers: '请选择至少一个用户',
+    batchGrant: '授予',
+    batchRevoke: '撤销',
+    batchConfirm: '确定要对 {count} 个用户执行 {action} “{perm}” 权限吗？',
+    batchSuccess: '批量操作成功：{success} 个成功，{fail} 个失败',
+    batchFailed: '批量操作失败：',
+    batchCommentPlaceholder: '请输入理由（可选）',
+    batchExecute: '执行',
+    batchOperationLabel: '批量操作 ({count} 个用户)',
+    affectedUsers: '受影响用户'
 } as Record<string, string>;
