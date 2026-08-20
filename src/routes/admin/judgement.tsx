@@ -4,21 +4,18 @@ import { raw } from 'hono/html';
 import type { AppEnv } from '../../types';
 import { Card } from '../../components/card';
 import { accessDenied } from '../errorPages';
-import { permissionAdmin, permissionVisit, permissionSpeak } from '../../settings';
+import { permissionAdmin, permissionCount } from '../../settings';
 import { User } from '../../components/user';
 import { getText } from "../../translations";
 
 const app = new Hono<AppEnv>();
 
-const PERMISSIONS = [
-    { bit: permissionVisit, labelKey: 'permission1' },
-    { bit: permissionSpeak, labelKey: 'permission2' },
-];
-
-// 安全转义函数（防止 HTML 实体破坏 JavaScript）
-const escapeJS = (str: string) => {
-    return JSON.stringify(str).replace(/<\//g, '<\\/');
-};
+// 动态生成权限位列表（过滤掉管理员权限，普通管理员不应在此修改管理员权限）
+function getPermissionBits(): number[] {
+    const bits = Array.from({ length: permissionCount }, (_, i) => 1 << i);
+    // 过滤掉 permissionAdmin，只显示可管理的一般权限
+    return bits.filter(bit => bit !== permissionAdmin);
+}
 
 app.get('/', async (c) => {
     const currentUser = c.get('currentUser');
@@ -29,16 +26,19 @@ app.get('/', async (c) => {
     const locale = c.get('locale');
     const env = c.env as any;
 
-    const permLabels = PERMISSIONS.map(p => ({
-        bit: p.bit,
-        label: getText(locale, p.labelKey)
+    // 获取所有需要显示的权限位
+    const permissionBits = getPermissionBits();
+    // 构建带翻译的权限列
+    const permLabels = permissionBits.map(bit => ({
+        bit,
+        label: getText(locale, 'permission' + bit)
     }));
 
     const { results: users } = await env.db
         .prepare('SELECT id, name, permission, name_color_light, name_color_dark FROM users ORDER BY id')
         .all();
 
-    // 翻译变量（先获取原始文本，再用 JSON.stringify 转义）
+    // 翻译变量（注入到前端）
     const t = {
         promptReason: JSON.stringify(getText(locale, 'promptReason')),
         confirmGrant: JSON.stringify(getText(locale, 'confirmGrant')),
@@ -106,17 +106,17 @@ app.get('/', async (c) => {
                 </tbody>
             </table>
 
-            {/* 注入全局翻译变量（使用 JSON.stringify 转义，安全可靠） */}
+            {/* 注入全局翻译变量 */}
             <script dangerouslySetInnerHTML={{
                 __html: `
-                    window.__promptReason = ${t.promptReason};
-                    window.__confirmGrant = ${t.confirmGrant};
-                    window.__confirmRevoke = ${t.confirmRevoke};
-                    window.__operationSuccess = ${t.operationSuccess};
-                    window.__operationFailed = ${t.operationFailed};
-                    window.__grant = ${t.grant};
-                    window.__revoke = ${t.revoke};
-                `
+          window.__promptReason = ${t.promptReason};
+          window.__confirmGrant = ${t.confirmGrant};
+          window.__confirmRevoke = ${t.confirmRevoke};
+          window.__operationSuccess = ${t.operationSuccess};
+          window.__operationFailed = ${t.operationFailed};
+          window.__grant = ${t.grant};
+          window.__revoke = ${t.revoke};
+        `
             }} />
             <script src="/js/admin-judgement.js"></script>
         </Card>,
