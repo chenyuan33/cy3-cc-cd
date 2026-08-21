@@ -100,7 +100,6 @@ CREATE TABLE judgement (
     type TEXT NOT NULL,
     payload TEXT,
     read INTEGER DEFAULT 0,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     ALTER TABLE judgement ADD COLUMN batch_id TEXT;
 );
 CREATE INDEX idx_ticket_created_at ON ticket(created_at DESC);
