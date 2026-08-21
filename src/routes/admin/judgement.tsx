@@ -54,6 +54,9 @@ app.get('/', async (c) => {
         cannotModify: JSON.stringify(getText(locale, 'cannotModify')),
         permissionAdminValue: permissionAdmin,
         batchSelectUsers: JSON.stringify(getText(locale, 'batchSelectUsers')),
+        batchSelectUsersHint: JSON.stringify(getText(locale, 'batchSelectUsersHint')),
+        batchSelectPerms: JSON.stringify(getText(locale, 'batchSelectPerms')),
+        batchAction: JSON.stringify(getText(locale, 'batchAction')),
         batchGrant: JSON.stringify(getText(locale, 'batchGrant')),
         batchRevoke: JSON.stringify(getText(locale, 'batchRevoke')),
         batchConfirm: JSON.stringify(getText(locale, 'batchConfirm')),
@@ -76,26 +79,48 @@ app.get('/', async (c) => {
                     placeholder={getText(locale, 'searchPlaceholder')}
                     style={{ padding: '8px', width: '300px', border: '1px solid #ccc', borderRadius: '4px' }}
                 />
-                <button id="batchToggleBtn" style={{ padding: '8px 16px' }}>
+                <button id="batchToggleBtn" style={{ padding: '8px 16px', background: 'light-dark(#e0e0e0, #444)', border: '1px solid #aaa', borderRadius: '4px', cursor: 'pointer' }}>
                     {getText(locale, 'batchOperation')}
                 </button>
             </div>
 
-            <div id="batchPanel" style={{ display: 'none', marginBottom: '20px', padding: '10px', border: '1px solid #ccc', borderRadius: '4px', background: 'light-dark(#f9f9f9, #2a2a2a)' }}>
-                <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap', alignItems: 'center' }}>
-                    <span>{getText(locale, 'batchSelectUsers')}</span>
-                    <select id="batchPermissionSelect">
-                        {permLabels.map(p => (
-                            <option key={p.bit} value={p.bit}>{p.label}</option>
-                        ))}
-                    </select>
-                    <select id="batchActionSelect">
-                        <option value="grant">{getText(locale, 'grant')}</option>
-                        <option value="revoke">{getText(locale, 'revoke')}</option>
-                    </select>
-                    <input id="batchComment" type="text" placeholder={getText(locale, 'batchCommentPlaceholder')} style={{ padding: '6px', flex: 1, minWidth: '150px' }} />
-                    <button id="batchExecuteBtn" style={{ padding: '8px 16px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px' }}>{getText(locale, 'batchExecute')}</button>
-                    <button id="batchCancelBtn" style={{ padding: '8px 16px' }}>{getText(locale, 'cancel')}</button>
+            <div id="batchPanel" style={{ display: 'none', marginBottom: '20px', border: '1px solid #ccc', borderRadius: '8px', background: 'light-dark(#ffffff, #2a2a2a)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #eee', background: 'light-dark(#f5f5f5, #3a3a3a)', borderRadius: '8px 8px 0 0' }}>
+                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{getText(locale, 'batchOperation')}</span>
+                    <button id="batchCloseBtn" style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'light-dark(#666, #aaa)' }}>
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div style={{ padding: '16px' }}>
+                    <div style={{ marginBottom: '12px' }}>
+                        <label style={{ fontWeight: '500', display: 'block', marginBottom: '4px' }}>{getText(locale, 'batchSelectUsers')}</label>
+                        <span style={{ fontSize: '14px', color: '#888' }}>{getText(locale, 'batchSelectUsersHint')}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
+                        <div style={{ flex: '2', minWidth: '150px' }}>
+                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{getText(locale, 'batchSelectPerms')}</label>
+                            <select id="batchPermissionSelect" multiple style={{ width: '100%', minHeight: '80px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', background: 'light-dark(#fff, #333)' }}>
+                                {permLabels.map(p => (
+                                    <option key={p.bit} value={p.bit}>{p.label}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div style={{ flex: '0 0 auto' }}>
+                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{getText(locale, 'batchAction')}</label>
+                            <select id="batchActionSelect" style={{ padding: '6px 12px', border: '1px solid #ccc', borderRadius: '4px', background: 'light-dark(#fff, #333)' }}>
+                                <option value="grant">{getText(locale, 'grant')}</option>
+                                <option value="revoke">{getText(locale, 'revoke')}</option>
+                            </select>
+                        </div>
+                        <div style={{ flex: '1', minWidth: '150px' }}>
+                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{getText(locale, 'reason')}</label>
+                            <input id="batchComment" type="text" placeholder={getText(locale, 'batchCommentPlaceholder')} style={{ width: '100%', padding: '6px 10px', border: '1px solid #ccc', borderRadius: '4px', background: 'light-dark(#fff, #333)' }} />
+                        </div>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
+                        <button id="batchExecuteBtn" style={{ padding: '8px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{getText(locale, 'batchExecute')}</button>
+                        <button id="batchCancelBtn" style={{ padding: '8px 20px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{getText(locale, 'cancel')}</button>
+                    </div>
                 </div>
             </div>
 
@@ -168,6 +193,9 @@ app.get('/', async (c) => {
           window.__cannotModify = ${t.cannotModify};
           window.__permissionAdmin = ${t.permissionAdminValue};
           window.__batchSelectUsers = ${t.batchSelectUsers};
+          window.__batchSelectUsersHint = ${t.batchSelectUsersHint};
+          window.__batchSelectPerms = ${t.batchSelectPerms};
+          window.__batchAction = ${t.batchAction};
           window.__batchGrant = ${t.batchGrant};
           window.__batchRevoke = ${t.batchRevoke};
           window.__batchConfirm = ${t.batchConfirm};
@@ -224,7 +252,6 @@ app.post('/toggle', async (c) => {
             oldPermission: permission,
             newPermission: newPermission
         });
-        // 单个操作 batch_id 为 NULL
         await env.db
             .prepare('INSERT INTO judgement (uid, type, payload, batch_id) VALUES (?, "permission-changed", ?, NULL)')
             .bind(targetId, payload)
@@ -247,8 +274,8 @@ app.post('/batch-toggle', async (c) => {
     if (!currentUser || !(currentUser.permission & permissionAdmin)) {
         return c.json({ success: false, error: getText(locale, 'apiPermissionDenied') }, 403);
     }
-    const { userIds, bit, enable, comment } = await c.req.json();
-    if (!userIds || !Array.isArray(userIds) || userIds.length === 0 || bit === undefined) {
+    const { userIds, bits, enable, comment } = await c.req.json();
+    if (!userIds || !Array.isArray(userIds) || userIds.length === 0 || !bits || !Array.isArray(bits) || bits.length === 0) {
         return c.json({ success: false, error: getText(locale, 'apiMissingParams') }, 400);
     }
     const env = c.env as any;
@@ -264,7 +291,7 @@ app.post('/batch-toggle', async (c) => {
             failCount++;
             continue;
         }
-        if (bit === permissionAdmin && currentUser.id !== 1) {
+        if (bits.includes(permissionAdmin) && currentUser.id !== 1) {
             results.push({ userId: targetId, success: false, error: getText(locale, 'apiCannotModifyAdmin') });
             failCount++;
             continue;
@@ -276,9 +303,13 @@ app.post('/batch-toggle', async (c) => {
                 .first();
             let newPermission = permission;
             if (enable) {
-                newPermission |= bit;
+                for (const bit of bits) {
+                    newPermission |= bit;
+                }
             } else {
-                newPermission &= ~bit;
+                for (const bit of bits) {
+                    newPermission &= ~bit;
+                }
             }
             await env.db
                 .prepare('UPDATE users SET permission = ? WHERE id = ?')

@@ -206,11 +206,14 @@ export default {
     batchSelectUsers: 'Please select at least one user',
     batchGrant: 'Grant',
     batchRevoke: 'Revoke',
-    batchConfirm: 'Are you sure you want to {action} “{perm}” permission for {count} users?',
+    batchConfirm: 'Are you sure you want to {action} “{perms}” permission for {count} users?',
     batchSuccess: 'Batch operation completed: {success} succeeded, {fail} failed',
     batchFailed: 'Batch operation failed: ',
     batchCommentPlaceholder: 'Enter reason (optional)',
     batchExecute: 'Execute',
     batchOperationLabel: 'Batch operation ({count} users)',
-    affectedUsers: 'Affected users'
+    affectedUsers: 'Affected users',
+    batchSelectPerms: 'Please select at least one permission',
+    batchSelectUsersHint: 'Select users from the table, then choose permissions for batch operation',
+    batchAction: 'Action Type'
 } as Record<string, string>;

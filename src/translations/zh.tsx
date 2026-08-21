@@ -206,11 +206,14 @@ export default {
     batchSelectUsers: '请选择至少一个用户',
     batchGrant: '授予',
     batchRevoke: '撤销',
-    batchConfirm: '确定要对 {count} 个用户执行 {action} “{perm}” 权限吗？',
+    batchConfirm: '确定要对 {count} 个用户执行 {action} “{perms}” 权限吗？',
     batchSuccess: '批量操作成功：{success} 个成功，{fail} 个失败',
     batchFailed: '批量操作失败：',
     batchCommentPlaceholder: '请输入理由（可选）',
     batchExecute: '执行',
     batchOperationLabel: '批量操作 ({count} 个用户)',
-    affectedUsers: '受影响用户'
+    affectedUsers: '受影响用户',
+    batchSelectUsersHint: '勾选表格中的用户，然后选择权限进行批量操作',
+    batchAction: '操作类型',
+    batchSelectPerms: '请选择至少一个权限'
 } as Record<string, string>;

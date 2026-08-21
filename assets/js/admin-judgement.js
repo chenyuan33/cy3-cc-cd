@@ -62,11 +62,29 @@
         });
     });
 
-    // 批量操作
+    // ---------- 批量操作 ----------
     const batchToggleBtn = document.getElementById('batchToggleBtn');
     const batchPanel = document.getElementById('batchPanel');
     const selectAll = document.getElementById('selectAll');
     const userCheckboxes = document.querySelectorAll('.user-checkbox');
+    const permSelect = document.getElementById('batchPermissionSelect');
+
+    // 自定义多选行为：点击选项切换选中状态，不依赖 Ctrl
+    if (permSelect) {
+        // 阻止 mousedown 的默认行为，防止拖拽选择
+        permSelect.addEventListener('mousedown', function (e) {
+            e.preventDefault();
+        });
+        // 点击时切换选中状态
+        permSelect.addEventListener('click', function (e) {
+            const option = e.target;
+            if (option.tagName === 'OPTION') {
+                e.preventDefault();
+                option.selected = !option.selected;
+                this.dispatchEvent(new Event('change', { bubbles: true }));
+            }
+        });
+    }
 
     batchToggleBtn.addEventListener('click', function () {
         batchMode = !batchMode;
@@ -94,14 +112,19 @@
             return;
         }
         const userIds = Array.from(selected).map(cb => cb.dataset.userid);
-        const bit = parseInt(document.getElementById('batchPermissionSelect').value);
+        const selectedOptions = Array.from(permSelect.selectedOptions);
+        if (selectedOptions.length === 0) {
+            alert(window.__batchSelectPerms);
+            return;
+        }
+        const bits = selectedOptions.map(opt => parseInt(opt.value));
         const action = document.getElementById('batchActionSelect').value;
         const enable = action === 'grant';
         const comment = document.getElementById('batchComment').value.trim();
 
         const actionText = enable ? window.__batchGrant : window.__batchRevoke;
-        const permName = document.getElementById('batchPermissionSelect').selectedOptions[0].text;
-        if (!confirm(window.__batchConfirm.replace(/\{count\}/g, selected.length).replace(/\{action\}/g, actionText).replace(/\{perm\}/g, permName))) {
+        const permNames = selectedOptions.map(opt => opt.text).join('、');
+        if (!confirm(window.__batchConfirm.replace(/\{count\}/g, selected.length).replace(/\{action\}/g, actionText).replace(/\{perms\}/g, permNames))) {
             return;
         }
 
@@ -109,7 +132,7 @@
             const response = await fetch('/admin/judgement/batch-toggle', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userIds, bit, enable, comment })
+                body: JSON.stringify({ userIds, bits, enable, comment })
             });
             const result = await response.json();
             if (result.success) {
