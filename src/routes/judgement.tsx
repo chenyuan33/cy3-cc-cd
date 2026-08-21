@@ -111,10 +111,11 @@ app.get('/', async (c) => {
                     if (changes.length === 0) return null;
 
                     const firstChange = changes[0];
+                    if (!firstChange) return null;
+
                     const isGrant = firstChange.isGrant;
                     const icon = isGrant ? 'fa-user-plus' : 'fa-user-minus';
                     const color = isGrant ? '#52c41a' : '#e74c3c';
-
                     const actionText = isGrant ? getText(locale, 'grantPermission') : getText(locale, 'revokePermission');
 
                     const userList = item.records.map(rec => rec.uid);
