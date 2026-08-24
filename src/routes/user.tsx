@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { type AppEnv } from "../types";
+import { type AppEnv, type ContextType } from "../types";
 import { getText } from "../translations";
 import { html, raw } from "hono/html";
 import { errorHTML, loginRequired, notFound } from "./errorPages";
@@ -106,6 +106,14 @@ app.get('/settings', async c => {
                     'align-items': 'center',
                     width: '300px'
                 }}>
+					<button onclick='Notification.requestPermission()'>{getText(locale, 'userSettingsEnableBrowserNotification')}</button>
+                </Card>
+                <Card style={{
+                    display: 'inline-flex',
+                    'flex-direction': 'column',
+                    'align-items': 'center',
+                    width: '300px'
+                }}>
                     <h2>{getText(locale, 'userSettingsChangeNameColor')}</h2>
                     <Form action='/api/user/change-name-color' method='post' inputs={[
                         { id: 'nameColorLight', name: 'light', label: getText(locale, 'userSettingsChangeNameColorLight'), main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_light }, required: true },
@@ -160,6 +168,89 @@ app.get('/settings', async c => {
         { title: getText(locale, 'userSettings') }
     );
 });
+export const notificationContent = (c: ContextType, type: string, payload: any) => {
+	const locale = c.get('locale');
+	switch (type) {
+		case 'feed-reply':
+			return renderTemplate(getText(locale, 'userNotificationFeedReply'), {
+				__USER__: <User c={c} user={payload.uid} />,
+				__FEED__: <a href={'/feed/' + payload.id}>{getText(locale, 'feed')}</a>,
+				__TARGET__: <a href={'/feed/' + payload.parent_id}>{getText(locale, 'userNotificationYourFeed')}</a>
+			});
+		case 'discussion-reply-replied':
+			return renderTemplate(getText(locale, 'userNotificationDiscussionReplyReplied'), {
+				__USER__: <User c={c} user={payload.uid} />,
+				__DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
+				__PARENT_REPLY__: payload.parent_id ? <a href={'/discussion/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourDiscussion')}</>,
+				__REPLY__: <a href={'/discussion/reply/' + payload.id}>{getText(locale, 'reply')}</a>
+			});
+		case 'discussion-reply-deleted-by-discussion-owner':
+			return renderTemplate(getText(locale, 'userNotificationDiscussionReplyDeletedByDiscussionOwner'), {
+				__USER__: <User c={c} user={payload.uid} />,
+				__DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
+				__REPLY_CREATED_AT__: <Time c={c} time={payload.reply_created_at} />,
+				__REPLY_CONTENT__: payload.reply_content,
+			});
+		case 'ticket-reply-replied':
+			return renderTemplate(getText(locale, 'userNotificationTicketReplyReplied'), {
+				__USER__: <User c={c} user={payload.uid} />,
+				__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
+				__PARENT_REPLY__: payload.parent_id ? <a href={'/ticket/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourTicket')}</>,
+				__REPLY__: <a href={'/ticket/reply/' + payload.id}>{getText(locale, 'reply')}</a>
+			});
+		case 'ticket-reply-deleted-by-ticket-owner':
+			return renderTemplate(getText(locale, 'userNotificationTicketReplyDeletedByTicketOwner'), {
+				__USER__: <User c={c} user={payload.uid} />,
+				__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
+				__REPLY_CREATED_AT__: <Time c={c} time={payload.reply_created_at} />,
+				__REPLY_CONTENT__: payload.reply_content,
+			});
+		case 'ticket-status-changed':
+			return renderTemplate(getText(locale, 'userNotificationTicketStatusChanged'), {
+				__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'userNotificationYourTicket')}</a>,
+				__STATUS__: <TicketStatus c={c} status={payload.status} />
+			});
+		case 'permission-changed':
+			const changes: { bit: number; isGrant: boolean }[] = [];
+			const oldP = payload.oldPermission || 0;
+			const newP = payload.newPermission || 0;
+			const diff = oldP ^ newP;
+			for (let i = 1; i < (1 << permissionCount); i <<= 1) {
+				if (diff & i) {
+					changes.push({ bit: i, isGrant: !!(newP & i) });
+				}
+			}
+			if (changes.length === 0) return <></>;
+			return (
+				<>
+					<p>{getText(locale, 'userNotificationPermissionChanged')}</p>
+					<blockquote>{payload.comment || getText(locale, 'noReason')}</blockquote>
+					<ul>
+						{changes.map((change, idx) => (
+							<li key={idx}>
+								<i class={`fa-solid ${change.isGrant ? 'fa-user-plus' : 'fa-user-minus'}`} style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}></i>
+								&nbsp;
+								<span style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}>
+									{change.isGrant ? getText(locale, 'permissionGot') : getText(locale, 'permissionLost')}
+								</span>
+								&nbsp;
+								<code>{getText(locale, 'permission' + change.bit)}</code>
+								&nbsp;
+								{getText(locale, 'permissionLabel')}
+							</li>
+						))}
+					</ul>
+				</>
+			);
+		case 'at':
+			return renderTemplate(getText(locale, 'userNotificationAt'), {
+				__USER__: <User c={c} user={payload.uid} />,
+				__LINK__: <a href={payload.link}>{getText(locale, 'userNotificationAtHere')}</a>
+			});
+		default:
+			return <>{getText(locale, 'userNotificationUnknownType')}</>;
+	}
+};
 app.get('/notification', async c => {
     const env = c.env as any, currentUser = c.get('currentUser'), locale = c.get('locale');
     if (!currentUser) {
@@ -171,88 +262,6 @@ app.get('/notification', async c => {
     const totalPage = Math.max(1, Math.ceil(total / perPage));
     const { results } = (await env.db.prepare('SELECT id, type, read, payload, created_at FROM notification WHERE uid = ? ORDER BY created_at DESC LIMIT ? OFFSET ?')
         .bind(currentUser.id, perPage, (currentPage - 1) * perPage).all());
-    const notificationContent = (type: string, payload: any) => {
-        switch (type) {
-            case 'feed-reply':
-                return renderTemplate(getText(locale, 'userNotificationFeedReply'), {
-                    __USER__: <User c={c} user={payload.uid} />,
-                    __FEED__: <a href={'/feed/' + payload.id}>{getText(locale, 'feed')}</a>,
-                    __TARGET__: <a href={'/feed/' + payload.parent_id}>{getText(locale, 'userNotificationYourFeed')}</a>
-                });
-            case 'discussion-reply-replied':
-                return renderTemplate(getText(locale, 'userNotificationDiscussionReplyReplied'), {
-                    __USER__: <User c={c} user={payload.uid} />,
-                    __DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
-                    __PARENT_REPLY__: payload.parent_id ? <a href={'/discussion/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourDiscussion')}</>,
-                    __REPLY__: <a href={'/discussion/reply/' + payload.id}>{getText(locale, 'reply')}</a>
-                });
-            case 'discussion-reply-deleted-by-discussion-owner':
-                return renderTemplate(getText(locale, 'userNotificationDiscussionReplyDeletedByDiscussionOwner'), {
-                    __USER__: <User c={c} user={payload.uid} />,
-                    __DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
-                    __REPLY_CREATED_AT__: <Time c={c} time={payload.reply_created_at} />,
-                    __REPLY_CONTENT__: payload.reply_content,
-                });
-            case 'ticket-reply-replied':
-                return renderTemplate(getText(locale, 'userNotificationTicketReplyReplied'), {
-                    __USER__: <User c={c} user={payload.uid} />,
-                    __TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
-                    __PARENT_REPLY__: payload.parent_id ? <a href={'/ticket/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourTicket')}</>,
-                    __REPLY__: <a href={'/ticket/reply/' + payload.id}>{getText(locale, 'reply')}</a>
-                });
-            case 'ticket-reply-deleted-by-ticket-owner':
-                return renderTemplate(getText(locale, 'userNotificationTicketReplyDeletedByTicketOwner'), {
-                    __USER__: <User c={c} user={payload.uid} />,
-                    __TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
-                    __REPLY_CREATED_AT__: <Time c={c} time={payload.reply_created_at} />,
-                    __REPLY_CONTENT__: payload.reply_content,
-                });
-            case 'ticket-status-changed':
-                return renderTemplate(getText(locale, 'userNotificationTicketStatusChanged'), {
-                    __TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'userNotificationYourTicket')}</a>,
-                    __STATUS__: <TicketStatus c={c} status={payload.status} />
-                });
-            case 'permission-changed':
-                const changes: { bit: number; isGrant: boolean }[] = [];
-                const oldP = payload.oldPermission || 0;
-                const newP = payload.newPermission || 0;
-                const diff = oldP ^ newP;
-                for (let i = 1; i < (1 << permissionCount); i <<= 1) {
-                    if (diff & i) {
-                        changes.push({ bit: i, isGrant: !!(newP & i) });
-                    }
-                }
-                if (changes.length === 0) return <></>;
-                return (
-                    <>
-                        <p>{getText(locale, 'userNotificationPermissionChanged')}</p>
-                        <blockquote>{payload.comment || getText(locale, 'noReason')}</blockquote>
-                        <ul>
-                            {changes.map((change, idx) => (
-                                <li key={idx}>
-                                    <i class={`fa-solid ${change.isGrant ? 'fa-user-plus' : 'fa-user-minus'}`} style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}></i>
-                                    &nbsp;
-                                    <span style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}>
-                                        {change.isGrant ? getText(locale, 'permissionGot') : getText(locale, 'permissionLost')}
-                                    </span>
-                                    &nbsp;
-                                    <code>{getText(locale, 'permission' + change.bit)}</code>
-                                    &nbsp;
-                                    {getText(locale, 'permissionLabel')}
-                                </li>
-                            ))}
-                        </ul>
-                    </>
-                );
-            case 'at':
-                return renderTemplate(getText(locale, 'userNotificationAt'), {
-                    __USER__: <User c={c} user={payload.uid} />,
-                    __LINK__: <a href={payload.link}>{getText(locale, 'userNotificationAtHere')}</a>
-                });
-            default:
-                return <>{getText(locale, 'userNotificationUnknownType')}</>;
-        }
-    };
     return c.render(<>
         <Card style={{ position: 'relative' }}>
             <h1>{getText(locale, 'userNotification')}</h1>
@@ -277,7 +286,7 @@ app.get('/notification', async c => {
                     <button type='submit'>{getText(locale, read ? 'markUnread' : 'markRead')}</button>
                 </form>
             </div>
-            <div style={{ margin: '12px 0' }}>{notificationContent(type, JSON.parse(payload))}</div>
+            <div style={{ margin: '12px 0' }}>{notificationContent(c, type, JSON.parse(payload))}</div>
             <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center' }}>
                 <Time c={c} time={created_at} />
             </div>
