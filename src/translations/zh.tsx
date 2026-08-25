@@ -178,9 +178,9 @@ export default {
     registeredAt: '注册时间',
     setPin: '设置置顶量',
     deleted: '已删除',
-    judgement: '权限更新',
-    judgementDescription: '此处展示所有用户的权限变更记录。',
-    noRecords: '暂无权限变更记录。',
+    judgement: '管理日志',
+    judgementDescription: '此处展示管理员的管理日志。',
+    noRecords: '暂无操作记录。',
     grantPermission: '授予权限',
     revokePermission: '撤销权限',
     grant: '授予',
@@ -215,5 +215,12 @@ export default {
     affectedUsers: '受影响用户',
     batchSelectUsersHint: '勾选表格中的用户，然后选择权限进行批量操作',
     batchAction: '操作类型',
-    batchSelectPerms: '请选择至少一个权限'
+    batchSelectPerms: '请选择至少一个权限',
+    setViolation: '设为违规用户名',
+    unsetViolation: '取消违规用户名',
+    violationSet: '已被设为违规用户名',
+    violationUnset: '已取消违规用户名',
+    notificationNameViolationSet: '您的用户名已被标记为违规用户名',
+    notificationNameViolationUnset: '您的用户名已取消违规标记',
+    operatorLabel: '操作者'
 } as Record<string, string>;

@@ -212,7 +212,7 @@ app.get('/notification', async c => {
                     __TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'userNotificationYourTicket')}</a>,
                     __STATUS__: <TicketStatus c={c} status={payload.status} />
                 });
-            case 'permission-changed':
+            case 'permission-changed': {
                 const changes: { bit: number; isGrant: boolean }[] = [];
                 const oldP = payload.oldPermission || 0;
                 const newP = payload.newPermission || 0;
@@ -244,6 +244,21 @@ app.get('/notification', async c => {
                         </ul>
                     </>
                 );
+            }
+            case 'name-violation': {
+                const isSet = payload.newViolation === 1;
+                return (
+                    <>
+                        <p>{isSet ? getText(locale, 'notificationNameViolationSet') : getText(locale, 'notificationNameViolationUnset')}</p>
+                        {payload.comment && payload.comment !== getText(locale, 'noReason') && (
+                            <blockquote>{payload.comment}</blockquote>
+                        )}
+                        <p style={{ fontSize: '0.8em', color: '#888' }}>
+                            {getText(locale, 'operatorLabel')}：<User c={c} user={payload.operator} />
+                        </p>
+                    </>
+                );
+            }
             case 'at':
                 return renderTemplate(getText(locale, 'userNotificationAt'), {
                     __USER__: <User c={c} user={payload.uid} />,
@@ -303,11 +318,14 @@ app.get('/:uid{[1-9][0-9]*}', async c => {
                     </tbody>
                 </table>
             </Card>
-            {currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <><Card style={{ marginTop: '10px' }}>
-                <Form action='/admin/user/name-violation' method='post' inputs={[
-                    { id: 'username-violation-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } }
-                ]} submit={{ content: getText(locale, 'toggleUsernameViolation') }} />
-            </Card><Card>
+            {currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <>
+                <Card style={{ marginTop: '10px' }}>
+                    <Form action='/admin/user/name-violation' method='post' inputs={[
+                        { id: 'username-violation-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
+                        { id: 'username-violation-comment', name: 'comment', label: getText(locale, 'reason'), main: { type: 'input', inputType: 'text' } }
+                    ]} submit={{ content: getText(locale, 'toggleUsernameViolation') }} />
+                </Card>
+                <Card>
                     <Form action='/admin/user/permission/set' method='post' inputs={[
                         { id: 'user-permission-set-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
                         { id: 'user-permission-comment', name: 'comment', label: getText(locale, 'reason'), main: { type: 'input', inputType: 'text' } },
@@ -318,7 +336,8 @@ app.get('/:uid{[1-9][0-9]*}', async c => {
                             main: { type: 'input', inputType: 'checkbox', checked: !!(user.permission & permissionId) }
                         } as { id: string, name: string, label: string, main: { type: 'input', inputType: 'checkbox', checked: boolean } }))
                     ]} submit={{ content: getText(locale, 'save') }} />
-                </Card></> : <></>}
+                </Card>
+            </> : <></>}
         </>,
         { title: getText(locale, 'userProfile').replace('__USERNAME__', displayName) }
     );

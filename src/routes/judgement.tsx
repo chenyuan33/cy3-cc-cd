@@ -1,4 +1,3 @@
-// src/routes/judgement.tsx
 import { Hono } from 'hono';
 import type { AppEnv } from '../types';
 import { getText } from '../translations';
@@ -14,6 +13,7 @@ function getPermissionBits(filter?: (bit: number) => boolean): number[] {
     return filter ? bits.filter(filter) : bits;
 }
 
+// 解析权限变更
 function parsePermissionChanges(payload: any, locale: string, permissionBits: number[]) {
     const { oldPermission, newPermission, comment } = payload;
     const changedBits = oldPermission ^ newPermission;
@@ -31,8 +31,21 @@ function parsePermissionChanges(payload: any, locale: string, permissionBits: nu
     return changes;
 }
 
+// 解析违规用户名变更（返回专有结构，不混用权限模板）
+function parseNameViolation(payload: any, locale: string) {
+    const { oldViolation, newViolation, comment } = payload;
+    if (oldViolation === newViolation) return null;
+    const isSet = newViolation === 1;
+    return {
+        type: 'name-violation',
+        icon: isSet ? 'fa-user-slash' : 'fa-user-check',
+        color: isSet ? '#e74c3c' : '#52c41a',
+        actionText: isSet ? getText(locale, 'setViolation') : getText(locale, 'unsetViolation'),
+        comment: comment || '',
+    };
+}
+
 app.get('/', async (c) => {
-    // 移除登录检查，允许未登录用户访问
     const locale = c.get('locale');
     const env = c.env as any;
     const permissionBits = getPermissionBits();
@@ -40,10 +53,10 @@ app.get('/', async (c) => {
     const { results } = await env.db
         .prepare(`
       SELECT 
-        id, uid, payload, created_at, batch_id,
+        id, uid, type, payload, created_at, batch_id,
         COUNT(*) OVER (PARTITION BY batch_id) as batch_count
       FROM judgement
-      WHERE type = 'permission-changed'
+      WHERE type IN ('permission-changed', 'name-violation')
       ORDER BY created_at DESC
       LIMIT 100
     `)
@@ -103,17 +116,31 @@ app.get('/', async (c) => {
             ) : (
                 displayItems.map((item, idx) => {
                     const firstRecord = item.records[0];
-                    const payload = JSON.parse(firstRecord.payload);
-                    const changes = parsePermissionChanges(payload, locale, permissionBits);
-                    if (changes.length === 0) return null;
+                    const rowType = firstRecord.type;
+                    let parsed: any = null;
+                    let isNameViolation = false;
 
-                    const firstChange = changes[0];
-                    if (!firstChange) return null;
-
-                    const isGrant = firstChange.isGrant;
-                    const icon = isGrant ? 'fa-user-plus' : 'fa-user-minus';
-                    const color = isGrant ? '#52c41a' : '#e74c3c';
-                    const actionText = isGrant ? getText(locale, 'grantPermission') : getText(locale, 'revokePermission');
+                    if (rowType === 'permission-changed') {
+                        const payload = JSON.parse(firstRecord.payload);
+                        const changes = parsePermissionChanges(payload, locale, permissionBits);
+                        if (changes.length === 0) return null;
+                        const firstChange = changes[0];
+                        if (!firstChange) return null;
+                        parsed = {
+                            icon: firstChange.isGrant ? 'fa-user-plus' : 'fa-user-minus',
+                            color: firstChange.isGrant ? '#52c41a' : '#e74c3c',
+                            actionText: firstChange.isGrant ? getText(locale, 'grantPermission') : getText(locale, 'revokePermission'),
+                            changes,
+                            comment: payload.comment || '',
+                        };
+                    } else if (rowType === 'name-violation') {
+                        const payload = JSON.parse(firstRecord.payload);
+                        parsed = parseNameViolation(payload, locale);
+                        if (!parsed) return null;
+                        isNameViolation = true;
+                    } else {
+                        return null;
+                    }
 
                     const userList = item.records.map(rec => rec.uid);
                     const uniqueUsers = [...new Set(userList)];
@@ -121,8 +148,8 @@ app.get('/', async (c) => {
                     return (
                         <Card key={idx} style={{ marginBottom: '16px' }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '12px' }}>
-                                <i class={`fa-solid ${icon}`} style={{ fontSize: '20px', color }}></i>
-                                <span style={{ fontWeight: 'bold', color }}>{actionText}</span>
+                                <i class={`fa-solid ${parsed.icon}`} style={{ fontSize: '20px', color: parsed.color }}></i>
+                                <span style={{ fontWeight: 'bold', color: parsed.color }}>{parsed.actionText}</span>
                             </div>
 
                             <div style={{ marginBottom: '8px' }}>
@@ -134,23 +161,26 @@ app.get('/', async (c) => {
                                 ))}
                             </div>
 
-                            <ul style={{ margin: '0 0 8px 0', paddingLeft: '20px' }}>
-                                {changes.map((change, idx2) => (
-                                    <li key={idx2}>
-                                        <span style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}>
-                                            {change.isGrant ? getText(locale, 'grant') : getText(locale, 'revoke')}
-                                        </span>
-                                        &nbsp;
-                                        <code>{change.permName}</code>
-                                        &nbsp;
-                                        {getText(locale, 'permissionLabel')}
-                                    </li>
-                                ))}
-                            </ul>
+                            {/* 对于权限变更，显示具体的权限列表；对于违规用户名，不显示权限列表 */}
+                            {!isNameViolation && (
+                                <ul style={{ margin: '0 0 8px 0', paddingLeft: '20px' }}>
+                                    {parsed.changes.map((change: any, idx2: number) => (
+                                        <li key={idx2}>
+                                            <span style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}>
+                                                {change.isGrant ? getText(locale, 'grant') : getText(locale, 'revoke')}
+                                            </span>
+                                            &nbsp;
+                                            <code>{change.permName}</code>
+                                            &nbsp;
+                                            {getText(locale, 'permissionLabel')}
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
 
                             <div style={{ color: 'light-dark(black, #e0e0e0)', fontSize: '0.95em' }}>
-                                {payload.comment && payload.comment !== getText(locale, 'noReason')
-                                    ? payload.comment
+                                {parsed.comment && parsed.comment !== getText(locale, 'noReason')
+                                    ? parsed.comment
                                     : <span style={{ color: 'light-dark(#999, #666)' }}>{getText(locale, 'unfilledReason')}</span>}
                             </div>
 
