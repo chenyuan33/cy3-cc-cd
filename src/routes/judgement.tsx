@@ -3,7 +3,6 @@ import { Hono } from 'hono';
 import type { AppEnv } from '../types';
 import { getText } from '../translations';
 import { Card } from '../components/card';
-import { loginRequired } from './errorPages';
 import { User } from '../components/user';
 import { Time } from '../components/time';
 import { permissionAdmin, permissionCount } from '../settings';
@@ -33,9 +32,7 @@ function parsePermissionChanges(payload: any, locale: string, permissionBits: nu
 }
 
 app.get('/', async (c) => {
-    const currentUser = c.get('currentUser');
-    if (!currentUser) return loginRequired(c);
-
+    // 移除登录检查，允许未登录用户访问
     const locale = c.get('locale');
     const env = c.env as any;
     const permissionBits = getPermissionBits();
