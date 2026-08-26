@@ -14,7 +14,6 @@ app.use('/*', async (c, next) => {
     await next();
 });
 
-// 挂载权限更新子路由
 app.route('/judgement', judgementRoutes);
 
 app.get('/', c => c.render(<>
@@ -22,10 +21,10 @@ app.get('/', c => c.render(<>
         <h1>Admin</h1>
         {c.get('currentUser')?.id === 1 ? <>
             <p><a href='/admin/init'>Init</a></p>
-            <p><a href='https://dash.cloudflare.com/5168c05171e882fb497107a7fe5d332e/workers/services/view/site/production/observability/events?filterCombination=%22and%22&calculations=%5B%7B%22operator%22%3A%22count%22%7D%5D&timeframe=24h&conditions=%7B%7D&conditionCombination=%22and%22&alertTiming=%7B%22interval%22%3A300%2C%22window%22%3A900%2C%22timeBeforeFiring%22%3A600%2C%22timeBeforeResolved%22%3A600%7D&orderBy=%7B%22value%22%3A%22count%22%2C%22limit%22%3A10%2C%22order%22%3A%22desc%22%7D&filters=%5B%7B%22key%22%3A%22customLog.logType%22%2C%22operation%22%3A%22eq%22%2C%22type%22%3A%22string%22%2C%22value%22%3A%22Custom+Log%22%7D%5D'>Log</a></p>
+            <p><a href='https://dash.cloudflare.com/...'>Log</a></p>
             <p><a href='/admin/domain/cy3.cc.cd/renew'>Domain cy3.cc.cd Renew</a></p>
         </> : <></>}
-        <p><a href='/admin/judgement'>{getText(c.get('locale'), 'judgement')}</a></p>
+        <p><a href='/admin/judgement'>{getText(c.get('locale'), 'adminJudgementTitle')}</a></p>
     </Card>
     <Card>
         <h2>Add a check-in type</h2>
@@ -82,11 +81,7 @@ app.get('/domain/cy3.cc.cd/renew', async c => {
 });
 
 app.post('/user/name-violation', async c => {
-    const currentUser = c.get('currentUser');
-    const env = c.env as any;
-    const reqBody = c.get('reqBody');
-    const locale = c.get('locale');
-
+    const reqBody = c.get('reqBody'), env = c.env as any;
     if (!Object.hasOwn(reqBody, 'uid')) {
         return notFound(c);
     }
@@ -94,40 +89,34 @@ app.post('/user/name-violation', async c => {
     if (uid === 1 || !await env.db.prepare('SELECT id FROM users WHERE id = ?').bind(uid).first()) {
         return notFound(c);
     }
-
-    // 获取当前违规状态
     const { username_violation: oldViolation } = await env.db
         .prepare('SELECT username_violation FROM users WHERE id = ?')
         .bind(uid).first();
-
     const newViolation = oldViolation === 1 ? 0 : 1;
     await env.db
         .prepare('UPDATE users SET username_violation = ? WHERE id = ?')
         .bind(newViolation, uid).run();
 
-    const comment = reqBody.comment?.trim() || getText(locale, 'noReason');
-
+    const comment = reqBody.comment?.trim() || getText(c.get('locale'), 'noReason');
     const payload = JSON.stringify({
         comment,
         oldViolation,
         newViolation,
-        operator: currentUser.id
+        operator: c.get('currentUser')!.id
     });
 
-    // 写入 judgement 表（公开记录）
     await env.db
         .prepare('INSERT INTO judgement (uid, type, payload, batch_id) VALUES (?, "name-violation", ?, NULL)')
         .bind(uid, payload).run();
 
-    // 发送通知给用户
     const typeLabel = newViolation === 1
-        ? getText(locale, 'violationSet')
-        : getText(locale, 'violationUnset');
+        ? getText(c.get('locale'), 'violationSet')
+        : getText(c.get('locale'), 'violationUnset');
     const notifPayload = JSON.stringify({
         comment,
         oldViolation,
         newViolation,
-        operator: currentUser.id,
+        operator: c.get('currentUser')!.id,
         typeLabel
     });
     await env.db

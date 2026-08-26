@@ -196,6 +196,7 @@ export default {
     permissionLabel: 'Permission',
     unfilledReason: 'Reason not provided',
     adminJudgementDescription: 'Click permission status (<i class="fa-solid fa-check"></i> / <i class="fa-solid fa-xmark"></i>) and enter a reason to grant or revoke permissions.',
+    adminJudgementTitle: 'Permissions Setting',
     searchPlaceholder: 'Search username or ID...',
     promptReason: 'Please enter a reason (optional):',
     confirmGrant: 'Are you sure you want to grant user {userId} the "{permName}" permission?',

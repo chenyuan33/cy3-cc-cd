@@ -188,6 +188,7 @@ export default {
     permissionLabel: '权限',
     unfilledReason: '未填写理由',
     adminJudgementDescription: '点击权限状态（<i class="fa-solid fa-check"></i> / <i class="fa-solid fa-xmark"></i>），填写理由后即可授予或取消权限。',
+    adminJudgementTitle: '权限设置',
     searchPlaceholder: '搜索用户名或 ID...',
     promptReason: '请输入操作理由（可选）：',
     confirmGrant: '确定要授予用户 {userId} 的 “{permName}” 权限吗？',

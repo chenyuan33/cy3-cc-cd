@@ -69,7 +69,7 @@ app.get('/', async (c) => {
 
     return c.render(
         <Card style={{ padding: '20px' }}>
-            <h1>{getText(locale, 'judgement')}</h1>
+            <h1>{getText(locale, 'adminJudgementTitle')}</h1>
             <p>{raw(getText(locale, 'adminJudgementDescription'))}</p>
 
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
@@ -208,7 +208,7 @@ app.get('/', async (c) => {
             }} />
             <script src="/js/admin-judgement.js"></script>
         </Card>,
-        { title: getText(locale, 'judgement') }
+        { title: getText(locale, 'adminJudgementTitle') }
     );
 });
 
