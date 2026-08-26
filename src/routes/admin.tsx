@@ -21,7 +21,7 @@ app.get('/', c => c.render(<>
         <h1>Admin</h1>
         {c.get('currentUser')?.id === 1 ? <>
             <p><a href='/admin/init'>Init</a></p>
-            <p><a href='https://dash.cloudflare.com/...'>Log</a></p>
+            <p><a href='https://dash.cloudflare.com/5168c05171e882fb497107a7fe5d332e/workers/services/view/site/production/observability/events?filterCombination=%22and%22&calculations=%5B%7B%22operator%22%3A%22count%22%7D%5D&timeframe=24h&conditions=%7B%7D&conditionCombination=%22and%22&alertTiming=%7B%22interval%22%3A300%2C%22window%22%3A900%2C%22timeBeforeFiring%22%3A600%2C%22timeBeforeResolved%22%3A600%7D&orderBy=%7B%22value%22%3A%22count%22%2C%22limit%22%3A10%2C%22order%22%3A%22desc%22%7D&filters=%5B%7B%22key%22%3A%22customLog.logType%22%2C%22operation%22%3A%22eq%22%2C%22type%22%3A%22string%22%2C%22value%22%3A%22Custom+Log%22%7D%5D'>Log</a></p>
             <p><a href='/admin/domain/cy3.cc.cd/renew'>Domain cy3.cc.cd Renew</a></p>
         </> : <></>}
         <p><a href='/admin/judgement'>{getText(c.get('locale'), 'adminJudgementTitle')}</a></p>
