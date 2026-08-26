@@ -169,8 +169,8 @@ export default {
     ticketSetStatus: 'Set ticket status to',
     ticketSetAssignee: 'Set ticket assignee to',
     ticketNoReplies: 'No replies yet.',
-    privateMessage: 'Private messages',
-    privateMessageRecent: 'Recent messages',
+    chat: 'Private messages',
+    chatRecent: 'Recent messages',
     searchUsernameOrUid: 'Search username or UID',
     none: 'None',
     doNotModify: 'Do not modify',
@@ -231,5 +231,7 @@ export default {
     violationUnset: 'has been unmarked as violating username',
     notificationNameViolationSet: 'Your username has been marked as violating',
     notificationNameViolationUnset: 'Your username has been unmarked as violating',
-    operatorLabel: 'Operator'
+    operatorLabel: 'Operator',
+    selectConversation: 'Select a conversation',
+    userNotFound: 'User "{username}" not found'
 } as Record<string, string>;
