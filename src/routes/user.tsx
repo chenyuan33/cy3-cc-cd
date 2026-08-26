@@ -106,7 +106,7 @@ app.get('/settings', async c => {
                     'align-items': 'center',
                     width: '300px'
                 }}>
-					<button onclick='Notification.requestPermission()'>{getText(locale, 'userSettingsEnableBrowserNotification')}</button>
+                    <button onclick='Notification.requestPermission()'>{getText(locale, 'userSettingsEnableBrowserNotification')}</button>
                 </Card>
                 <Card style={{
                     display: 'inline-flex',
@@ -169,87 +169,101 @@ app.get('/settings', async c => {
     );
 });
 export const notificationContent = (c: ContextType, type: string, payload: any) => {
-	const locale = c.get('locale');
-	switch (type) {
-		case 'feed-reply':
-			return renderTemplate(getText(locale, 'userNotificationFeedReply'), {
-				__USER__: <User c={c} user={payload.uid} />,
-				__FEED__: <a href={'/feed/' + payload.id}>{getText(locale, 'feed')}</a>,
-				__TARGET__: <a href={'/feed/' + payload.parent_id}>{getText(locale, 'userNotificationYourFeed')}</a>
-			});
-		case 'discussion-reply-replied':
-			return renderTemplate(getText(locale, 'userNotificationDiscussionReplyReplied'), {
-				__USER__: <User c={c} user={payload.uid} />,
-				__DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
-				__PARENT_REPLY__: payload.parent_id ? <a href={'/discussion/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourDiscussion')}</>,
-				__REPLY__: <a href={'/discussion/reply/' + payload.id}>{getText(locale, 'reply')}</a>
-			});
-		case 'discussion-reply-deleted-by-discussion-owner':
-			return renderTemplate(getText(locale, 'userNotificationDiscussionReplyDeletedByDiscussionOwner'), {
-				__USER__: <User c={c} user={payload.uid} />,
-				__DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
-				__REPLY_CREATED_AT__: <Time c={c} time={payload.reply_created_at} />,
-				__REPLY_CONTENT__: payload.reply_content,
-			});
-		case 'ticket-reply-replied':
-			return renderTemplate(getText(locale, 'userNotificationTicketReplyReplied'), {
-				__USER__: <User c={c} user={payload.uid} />,
-				__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
-				__PARENT_REPLY__: payload.parent_id ? <a href={'/ticket/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourTicket')}</>,
-				__REPLY__: <a href={'/ticket/reply/' + payload.id}>{getText(locale, 'reply')}</a>
-			});
-		case 'ticket-reply-deleted-by-ticket-owner':
-			return renderTemplate(getText(locale, 'userNotificationTicketReplyDeletedByTicketOwner'), {
-				__USER__: <User c={c} user={payload.uid} />,
-				__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
-				__REPLY_CREATED_AT__: <Time c={c} time={payload.reply_created_at} />,
-				__REPLY_CONTENT__: payload.reply_content,
-			});
-		case 'ticket-status-changed':
-			return renderTemplate(getText(locale, 'userNotificationTicketStatusChanged'), {
-				__TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'userNotificationYourTicket')}</a>,
-				__STATUS__: <TicketStatus c={c} status={payload.status} />
-			});
-		case 'permission-changed':
-			const changes: { bit: number; isGrant: boolean }[] = [];
-			const oldP = payload.oldPermission || 0;
-			const newP = payload.newPermission || 0;
-			const diff = oldP ^ newP;
-			for (let i = 1; i < (1 << permissionCount); i <<= 1) {
-				if (diff & i) {
-					changes.push({ bit: i, isGrant: !!(newP & i) });
-				}
-			}
-			if (changes.length === 0) return <></>;
-			return (
-				<>
-					<p>{getText(locale, 'userNotificationPermissionChanged')}</p>
-					<blockquote>{payload.comment || getText(locale, 'noReason')}</blockquote>
-					<ul>
-						{changes.map((change, idx) => (
-							<li key={idx}>
-								<i class={`fa-solid ${change.isGrant ? 'fa-user-plus' : 'fa-user-minus'}`} style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}></i>
-								&nbsp;
-								<span style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}>
-									{change.isGrant ? getText(locale, 'permissionGot') : getText(locale, 'permissionLost')}
-								</span>
-								&nbsp;
-								<code>{getText(locale, 'permission' + change.bit)}</code>
-								&nbsp;
-								{getText(locale, 'permissionLabel')}
-							</li>
-						))}
-					</ul>
-				</>
-			);
-		case 'at':
-			return renderTemplate(getText(locale, 'userNotificationAt'), {
-				__USER__: <User c={c} user={payload.uid} />,
-				__LINK__: <a href={payload.link}>{getText(locale, 'userNotificationAtHere')}</a>
-			});
-		default:
-			return <>{getText(locale, 'userNotificationUnknownType')}</>;
-	}
+    const locale = c.get('locale');
+    switch (type) {
+        case 'feed-reply':
+            return renderTemplate(getText(locale, 'userNotificationFeedReply'), {
+                __USER__: <User c={c} user={payload.uid} />,
+                __FEED__: <a href={'/feed/' + payload.id}>{getText(locale, 'feed')}</a>,
+                __TARGET__: <a href={'/feed/' + payload.parent_id}>{getText(locale, 'userNotificationYourFeed')}</a>
+            });
+        case 'discussion-reply-replied':
+            return renderTemplate(getText(locale, 'userNotificationDiscussionReplyReplied'), {
+                __USER__: <User c={c} user={payload.uid} />,
+                __DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
+                __PARENT_REPLY__: payload.parent_id ? <a href={'/discussion/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourDiscussion')}</>,
+                __REPLY__: <a href={'/discussion/reply/' + payload.id}>{getText(locale, 'reply')}</a>
+            });
+        case 'discussion-reply-deleted-by-discussion-owner':
+            return renderTemplate(getText(locale, 'userNotificationDiscussionReplyDeletedByDiscussionOwner'), {
+                __USER__: <User c={c} user={payload.uid} />,
+                __DISCUSSION__: <a href={'/discussion/' + payload.discussion_id}>{getText(locale, 'discussion')}</a>,
+                __REPLY_CREATED_AT__: <Time c={c} time={payload.reply_created_at} />,
+                __REPLY_CONTENT__: payload.reply_content,
+            });
+        case 'ticket-reply-replied':
+            return renderTemplate(getText(locale, 'userNotificationTicketReplyReplied'), {
+                __USER__: <User c={c} user={payload.uid} />,
+                __TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
+                __PARENT_REPLY__: payload.parent_id ? <a href={'/ticket/reply/' + payload.parent_id}>{getText(locale, 'userNotificationYourReply')}</a> : <>{getText(locale, 'userNotificationYourTicket')}</>,
+                __REPLY__: <a href={'/ticket/reply/' + payload.id}>{getText(locale, 'reply')}</a>
+            });
+        case 'ticket-reply-deleted-by-ticket-owner':
+            return renderTemplate(getText(locale, 'userNotificationTicketReplyDeletedByTicketOwner'), {
+                __USER__: <User c={c} user={payload.uid} />,
+                __TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'ticket')}</a>,
+                __REPLY_CREATED_AT__: <Time c={c} time={payload.reply_created_at} />,
+                __REPLY_CONTENT__: payload.reply_content,
+            });
+        case 'ticket-status-changed':
+            return renderTemplate(getText(locale, 'userNotificationTicketStatusChanged'), {
+                __TICKET__: <a href={'/ticket/' + payload.ticket_id}>{getText(locale, 'userNotificationYourTicket')}</a>,
+                __STATUS__: <TicketStatus c={c} status={payload.status} />
+            });
+        case 'permission-changed':
+            const changes: { bit: number; isGrant: boolean }[] = [];
+            const oldP = payload.oldPermission || 0;
+            const newP = payload.newPermission || 0;
+            const diff = oldP ^ newP;
+            for (let i = 1; i < (1 << permissionCount); i <<= 1) {
+                if (diff & i) {
+                    changes.push({ bit: i, isGrant: !!(newP & i) });
+                }
+            }
+            if (changes.length === 0) return <></>;
+            return (
+                <>
+                    <p>{getText(locale, 'userNotificationPermissionChanged')}</p>
+                    <blockquote>{payload.comment || getText(locale, 'noReason')}</blockquote>
+                    <ul>
+                        {changes.map((change, idx) => (
+                            <li key={idx}>
+                                <i class={`fa-solid ${change.isGrant ? 'fa-user-plus' : 'fa-user-minus'}`} style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}></i>
+                                &nbsp;
+                                <span style={{ color: change.isGrant ? '#52c41a' : '#e74c3c' }}>
+                                    {change.isGrant ? getText(locale, 'permissionGot') : getText(locale, 'permissionLost')}
+                                </span>
+                                &nbsp;
+                                <code>{getText(locale, 'permission' + change.bit)}</code>
+                                &nbsp;
+                                {getText(locale, 'permissionLabel')}
+                            </li>
+                        ))}
+                    </ul>
+                </>
+            );
+        case 'name-violation': {
+            const isSet = payload.newViolation === 1;
+            return (
+                <>
+                    <p>{isSet ? getText(locale, 'notificationNameViolationSet') : getText(locale, 'notificationNameViolationUnset')}</p>
+                    {payload.comment && payload.comment !== getText(locale, 'noReason') && (
+                        <blockquote>{payload.comment}</blockquote>
+                    )}
+                    <p style={{ fontSize: '0.8em', color: '#888' }}>
+                        {getText(locale, 'operatorLabel')}：<User c={c} user={payload.operator} />
+                    </p>
+                </>
+            );
+        }
+        case 'at':
+            return renderTemplate(getText(locale, 'userNotificationAt'), {
+                __USER__: <User c={c} user={payload.uid} />,
+                __LINK__: <a href={payload.link}>{getText(locale, 'userNotificationAtHere')}</a>
+            });
+        default:
+            return <>{getText(locale, 'userNotificationUnknownType')}</>;
+    }
 };
 app.get('/notification', async c => {
     const env = c.env as any, currentUser = c.get('currentUser'), locale = c.get('locale');
@@ -314,7 +328,8 @@ app.get('/:uid{[1-9][0-9]*}', async c => {
             </Card>
             {currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <><Card style={{ marginTop: '10px' }}>
                 <Form action='/admin/user/name-violation' method='post' inputs={[
-                    { id: 'username-violation-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } }
+                    { id: 'username-violation-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
+                    { id: 'username-violation-comment', name: 'comment', label: getText(locale, 'reason'), main: { type: 'input', inputType: 'text' } }
                 ]} submit={{ content: getText(locale, 'toggleUsernameViolation') }} />
             </Card><Card>
                     <Form action='/admin/user/permission/set' method='post' inputs={[
