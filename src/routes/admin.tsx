@@ -87,9 +87,6 @@ app.post('/user/name-violation', async c => {
     const reqBody = c.get('reqBody');
     const locale = c.get('locale');
 
-    if (!currentUser || !(currentUser.permission & permissionAdmin)) {
-        return accessDenied(c);
-    }
     if (!Object.hasOwn(reqBody, 'uid')) {
         return notFound(c);
     }

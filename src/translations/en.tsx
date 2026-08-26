@@ -47,7 +47,7 @@ export default {
     confirmPassword: 'Confirm password',
     passwordNotMatch: 'Passwords do not match.',
     home: 'Home',
-    homeCheckIn: 'Check-in',
+    homeCheckIn: 'Check in',
     homeCheckInResetTime: 'You can check in again on __DATE__.',
     homeCheckInButton: 'Click to check in',
     homeCheckInGood: 'Good:',
