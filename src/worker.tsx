@@ -1,24 +1,25 @@
 import { Hono } from 'hono';
 import { jwtVerify } from 'jose';
+import { jsxRenderer, useRequestContext } from 'hono/jsx-renderer';
+import type { FC, PropsWithChildren } from 'hono/jsx';
+import { raw } from 'hono/html';
 import { translations, getText } from './translations';
-import { User, userQuery } from './components/user';
 import type { AppEnv } from './types';
+import { permissionAdmin, permissionVisit } from './settings';
+import { User, userQuery } from './components/user';
+import { Card } from './components/card';
+import { renderTemplate } from './components/renderTemplate';
+import { Time } from './components/time';
+import { Form } from './components/form';
+import { banned, errorHTML, notFound } from './routes/errorPages';
 import apisRoutes from './routes/apis';
+import webSocketRoutes from './routes/ws';
 import userRoutes from './routes/user';
 import feedRoutes from './routes/feed';
 import discussionRoutes from './routes/discussion';
 import ticketRoutes from './routes/ticket';
 import privateMessageRoutes from './routes/privateMessage';
 import adminRoutes from './routes/admin';
-import { Card } from './components/card';
-import { banned, errorHTML, notFound } from './routes/errorPages';
-import { jsxRenderer, useRequestContext } from 'hono/jsx-renderer';
-import { permissionAdmin, permissionVisit } from './settings';
-import { renderTemplate } from './components/renderTemplate';
-import { Time } from './components/time';
-import { Form } from './components/form';
-import type { FC, PropsWithChildren } from 'hono/jsx';
-import { raw } from 'hono/html';
 import judgementRoutes from './routes/judgement';
 const app = new Hono<AppEnv>();
 app.use(async (c, next) => {
@@ -101,7 +102,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
     const c = useRequestContext();
     const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any;
     const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
-    const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0;').bind(currentUser.id).first() : { privateMessageCount: 0 };
+    const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0').bind(currentUser.id).first() : { privateMessageCount: 0 };
     return <html lang={locale}>
         <head>
             <meta charset='UTF-8' />
@@ -109,6 +110,16 @@ app.use(jsxRenderer(async ({ children, title }) => {
             <link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
             <link rel='stylesheet' type='text/css' href='/style.css' />
             <link rel='icon' type='image/x-icon' href='/favicon.ico' />
+			<script dangerouslySetInnerHTML={{ __html: `
+				const helperScriptTranslations = {
+					notificationTitle_notification: '${getText(locale, 'notificationTitle_notification')}',
+					notificationTitle_privateMessage: '${getText(locale, 'notificationTitle_privateMessage')}',
+					notificationBody_notification: '${getText(locale, 'notificationBody_notification')}',
+					notificationBody_privateMessage: '${getText(locale, 'notificationBody_privateMessage')}',
+					serverConnectStatusConnected: '${getText(locale, 'serverConnectStatusConnected')}',
+					serverConnectStatusFailed: '${getText(locale, 'serverConnectStatusFailed')}',
+				};
+			` }}></script>
             <script src='/helper.js'></script>
             <title>{title} - cy3's site</title>
         </head>
@@ -129,9 +140,12 @@ app.use(jsxRenderer(async ({ children, title }) => {
                 zIndex: 2
             }}>
                 {/* 最左侧网站图标，点击跳转首页 */}
-                <a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
-                    <img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
-                </a>
+				<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+					<a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
+						<img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
+					</a>
+					<i class='fa-solid fa-server' style={{ fontSize: '20px', color: 'yellow' }} title={getText(locale, 'serverConnectStatusConnecting')} id='serverConnectStatus'></i>
+				</div>
 
                 {/* 右侧用户相关元素 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -157,18 +171,24 @@ app.use(jsxRenderer(async ({ children, title }) => {
                             ) : null}
 
                             {/* 私信图标（位于管理面板右侧、铃铛左侧） */}
-                            <a
-                                href='/private-message'
-                                style={{
-                                    textDecoration: 'none',
-                                    color: 'var(--text)',
-                                    fontSize: '20px',
-                                    display: 'inline-flex',
-                                    alignItems: 'center'
-                                }}
-                                title={getText(locale, 'privateMessage')}
-                            >
-                                <i class='fa-solid fa-envelope'></i>
+                            <a href='/private-message' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+                                <span style={{ position: 'relative', display: 'inline-block' }}>
+                                    <i class='fa-solid fa-envelope' style={{ fontSize: '20px' }}></i>
+                                    {privateMessageCount ? (
+                                        <sup style={{
+                                            padding: '1px 5px',
+                                            backgroundColor: 'red',
+                                            color: 'white',
+                                            borderRadius: '5px',
+                                            position: 'absolute',
+                                            top: '-5px',
+                                            right: '-10px',
+                                            fontSize: '10px'
+                                        }}>
+                                            {privateMessageCount}
+                                        </sup>
+                                    ) : null}
+                                </span>
                             </a>
 
                             {/* 通知项（铃铛） */}
@@ -352,6 +372,7 @@ app.get('/', async c => {
     </>, { title: getText(locale, 'home') });
 });
 app.route('/api', apisRoutes);
+app.route('/ws', webSocketRoutes);
 app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
