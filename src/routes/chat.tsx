@@ -3,7 +3,7 @@ import type { AppEnv } from "../types";
 import { getText } from "../translations";
 import { Card } from "../components/card";
 import { loginRequired } from "./errorPages";
-import { User, getDisplayUsername } from "../components/user";
+import { User } from "../components/user";
 import { MdInit, MdRender } from "../components/mdeditor";
 import { Time } from "../components/time";
 import { Form } from "../components/form";
@@ -22,7 +22,6 @@ app.get('/', async c => {
     let validUser: string | null = null;
     let searchError: string | null = null;
 
-    // 处理 user 参数
     if (rawUser) {
         if (/^\d+$/.test(rawUser)) {
             validUser = rawUser;
@@ -116,9 +115,6 @@ app.get('/', async c => {
                     unread_count: number
                 }) => {
                     const targetUid = sender === currentUser.id ? receiver : sender;
-                    const userInfo = userMap.get(targetUid);
-                    const displayName = userInfo ? getDisplayUsername(userInfo, locale) : '未知用户';
-                    const colorStyle = userInfo ? { color: `light-dark(#${userInfo.name_color_light}, #${userInfo.name_color_dark})` } : {};
                     return (
                         <a
                             key={created_at}
@@ -135,8 +131,8 @@ app.get('/', async c => {
                                 }}
                             >
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontWeight: '500', fontSize: '15px', ...colorStyle }}>
-                                        {displayName}
+                                    <span style={{ fontWeight: '500', fontSize: '15px' }}>
+                                        <User c={c} user={targetUid} linkable={false} />
                                     </span>
                                     <span style={{ fontSize: '11px', color: 'lightgray' }}>
                                         <Time c={c} time={created_at} short />
@@ -218,7 +214,7 @@ app.get('/', async c => {
                                 })
                             }
                         </div>
-                        <Form action='/api/chat/send' method='post' inputs={[
+                        <Form action='/api/private-message/send' method='post' inputs={[
                             { id: 'receiver', name: 'uid', main: { type: 'input', inputType: 'hidden', value: validUser } },
                             { id: 'content', name: 'content', main: { type: 'mdeditor', mdeditorHeight: '80px' }, required: true }
                         ]} submit={{ content: getText(locale, 'send') }} style={{ padding: '8px 16px', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)', borderTop: '1px solid light-dark(#e0e0e0, #444)' }} />

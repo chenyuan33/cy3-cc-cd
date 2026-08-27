@@ -10,8 +10,8 @@ export const Time: FC<{ c: ContextType; time: string | Date; short?: boolean }> 
     );
     const now = new Date();
     const isToday = date.getFullYear() === now.getFullYear() &&
-        date.getMonth() === now.getMonth() &&
-        date.getDate() === now.getDate();
+                    date.getMonth() === now.getMonth() &&
+                    date.getDate() === now.getDate();
     const isThisYear = date.getFullYear() === now.getFullYear();
 
     let formatted: string;
@@ -38,5 +38,5 @@ export const Time: FC<{ c: ContextType; time: string | Date; short?: boolean }> 
         });
     }
 
-    return <span>{formatted}</span>;
+    return <time datetime={date.toISOString()}>{formatted}</time>;
 };
