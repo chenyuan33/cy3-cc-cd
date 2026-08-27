@@ -31,8 +31,8 @@ export const Time: FC<{ c: ContextType; time: string | Date; short?: boolean }> 
     } else {
         formatted = date.toLocaleString(c.get('locale'), {
             year: 'numeric',
-            month: 'short',
-            day: 'numeric',
+            month: '2-digit',
+            day: '2-digit',
             hour: '2-digit',
             minute: '2-digit',
         });
