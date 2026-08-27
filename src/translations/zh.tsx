@@ -67,8 +67,6 @@ export default {
     homeRecentDiscussions: '最近讨论',
     register: '注册',
     registerUsernameLength: '用户名必须在 3 到 30 个字符之间。',
-    registerUsernameFormat: '用户名必须由大小写字母、数字、英文点号（<code>.</code>）、下划线（<code>_</code>）和短横线（<code>-</code>）组成。',
-    registerUsernameStartWithNumber: '用户名不能以数字开头。',
     registerUsernameExists: '用户名不能已存在。',
     login: '登录',
     registerToLogin: '已有账号？<a href="/user/login">前往登录！</a>',

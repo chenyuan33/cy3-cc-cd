@@ -51,8 +51,6 @@ app.get('/register', c => {
                 <Card style={{ 'max-width': '400px' }}>
                     <ul id='namechecklist'>
                         <li><i class='fa-solid fa-xmark check-failed' id='namecheck-length'></i>{getText(c.get('locale'), 'registerUsernameLength')}</li>
-                        <li><i class='fa-solid fa-check check-success' id='namecheck-consist'></i>{raw(getText(c.get('locale'), 'registerUsernameFormat'))}</li>
-                        <li><i class='fa-solid fa-check check-success' id='namecheck-start'></i>{getText(c.get('locale'), 'registerUsernameStartWithNumber')}</li>
                         <li><i class='fa-solid fa-check check-success' id='namecheck-used'></i>{getText(c.get('locale'), 'registerUsernameExists')}</li>
                     </ul>
                 </Card>

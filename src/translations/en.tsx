@@ -67,8 +67,6 @@ export default {
     homeRecentDiscussions: 'Recent discussions',
     register: 'Register',
     registerUsernameLength: 'Username must be between 3 and 30 characters.',
-    registerUsernameFormat: 'Username must consist of letters, numbers, periods (<code>.</code>), underscores (<code>_</code>), and hyphens (<code>-</code>).',
-    registerUsernameStartWithNumber: 'Username cannot start with a number.',
     registerUsernameExists: 'Username already exists.',
     login: 'Login',
     registerToLogin: 'Already have an account? <a href="/user/login">Log in here!</a>',

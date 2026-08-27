@@ -18,12 +18,12 @@ const validateUsername = (name: string, locale: string) => {
 	if (name.trim().length < 3 || name.trim().length > 30) {
 		return getText(locale, 'registerUsernameLength');
 	}
-	if (!/^[A-Za-z0-9._-]*$/.test(name.trim())) {
-		return getText(locale, 'registerUsernameFormat');
-	}
-	if (/^[0-9]/.test(name.trim())) {
-		return getText(locale, 'registerUsernameStartWithNumber');
-	}
+	// if (!/^[A-Za-z0-9._-]*$/.test(name.trim())) {
+	// 	return getText(locale, 'registerUsernameFormat');
+	// }
+	// if (/^[0-9]/.test(name.trim())) {
+	// 	return getText(locale, 'registerUsernameStartWithNumber');
+	// }
 	return null;
 };
 const login = async (uid: number, c: ContextType) => {
@@ -35,12 +35,6 @@ const login = async (uid: number, c: ContextType) => {
 	}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`);
 	return c.redirect('/');
 };
-// app.get('/test', async c => c.render(await new SignJWT({ uid: 54 })
-// 		.setProtectedHeader({ alg: 'HS256' })
-// 		.setIssuedAt()
-// 		.setExpirationTime('30d')
-// 		.sign(new TextEncoder().encode((c.env as any).JWT_SECRET))
-// 	, { title: '1' }));
 app.post('/register', async c => {
 	const locale = c.get('locale'), reqBody = c.get('reqBody');
 	if (c.get('currentUser')) {
