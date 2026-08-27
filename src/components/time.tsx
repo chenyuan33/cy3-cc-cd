@@ -1,3 +1,42 @@
+import type { FC } from "hono/jsx";
+import type { ContextType } from "../types";
+
+export const Time: FC<{ c: ContextType, time?: string | number | Date, short?: boolean }> = ({ c, time = new Date(), short = false }) => {
+	try {
+		let date: Date;
+		switch (typeof time) {
+			case 'string':
+				date = new Date(time + 'Z');
+				break;
+			case 'number':
+				date = new Date(time);
+				break;
+			default:
+				date = time;
+				break;
+		}
+		const today = new Date();
+		return <time datetime={date.toISOString()}>{new Intl.DateTimeFormat(c.get('locale'), short ? {
+			timeZone: (c.req.raw.cf?.timezone as string) ?? 'UTC',
+			...(date.getFullYear() === today.getFullYear() ? {} : { year: 'numeric' }),
+			...(date.getFullYear() === today.getFullYear() &&
+				date.getMonth() === today.getMonth() &&
+				date.getDate() === today.getDate() ? { hour: '2-digit', minute: '2-digit' } : { month: '2-digit', day: '2-digit' }),
+		} : {
+			timeZone: (c.req.raw.cf?.timezone as string) ?? 'UTC',
+			year: 'numeric',
+			month: '2-digit',
+			day: '2-digit',
+			hour: '2-digit',
+			minute: '2-digit',
+			second: '2-digit'
+		}).format(date)}</time>;
+	} catch (exc) {
+		return <span>Unknown time {time}</span>
+	}
+};
+/*
+
 import type { FC } from 'hono/jsx';
 import type { ContextType } from '../types';
 
@@ -40,3 +79,5 @@ export const Time: FC<{ c: ContextType; time: string | Date; short?: boolean }> 
 
     return <time datetime={date.toISOString()}>{formatted}</time>;
 };
+
+*/
