@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { AppEnv } from "../types";
+import type { AppEnv, userInfo } from "../types";
 import { getText } from "../translations";
 import { Card } from "../components/card";
 import { loginRequired } from "./errorPages";
@@ -43,7 +43,7 @@ app.get('/', async c => {
         await env.db.prepare('UPDATE private_messages SET read = 1 WHERE sender = ? AND receiver = ?').bind(validUser, currentUser.id).run();
     }
 
-    const { results: recent } = await env.db.prepare(`
+    const { results: recent }: { results: { sender: number, receiver: number, content: string, created_at: string, unread_count: number }[] } = await env.db.prepare(`
 		SELECT
 			p1.sender,
 			p1.receiver,
@@ -75,18 +75,6 @@ app.get('/', async c => {
 			50
 	`).bind(currentUser.id, currentUser.id, currentUser.id).all();
 
-    const targetUids = recent.map(r => r.sender === currentUser.id ? r.receiver : r.sender);
-    const uniqueUids = [...new Set(targetUids)];
-    let userMap: Map<number, any> = new Map();
-    if (uniqueUids.length > 0) {
-        const placeholders = uniqueUids.map(() => '?').join(',');
-        const { results: users } = await env.db
-            .prepare(`SELECT id, name, name_color_light, name_color_dark, username_violation FROM users WHERE id IN (${placeholders})`)
-            .bind(...uniqueUids)
-            .all();
-        userMap = new Map(users.map(u => [u.id, u]));
-    }
-
     return c.render(<Card style={{ position: 'fixed', top: '50px', bottom: '10px', left: '70px', right: '10px' }}>
         <MdInit />
         <h1>{getText(locale, 'chat')}</h1>
@@ -108,52 +96,37 @@ app.get('/', async c => {
                     content,
                     created_at,
                     unread_count
-                }: {
-                    sender: number,
-                    receiver: number,
-                    content: string,
-                    created_at: string,
-                    unread_count: number
                 }) => {
                     const targetUid = sender === currentUser.id ? receiver : sender;
-                    const userInfo = userMap.get(targetUid);
-                    const displayName = userInfo ? getDisplayUsername(userInfo, locale) : '未知用户';
-                    const colorStyle = userInfo ? { color: `light-dark(#${userInfo.name_color_light}, #${userInfo.name_color_dark})` } : {};
                     return (
-                        <a
-                            key={created_at}
-                            href={'?user=' + targetUid}
-                            style={{ textDecoration: 'none', display: 'block' }}
-                        >
-                            <div
-                                style={{
-                                    padding: '8px 12px',
-                                    borderBottom: '1px solid light-dark(#e0e0e0, #444)',
-                                    borderLeft: unread_count ? '4px solid #ff6b6b' : '4px solid transparent',
-                                    cursor: 'pointer',
-                                    backgroundColor: 'transparent',
-                                }}
-                            >
-                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                    <span style={{ fontWeight: '500', fontSize: '15px', ...colorStyle }}>
-                                        {displayName}
-                                    </span>
-                                    <span style={{ fontSize: '11px', color: 'lightgray' }}>
-                                        <Time c={c} time={created_at} short />
-                                    </span>
-                                </div>
-                                <div style={{
-                                    fontSize: '13px',
-                                    color: 'light-dark(#555, #bbb)',
-                                    whiteSpace: 'nowrap',
-                                    overflow: 'hidden',
-                                    textOverflow: 'ellipsis',
-                                    marginTop: '2px'
-                                }}>
-                                    <MdRender markdown={content} />
-                                </div>
-                            </div>
-                        </a>
+                        <div
+							style={{
+								borderTop: '1px solid light-dark(#e0e0e0, #444)',
+								cursor: 'pointer',
+								backgroundColor: 'transparent',
+							}}
+							onclick={`location.href = "?user=${targetUid}"`}
+						>
+							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+								<span style={{ fontWeight: '500', fontSize: '15px' }}>
+									{unread_count ? <><span style={{ color: 'white', backgroundColor: 'red', borderRadius: '5px', padding: '1px 5px', fontSize: '70%' }}>{unread_count}</span>&nbsp;</> : <></>}
+									<User c={c} user={targetUid} />
+								</span>
+								<span style={{ fontSize: '11px', color: 'lightgray' }}>
+									<Time c={c} time={created_at} short />
+								</span>
+							</div>
+							<div style={{
+								fontSize: '13px',
+								color: 'light-dark(#555, #bbb)',
+								whiteSpace: 'nowrap',
+								overflow: 'hidden',
+								textOverflow: 'ellipsis',
+								marginTop: '2px'
+							}}>
+								<MdRender markdown={content} />
+							</div>
+						</div>
                     );
                 })}
             </div>
