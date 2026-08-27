@@ -21,6 +21,7 @@ import ticketRoutes from './routes/ticket';
 import privateMessageRoutes from './routes/privateMessage';
 import adminRoutes from './routes/admin';
 import judgementRoutes from './routes/judgement';
+import fileRoutes from './routes/file';
 const app = new Hono<AppEnv>();
 app.use(async (c, next) => {
     c.set('reqBody', c.req.method === 'POST' || c.req.method === 'PUT' ?
@@ -380,6 +381,7 @@ app.route('/ticket', ticketRoutes);
 app.route('/private-message', privateMessageRoutes);
 app.route('/admin', adminRoutes);
 app.route('/judgement', judgementRoutes);
+app.route('/file', fileRoutes);
 app.onError((err, c) => {
     console.error(err);
     return errorHTML(c, err, 500);

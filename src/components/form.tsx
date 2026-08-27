@@ -3,7 +3,7 @@ import { MdEditor } from "./mdeditor";
 import type { JSX } from "hono/jsx/jsx-runtime";
 
 export const createSubmitHandler = (onsubmit?: string) => `var _form = this; var _button = _form.querySelector('button[type="submit"]'); if (_button && _button.dataset.submitting === 'true') return false; if (_button) { _button.dataset.submitting = 'true'; _button.disabled = true; } var _result = true; try { _result = (function(){ ${onsubmit || ''} })(); } catch (_error) { if (_button) { _button.dataset.submitting = 'false'; _button.disabled = false; } throw _error; } if (_result === false && _button) { _button.dataset.submitting = 'false'; _button.disabled = false; } return _result;`;
-export const Form: FC<{ action: string, method: 'get' | 'post', onsubmit?: string, inputs: { id: string, name?: string, label?: string, required?: boolean, main:
+export const Form: FC<{ action: string, method: 'get' | 'post', enctype?: 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain', onsubmit?: string, inputs: { id: string, name?: string, label?: string, required?: boolean, main:
 	{
 		type: 'input',
 		inputType: 'button' | 'checkbox' | 'color' | 'date' | 'datetime-local' | 'email' | 'file' | 'hidden' | 'image' | 'month' | 'number' | 'password' | 'radio' | 'range' | 'reset' | 'search' | 'submit' | 'tel' | 'text' | 'time' | 'url' | 'week',
@@ -19,7 +19,7 @@ export const Form: FC<{ action: string, method: 'get' | 'post', onsubmit?: strin
 		optionGroups?: { group: string, options: { value: string, label: string, selected?: boolean, disabled?: boolean }[] }[],
 		options?: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[]
 	}
-}[], submit: { content: string, disabled?: boolean } | JSX.Element, locale?: string, style?: CSSProperties | string | undefined }> = ({ action, method, onsubmit, inputs, submit, locale, style }) => <form action={action} method={method} onsubmit={createSubmitHandler(onsubmit)} style={style}>
+}[], submit: { content: string, disabled?: boolean } | JSX.Element, locale?: string, style?: CSSProperties | string | undefined }> = ({ action, method, enctype, onsubmit, inputs, submit, locale, style }) => <form action={action} method={method} enctype={enctype} onsubmit={createSubmitHandler(onsubmit)} style={style}>
 	{inputs.map(({ id, name, label, main, required = false }) => 
 		main.type === 'input' ? main.inputType === 'checkbox' ? <div>
 			<input id={id} type='checkbox' name={name} oninput={main.oninput} required={required} autocomplete={main.autocomplete || 'off'} value={main.value} checked={main.checked} />

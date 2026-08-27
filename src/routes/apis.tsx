@@ -3,6 +3,7 @@ import userRoutes from './api/user';
 import feedRoutes from './api/feed';
 import discussionRoutes from './api/discussion';
 import ticketRoutes from './api/ticket';
+import fileRoutes from './api/file';
 import type { AppEnv } from '../types';
 import { loginRequired, notFound } from './errorPages';
 const app = new Hono<AppEnv>();
@@ -10,6 +11,7 @@ app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
+app.route('/file', fileRoutes);
 app.post('/check-in', async c => {
 	const env = c.env as any, currentUser = c.get('currentUser');
 	if (!currentUser) {
