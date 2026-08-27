@@ -214,7 +214,7 @@ app.get('/', async c => {
                                 })
                             }
                         </div>
-                        <Form action='/api/private-message/send' method='post' inputs={[
+                        <Form action='/api/chat/send' method='post' inputs={[
                             { id: 'receiver', name: 'uid', main: { type: 'input', inputType: 'hidden', value: validUser } },
                             { id: 'content', name: 'content', main: { type: 'mdeditor', mdeditorHeight: '80px' }, required: true }
                         ]} submit={{ content: getText(locale, 'send') }} style={{ padding: '8px 16px', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)', borderTop: '1px solid light-dark(#e0e0e0, #444)' }} />

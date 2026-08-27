@@ -2,10 +2,10 @@ import type { FC } from 'hono/jsx';
 import type { ContextType } from '../types';
 
 export const Time: FC<{ c: ContextType; time: string | Date; short?: boolean }> = ({ c, time, short = false }) => {
-    // 如果 time 是字符串且格式为 "YYYY-MM-DD HH:MM:SS"，则将其视为 UTC，补上 Z
+    // 如果 time 是字符串且格式为 "YYYY-MM-DD HH:MM:SS"，则转换为 ISO 格式并补上 Z，表示 UTC
     const date = new Date(
         typeof time === 'string' && /^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/.test(time)
-            ? time + 'Z'
+            ? time.replace(' ', 'T') + 'Z'
             : time
     );
     const now = new Date();
