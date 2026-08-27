@@ -10,22 +10,6 @@ import { Form } from "../components/form";
 
 const app = new Hono<AppEnv>();
 
-// 辅助函数：格式化私信列表的时间
-function formatMessageTime(dateStr: string): string {
-    const now = new Date();
-    const date = new Date(dateStr);
-    const isToday = now.getFullYear() === date.getFullYear() &&
-        now.getMonth() === date.getMonth() &&
-        now.getDate() === date.getDate();
-    if (isToday) {
-        return date.toLocaleTimeString('default', { hour: '2-digit', minute: '2-digit' });
-    } else {
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const day = String(date.getDate()).padStart(2, '0');
-        return month + '-' + day;
-    }
-}
-
 app.get('/', async c => {
     const currentUser = c.get('currentUser');
     if (!currentUser) {
@@ -145,6 +129,7 @@ app.get('/', async c => {
                                 style={{
                                     padding: '8px 12px',
                                     borderBottom: '1px solid light-dark(#e0e0e0, #444)',
+                                    borderLeft: unread_count ? '4px solid #ff6b6b' : '4px solid transparent',
                                     cursor: 'pointer',
                                     backgroundColor: 'transparent',
                                 }}
@@ -152,21 +137,9 @@ app.get('/', async c => {
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                                     <span style={{ fontWeight: '500', fontSize: '15px', ...colorStyle }}>
                                         {displayName}
-                                        {unread_count ? <span style={{
-                                            backgroundColor: 'red',
-                                            color: 'white',
-                                            borderRadius: '50%',
-                                            padding: '0 6px',
-                                            fontSize: '11px',
-                                            marginLeft: '6px',
-                                            display: 'inline-block',
-                                            lineHeight: '18px',
-                                            minWidth: '18px',
-                                            textAlign: 'center'
-                                        }}>{unread_count}</span> : <></>}
                                     </span>
                                     <span style={{ fontSize: '11px', color: 'lightgray' }}>
-                                        {formatMessageTime(created_at)}
+                                        <Time c={c} time={created_at} short />
                                     </span>
                                 </div>
                                 <div style={{
@@ -245,7 +218,7 @@ app.get('/', async c => {
                                 })
                             }
                         </div>
-                        <Form action='/api/private-message/send' method='post' inputs={[
+                        <Form action='/api/chat/send' method='post' inputs={[
                             { id: 'receiver', name: 'uid', main: { type: 'input', inputType: 'hidden', value: validUser } },
                             { id: 'content', name: 'content', main: { type: 'mdeditor', mdeditorHeight: '80px' }, required: true }
                         ]} submit={{ content: getText(locale, 'send') }} style={{ padding: '8px 16px', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)', borderTop: '1px solid light-dark(#e0e0e0, #444)' }} />
