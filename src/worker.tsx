@@ -372,6 +372,12 @@ app.get('/', async c => {
         </div>
     </>, { title: getText(locale, 'home') });
 });
+app.get('/private-message', (c) => {
+    const query = c.req.query();
+    const searchParams = new URLSearchParams(query).toString();
+    const suffix = searchParams ? '?' + searchParams : '';
+    return c.redirect('/chat' + suffix, 301);
+});
 app.route('/api', apisRoutes);
 app.route('/ws', webSocketRoutes);
 app.route('/user', userRoutes);
