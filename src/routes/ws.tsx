@@ -3,6 +3,7 @@ import { type AppEnv } from "../types";
 import { upgradeWebSocket } from "hono/cloudflare-workers";
 
 const app = new Hono<AppEnv>();
+
 app.get('/', upgradeWebSocket(c => {
     const currentUser = c.get('currentUser'), env = c.env as any;
     return {
@@ -28,32 +29,46 @@ app.get('/', upgradeWebSocket(c => {
         }
     };
 }));
+
 app.get('/ide-judge', upgradeWebSocket(c => ({
     async onMessage(evt, ws) {
         try {
             if (c.get('currentUser') && typeof evt.data === 'string') {
-                const { code, input, language } = JSON.parse(evt.data);
-                ws.send(JSON.stringify(((await (await fetch("https://judge.cqiming.com/api/v1/judgments/", {
+                const payload = JSON.parse(evt.data);
+                const requestBody = {
+                    language: payload.language,
+                    code: payload.code,
+                    test_cases: payload.test_cases || [],
+                    time_limit_ms: payload.time_limit_ms || 1000,
+                    memory_limit_mb: payload.memory_limit_mb || 256
+                };
+                // 使用 AbortController 设置超时（可选）
+                const controller = new AbortController();
+                const timeout = setTimeout(() => controller.abort(), 30000); // 30秒超时
+                const response = await fetch("https://judge.cqiming.com/api/v1/judgments/", {
                     method: "POST",
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        language: language,
-                        code,
-                        test_cases: [
-                            {
-                                input,
-                                output: ""
-                            }
-                        ],
-                        time_limit_ms: 1000,
-                        memory_limit_mb: 512
-                    })
-                })).json()) as any).results[0]));
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestBody),
+                    signal: controller.signal
+                });
+                clearTimeout(timeout);
+                if (!response.ok) {
+                    throw new Error(`API returned ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                ws.send(JSON.stringify(data));
+            } else {
+                ws.send(JSON.stringify({ error: 'Unauthorized or invalid data' }));
             }
         } catch (e) {
             console.error('An error occurred with WebSocket (Judge): ', e instanceof Error ? e.message : e);
+            // 向客户端发送错误信息
+            const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+            try {
+                ws.send(JSON.stringify({ error: errorMsg }));
+            } catch (_) {
+                // 如果 WebSocket 已关闭，忽略发送错误
+            }
         }
     },
     onClose(evt, ws) {
@@ -64,4 +79,5 @@ app.get('/ide-judge', upgradeWebSocket(c => ({
         ws.close(1011);
     }
 })));
+
 export default app;

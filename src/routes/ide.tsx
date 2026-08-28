@@ -4,6 +4,7 @@ import { loginRequired } from "./errorPages";
 import { Card } from "../components/card";
 import { CodeMirrorEditor, CodeMirrorInit, CodeMirrorLangInit } from "../components/codemirror";
 import { getText, translations } from "../translations";
+import { timeLimitMax, memoryLimitMax, timeLimitDefault, memoryLimitDefault } from "../settings";
 
 const app = new Hono<AppEnv>();
 app.get('/', c => {
@@ -11,8 +12,6 @@ app.get('/', c => {
         return loginRequired(c);
     }
     const locale = c.get('locale');
-    const timeLimitMax = parseInt(getText(locale, 'timeLimitMax'));
-    const memoryLimitMax = parseInt(getText(locale, 'memoryLimitMax'));
     return c.render(<Card>
         <CodeMirrorInit />
         <CodeMirrorLangInit lang='clike' />
@@ -21,10 +20,10 @@ app.get('/', c => {
             __html: `
 				const ideTranslations = {
 					${Object.keys(translations[locale] || {})
-                    .filter(k => k.startsWith('ideStatus_'))
+                    .filter(k => k.startsWith('ideStatus_') || k === 'ideSelectLanguage')
                     .map(k => {
-                        const status = k.replace('ideStatus_', '').replace(/_/g, ' ');
-                        return `"${status}": "${getText(locale, k)}"`;
+                        const key = k === 'ideSelectLanguage' ? 'selectLanguage' : k.replace('ideStatus_', '').replace(/_/g, ' ');
+                        return `"${key}": "${getText(locale, k)}"`;
                     })
                     .join(',\n')}
 				};
@@ -40,14 +39,14 @@ app.get('/', c => {
             </div>
             <div>
                 <label style={{ marginRight: '5px' }}>{getText(locale, 'timeLimitLabel')}</label>
-                <input type="number" id="timeLimit" value={getText(locale, 'timeLimitDefault')} style={{ width: '80px', padding: '4px' }}
+                <input type="number" id="timeLimit" value={timeLimitDefault} style={{ width: '80px', padding: '4px' }}
                     onchange={`if (parseInt(this.value) > ${timeLimitMax}) this.value = ${timeLimitMax}; if (parseInt(this.value) < 1) this.value = 1;`}
                     oninput={`if (parseInt(this.value) > ${timeLimitMax}) this.value = ${timeLimitMax}; if (parseInt(this.value) < 1) this.value = 1;`}
                 />
             </div>
             <div>
                 <label style={{ marginRight: '5px' }}>{getText(locale, 'memoryLimitLabel')}</label>
-                <input type="number" id="memoryLimit" value={getText(locale, 'memoryLimitDefault')} style={{ width: '80px', padding: '4px' }}
+                <input type="number" id="memoryLimit" value={memoryLimitDefault} style={{ width: '80px', padding: '4px' }}
                     onchange={`if (parseInt(this.value) > ${memoryLimitMax}) this.value = ${memoryLimitMax}; if (parseInt(this.value) < 1) this.value = 1;`}
                     oninput={`if (parseInt(this.value) > ${memoryLimitMax}) this.value = ${memoryLimitMax}; if (parseInt(this.value) < 1) this.value = 1;`}
                 />

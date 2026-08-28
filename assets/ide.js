@@ -16,45 +16,59 @@ document.addEventListener('DOMContentLoaded', loadLanguages);
 const run = () => {
     const codeEl = document.getElementById('code');
     const stdinEl = document.getElementById('stdin');
+    const expectedOutputEl = document.getElementById('expectedOutput');
     const versionSelect = document.getElementById('cxxVersion');
     const timeLimitEl = document.getElementById('timeLimit');
     const memoryLimitEl = document.getElementById('memoryLimit');
     const resultEl = document.getElementById('result');
+
+    const language = versionSelect.value;
+    if (!language) {
+        alert(window.ideTranslations.selectLanguage || 'Please select a language');
+        return;
+    }
+
+    const input = stdinEl.value ?? '';
+    const output = expectedOutputEl.value ?? '';
+    let timeLimit = parseInt(timeLimitEl.value) || 1000;
+    let memoryLimit = parseInt(memoryLimitEl.value) || 256;
+    if (timeLimit < 1) timeLimit = 1000;
+    if (memoryLimit < 16) memoryLimit = 256;
+    if (memoryLimit > 2048) memoryLimit = 2048;
 
     const url = new URL('/ws/ide-judge', location.href);
     url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
     const judger = new WebSocket(url.toString());
 
     judger.addEventListener('open', () => {
-        const language = versionSelect.value;
-        if (!language) {
-            alert('请选择一种语言');
-            return;
-        }
-        const timeLimit = parseInt(timeLimitEl.value) || 1000;
-        const memoryLimit = parseInt(memoryLimitEl.value) || 256;
         judger.send(JSON.stringify({
-            code: codeEl.value,
-            input: stdinEl.value,
             language: language,
+            code: codeEl.value,
+            test_cases: [{ input, output }],
             time_limit_ms: timeLimit,
-            memory_limit_mb: memoryLimit,
+            memory_limit_mb: memoryLimit
         }));
-        resultEl.innerHTML = window.ideTranslations.running;
+        resultEl.innerHTML = window.ideTranslations.running || 'running';
     });
 
     judger.addEventListener('message', ({ data: dataString }) => {
         const data = JSON.parse(dataString);
-        const status = window.ideTranslations[data.status] || data.status;
-        resultEl.innerHTML = `
-            ${status}
-            ${data.time_ms ? '<br />' + data.time_ms + 'ms' : ''}
-        `;
-        if (data.status === 'Compilation Error') {
-            CodeMirrorEditor_actualOutput.setValue(data.stderr ?? '');
-        } else {
-            CodeMirrorEditor_actualOutput.setValue(data.stdout ?? '');
+        if (data.error) {
+            resultEl.innerHTML = 'Error: ' + data.error;
+            return;
         }
-        CodeMirrorEditor_stderr.setValue(data.stderr ?? '');
+        const result = data.results && data.results.length ? data.results[0] : {};
+        const status = window.ideTranslations[result.status] || result.status || data.status;
+        const stdout = result.stdout ?? '';
+        const stderr = result.stderr ?? '';
+        const timeMs = result.time_ms ?? data.time_ms;
+
+        resultEl.innerHTML = status + (timeMs ? '<br />' + timeMs + 'ms' : '');
+        CodeMirrorEditor_actualOutput.setValue(stdout);
+        CodeMirrorEditor_stderr.setValue(stderr);
+    });
+
+    judger.addEventListener('error', () => {
+        resultEl.innerHTML = 'WebSocket error';
     });
 };
