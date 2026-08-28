@@ -22,7 +22,9 @@ import chatRoutes from './routes/chat';
 import adminRoutes from './routes/admin';
 import judgementRoutes from './routes/judgement';
 import ideRoutes from './routes/ide';
+
 const app = new Hono<AppEnv>();
+
 app.use(async (c, next) => {
     c.set('reqBody', c.req.method === 'POST' || c.req.method === 'PUT' ?
         !c.req.header('Content-Type') || (c.req.header('Content-Type')?.split(';')[0] ?? c.req.header('Content-Type'))?.trim().toLowerCase() === 'application/json' ?
@@ -91,6 +93,7 @@ app.use(async (c, next) => {
     });
     await next();
 });
+
 declare module 'hono' {
     interface ContextRenderer {
         (
@@ -98,7 +101,8 @@ declare module 'hono' {
             props: { title: string }
         ): Response
     }
-};
+}
+
 app.use(jsxRenderer(async ({ children, title }) => {
     const c = useRequestContext();
     const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any;
@@ -121,15 +125,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
 					serverConnectStatusConnected: '${getText(locale, 'serverConnectStatusConnected')}',
 					serverConnectStatusFailed: '${getText(locale, 'serverConnectStatusFailed')}',
 				};
-                const ideTranslations = {
-                    ${Object.keys(translations[locale] || {})
-                        .filter(k => k.startsWith('ideStatus_'))
-                        .map(k => {
-                            const status = k.replace('ideStatus_', '').replace(/_/g, ' ');
-                            return `"${status}": "${getText(locale, k)}"`;
-                        })
-                        .join(',\n')}
-                };
 			` }}></script>
             <script src='/helper.js'></script>
             <title>{title} - cy3's site</title>
@@ -137,7 +132,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
         <body>
             <noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
 
-            {/* 顶部导航栏 */}
             <header style={{
                 position: 'fixed',
                 top: 0,
@@ -150,19 +144,15 @@ app.use(jsxRenderer(async ({ children, title }) => {
                 padding: '0 30px',
                 zIndex: 2
             }}>
-                {/* 最左侧网站图标，点击跳转首页 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     <a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
                         <img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
                     </a>
                     <i class='fa-solid fa-server' style={{ fontSize: '20px', color: 'yellow' }} title={getText(locale, 'serverConnectStatusConnecting')} id='serverConnectStatus'></i>
                 </div>
-
-                {/* 右侧用户相关元素 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
                     {currentUser ? (
                         <>
-                            {/* 管理面板（仅管理员可见，只显示图标，位于铃铛左边） */}
                             {c.get('currentUser').permission & permissionAdmin ? (
                                 <a
                                     href='/admin'
@@ -180,8 +170,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
                                     <i class='fa-solid fa-user-shield'></i>
                                 </a>
                             ) : null}
-
-                            {/* 私信图标（位于管理面板右侧、铃铛左侧） */}
                             <a href='/chat' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
                                 <span style={{ position: 'relative', display: 'inline-block' }}>
                                     <i class='fa-solid fa-envelope' style={{ fontSize: '20px' }}></i>
@@ -201,8 +189,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
                                     ) : null}
                                 </span>
                             </a>
-
-                            {/* 通知项（铃铛） */}
                             <a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
                                 <span style={{ position: 'relative', display: 'inline-block' }}>
                                     <i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
@@ -222,11 +208,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
                                     ) : null}
                                 </span>
                             </a>
-
-                            {/* 用户名 */}
                             <User user={currentUser} c={c} />
-
-                            {/* 用户设置（仅图标，位于用户名右侧） */}
                             <a
                                 href='/user/settings'
                                 style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px', display: 'inline-flex', alignItems: 'center' }}
@@ -234,8 +216,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
                             >
                                 <i class='fa-solid fa-gear'></i>
                             </a>
-
-                            {/* 登出 */}
                             <a
                                 href='/api/user/logout'
                                 style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
@@ -256,7 +236,6 @@ app.use(jsxRenderer(async ({ children, title }) => {
                 </div>
             </header>
 
-            {/* 侧边栏 */}
             <nav style={{
                 position: 'fixed',
                 top: '50px',
@@ -271,50 +250,27 @@ app.use(jsxRenderer(async ({ children, title }) => {
                 'border-radius': '10px',
                 'z-index': 1
             }}>
-                <p><a href='/'>
-                    <i class='fa-solid fa-house'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'home')}</span>
-                </a></p>
-                <p><a href='/feed'>
-                    <i class='fa-solid fa-rss'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
-                </a></p>
-                <p><a href='/discussion'>
-                    <i class='fa-solid fa-comments'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
-                </a></p>
-                <p><a href='/ticket'>
-                    <i class='fa-solid fa-ticket'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
-                </a></p>
-                <p><a href='/ide'>
-                    <i class='fa-solid fa-code'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'ide')}</span>
-                </a></p>
-
-                {/* 权限更新 */}
-                <p><a href='/judgement'>
-                    <i class='fa-solid fa-user'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'judgement')}</span>
-                </a></p>
-
-                <p><a href='javascript:void(0)' onclick='switchLight()'>
-                    <i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
-                    <span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
-                </a></p>
+                <p><a href='/'><i class='fa-solid fa-house'></i><span class='sidebarTitle'>{getText(locale, 'home')}</span></a></p>
+                <p><a href='/feed'><i class='fa-solid fa-rss'></i><span class='sidebarTitle'>{getText(locale, 'feeds')}</span></a></p>
+                <p><a href='/discussion'><i class='fa-solid fa-comments'></i><span class='sidebarTitle'>{getText(locale, 'discussion')}</span></a></p>
+                <p><a href='/ticket'><i class='fa-solid fa-ticket'></i><span class='sidebarTitle'>{getText(locale, 'ticket')}</span></a></p>
+                <p><a href='/ide'><i class='fa-solid fa-code'></i><span class='sidebarTitle'>{getText(locale, 'ide')}</span></a></p>
+                <p><a href='/judgement'><i class='fa-solid fa-user'></i><span class='sidebarTitle'>{getText(locale, 'judgement')}</span></a></p>
+                <p><a href='javascript:void(0)' onclick='switchLight()'><i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i><span class='sidebarTitle'>{getText(locale, 'navTheme')}</span></a></p>
             </nav>
 
-            {/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
             <main style={{ paddingTop: '50px' }}>{children}</main>
         </body>
     </html>;
 }));
+
 app.use(async (c, next) => {
     if (c.get('currentUser') && !(c.get('currentUser')!.permission & permissionVisit)) {
         return banned(c);
     }
     await next();
 });
+
 app.get('/', async c => {
     const locale = c.get('locale'), env = c.env as any, nextDay = new Date();
     nextDay.setDate(nextDay.getDate() + 1);
@@ -374,7 +330,7 @@ app.get('/', async c => {
             <Card>
                 <h2>{getText(locale, 'homeRecentDiscussions')}</h2>
                 {discussions.length ? discussions.map(({ id, uid, category, title, created_at, pin }: { id: number, uid: number, category: string, title: string, created_at: string, pin: number }) => <Card>
-                    {pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'red' }}></i> : <></>}
+                    {pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'gold' }}></i> : <></>}
                     <a href={'/discussion/' + id}>{title}</a><br />
                     {renderTemplate(getText(locale, 'discussionItemDescription'), {
                         __USER__: <User c={c} user={uid} />,
@@ -386,12 +342,20 @@ app.get('/', async c => {
         </div>
     </>, { title: getText(locale, 'home') });
 });
+
 app.get('/private-message', (c) => {
     const query = c.req.query();
     const searchParams = new URLSearchParams(query).toString();
     const suffix = searchParams ? '?' + searchParams : '';
     return c.redirect('/chat' + suffix, 301);
 });
+
+app.get('/api/languages', async c => {
+    const response = await fetch('https://judge.cqiming.com/languages/');
+    const data = await response.json();
+    return c.json(data);
+});
+
 app.route('/api', apisRoutes);
 app.route('/ws', webSocketRoutes);
 app.route('/admin', adminRoutes);
@@ -402,16 +366,20 @@ app.route('/ticket', ticketRoutes);
 app.route('/chat', chatRoutes);
 app.route('/judgement', judgementRoutes);
 app.route('/ide', ideRoutes);
+
 app.onError((err, c) => {
     console.error(err);
     return errorHTML(c, err, 500);
 });
+
 app.notFound(c => notFound(c));
+
 export default app;
+
 /**
  * CREATE TABLE IF NOT EXISTS checkin_texts (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        title_en TEXT, good_en TEXT, bad_en TEXT,
-        title_zh TEXT, good_zh TEXT, bad_zh TEXT
-    )
+ *      id INTEGER PRIMARY KEY AUTOINCREMENT,
+ *      title_en TEXT, good_en TEXT, bad_en TEXT,
+ *      title_zh TEXT, good_zh TEXT, bad_zh TEXT
+ * )
  */
