@@ -16,6 +16,8 @@ app.get('/', c => {
         value: v,
         label: getText(locale, 'cxxVersion_' + v)
     }));
+    const timeLimitMax = parseInt(getText(locale, 'timeLimitMax'));
+    const memoryLimitMax = parseInt(getText(locale, 'memoryLimitMax'));
     return c.render(<Card>
         <CodeMirrorInit />
         <CodeMirrorLangInit lang='clike' />
@@ -37,11 +39,17 @@ app.get('/', c => {
             </div>
             <div>
                 <label style={{ marginRight: '5px' }}>{getText(locale, 'timeLimitLabel')}</label>
-                <input type="number" id="timeLimit" value={getText(locale, 'timeLimitDefault')} style={{ width: '80px', padding: '4px' }} />
+                <input type="number" id="timeLimit" value={getText(locale, 'timeLimitDefault')} style={{ width: '80px', padding: '4px' }}
+                    onchange={`if (parseInt(this.value) > ${timeLimitMax}) this.value = ${timeLimitMax}; if (parseInt(this.value) < 1) this.value = 1;`}
+                    oninput={`if (parseInt(this.value) > ${timeLimitMax}) this.value = ${timeLimitMax}; if (parseInt(this.value) < 1) this.value = 1;`}
+                />
             </div>
             <div>
                 <label style={{ marginRight: '5px' }}>{getText(locale, 'memoryLimitLabel')}</label>
-                <input type="number" id="memoryLimit" value={getText(locale, 'memoryLimitDefault')} style={{ width: '80px', padding: '4px' }} />
+                <input type="number" id="memoryLimit" value={getText(locale, 'memoryLimitDefault')} style={{ width: '80px', padding: '4px' }}
+                    onchange={`if (parseInt(this.value) > ${memoryLimitMax}) this.value = ${memoryLimitMax}; if (parseInt(this.value) < 1) this.value = 1;`}
+                    oninput={`if (parseInt(this.value) > ${memoryLimitMax}) this.value = ${memoryLimitMax}; if (parseInt(this.value) < 1) this.value = 1;`}
+                />
             </div>
         </div>
         <CodeMirrorEditor id='code' height='400px' mode='text/x-c++src' />
@@ -52,8 +60,8 @@ app.get('/', c => {
                 <CodeMirrorEditor id='stdin' height='100px' mode='text/plain' style={{ overflow: 'auto' }} />
             </div>
             <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
-                <h2>{getText(locale, 'stdout')}</h2>
-                <CodeMirrorEditor id='stdout' height='100px' mode='text/plain' style={{ overflow: 'auto' }} />
+                <h2>{getText(locale, 'expectedOutput')}</h2>
+                <CodeMirrorEditor id='expectedOutput' height='100px' mode='text/plain' style={{ overflow: 'auto' }} />
             </div>
             <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
                 <h2>{getText(locale, 'actualOutput')}</h2>

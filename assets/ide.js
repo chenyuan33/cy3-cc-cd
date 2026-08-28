@@ -27,7 +27,11 @@ const run = () => {
 			${status}
 			${data.time_ms ? '<br />' + data.time_ms + 'ms' : ''}
 		`;
-        CodeMirrorEditor_actualOutput.setValue(data.stdout ?? '');
-        CodeMirrorEditor_stderr.setValue(data.stderr ?? '');
+        // 实际输出：如果是编译错误，显示 stderr，否则显示 stdout
+        if (data.status === 'Compilation Error') {
+            CodeMirrorEditor_actualOutput.setValue(data.stderr ?? '');
+        } else {
+            CodeMirrorEditor_actualOutput.setValue(data.stdout ?? '');
+        }
     });
 };

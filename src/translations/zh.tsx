@@ -254,9 +254,10 @@ export default {
     ideStatus_MemoryLimitExceeded: '内存超限',
     ideStatus_InternalError: '内部错误',
     ideStatus_running: '运行中...',
+    actualOutput: '实际输出',
+    expectedOutput: '预期输出',
+    timeLimitMax: '5000',
+    memoryLimitMax: '1024',
     timeLimitLabel: '时间限制 (ms)',
-    memoryLimitLabel: '内存限制 (MB)',
-    timeLimitDefault: '1000',
-    memoryLimitDefault: '256',
-    actualOutput: '实际输出'
+    memoryLimitLabel: '内存限制 (MB)'
 } as Record<string, string>;
