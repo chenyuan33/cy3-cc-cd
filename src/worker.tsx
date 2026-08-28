@@ -350,12 +350,6 @@ app.get('/private-message', (c) => {
     return c.redirect('/chat' + suffix, 301);
 });
 
-app.get('/api/languages', async c => {
-    const response = await fetch('https://judge.cqiming.com/languages/');
-    const data = await response.json();
-    return c.json(data);
-});
-
 app.route('/api', apisRoutes);
 app.route('/ws', webSocketRoutes);
 app.route('/admin', adminRoutes);

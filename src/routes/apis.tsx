@@ -42,4 +42,9 @@ app.post('/chat/send', async c => {
     await env.db.prepare('INSERT INTO private_messages (sender, receiver, content) VALUES (?, ?, ?)').bind(currentUser.id, uid, content).run();
     return c.redirect('/chat?user=' + uid);
 });
+app.get('/languages', async c => {
+    const response = await fetch('https://judge.cqiming.com/languages/');
+    const data = await response.json();
+    return c.json(data);
+});
 export default app;
