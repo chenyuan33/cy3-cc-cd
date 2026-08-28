@@ -67,6 +67,10 @@ app.get('/', c => {
                 <h2>{getText(locale, 'actualOutput')}</h2>
                 <CodeMirrorEditor id='actualOutput' height='100px' mode='text/plain' style={{ overflow: 'auto' }} readOnly={true} />
             </div>
+            <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
+                <h2>{getText(locale, 'stderr')}</h2>
+                <CodeMirrorEditor id='stderr' height='100px' mode='text/plain' style={{ overflow: 'auto' }} readOnly={true} />
+            </div>
         </div>
     </Card>, { title: getText(locale, 'ide') });
 });
