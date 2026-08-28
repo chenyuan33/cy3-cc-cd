@@ -253,5 +253,10 @@ export default {
     ideStatus_TimeLimitExceeded: 'Time Limit Exceeded',
     ideStatus_MemoryLimitExceeded: 'Memory Limit Exceeded',
     ideStatus_InternalError: 'Internal Error',
-    ideStatus_running: 'Running...'
+    ideStatus_running: 'Running...',
+    timeLimitLabel: 'Time Limit (ms)',
+    memoryLimitLabel: 'Memory Limit (MB)',
+    timeLimitDefault: '1000',
+    memoryLimitDefault: '256',
+    actualOutput: 'Actual Output'
 } as Record<string, string>;

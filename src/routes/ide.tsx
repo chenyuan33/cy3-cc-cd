@@ -21,7 +21,7 @@ app.get('/', c => {
         <CodeMirrorLangInit lang='clike' />
         <script src='/ide.js' />
         <h1>{getText(locale, 'ide')}</h1>
-        <div style={{ display: 'flex', gap: '20px', marginBottom: '10px', alignItems: 'center' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '10px', alignItems: 'center' }}>
             <div>
                 <label style={{ marginRight: '5px' }}>{getText(locale, 'cxxVersionLabel')}</label>
                 <select id="cxxVersion" style={{ padding: '4px 8px' }}>
@@ -35,6 +35,14 @@ app.get('/', c => {
                     <input type="checkbox" id="cxxO2" /> {getText(locale, 'cxxO2Label')}
                 </label>
             </div>
+            <div>
+                <label style={{ marginRight: '5px' }}>{getText(locale, 'timeLimitLabel')}</label>
+                <input type="number" id="timeLimit" value={getText(locale, 'timeLimitDefault')} style={{ width: '80px', padding: '4px' }} />
+            </div>
+            <div>
+                <label style={{ marginRight: '5px' }}>{getText(locale, 'memoryLimitLabel')}</label>
+                <input type="number" id="memoryLimit" value={getText(locale, 'memoryLimitDefault')} style={{ width: '80px', padding: '4px' }} />
+            </div>
         </div>
         <CodeMirrorEditor id='code' height='400px' mode='text/x-c++src' />
         <div style={{ display: 'flex' }}>
@@ -45,12 +53,11 @@ app.get('/', c => {
             </div>
             <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
                 <h2>{getText(locale, 'stdout')}</h2>
-                <span style={{ position: 'absolute', right: '10px', top: '20px' }} id='result'></span>
                 <CodeMirrorEditor id='stdout' height='100px' mode='text/plain' style={{ overflow: 'auto' }} />
             </div>
             <div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
-                <h2>{getText(locale, 'stderr')}</h2>
-                <CodeMirrorEditor id='stderr' height='100px' mode='text/plain' style={{ overflow: 'auto' }} />
+                <h2>{getText(locale, 'actualOutput')}</h2>
+                <CodeMirrorEditor id='actualOutput' height='100px' mode='text/plain' style={{ overflow: 'auto' }} readOnly={true} />
             </div>
         </div>
     </Card>, { title: getText(locale, 'ide') });

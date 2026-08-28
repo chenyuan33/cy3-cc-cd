@@ -9,21 +9,25 @@ const run = () => {
         if (o2) {
             language += '-o2';
         }
+        const timeLimit = parseInt(document.getElementById('timeLimit').value) || 1000;
+        const memoryLimit = parseInt(document.getElementById('memoryLimit').value) || 256;
         judger.send(JSON.stringify({
             code: document.getElementById('code').value,
             input: document.getElementById('stdin').value,
             language: language,
+            time_limit_ms: timeLimit,
+            memory_limit_mb: memoryLimit,
         }));
-        document.getElementById('result').innerHTML = ideTranslations['running'] || 'running';
+        document.getElementById('result').innerHTML = window.ideTranslations['running'] || 'running';
     });
     judger.addEventListener('message', ({ data: dataString }) => {
         const data = JSON.parse(dataString);
-        const status = ideTranslations[data.status] || data.status;
+        const status = window.ideTranslations[data.status] || data.status;
         document.getElementById('result').innerHTML = `
 			${status}
 			${data.time_ms ? '<br />' + data.time_ms + 'ms' : ''}
 		`;
-        CodeMirrorEditor_stdout.setValue(data.stdout ?? '');
+        CodeMirrorEditor_actualOutput.setValue(data.stdout ?? '');
         CodeMirrorEditor_stderr.setValue(data.stderr ?? '');
     });
 };
