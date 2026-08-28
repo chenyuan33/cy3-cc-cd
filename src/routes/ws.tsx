@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { type AppEnv } from "../types";
 import { upgradeWebSocket } from "hono/cloudflare-workers";
+import { timeLimitDefault, memoryLimitDefault } from "../settings";
 
 const app = new Hono<AppEnv>();
 
@@ -39,10 +40,9 @@ app.get('/ide-judge', upgradeWebSocket(c => ({
                     language: payload.language,
                     code: payload.code,
                     test_cases: payload.test_cases || [],
-                    time_limit_ms: payload.time_limit_ms || 1000,
-                    memory_limit_mb: payload.memory_limit_mb || 256
+                    time_limit_ms: payload.time_limit_ms || timeLimitDefault,
+                    memory_limit_mb: payload.memory_limit_mb || memoryLimitDefault
                 };
-                // 使用 AbortController 设置超时（可选）
                 const controller = new AbortController();
                 const timeout = setTimeout(() => controller.abort(), 30000); // 30秒超时
                 const response = await fetch("https://judge.cqiming.com/api/v1/judgments/", {
@@ -63,7 +63,7 @@ app.get('/ide-judge', upgradeWebSocket(c => ({
         } catch (e) {
             console.error('An error occurred with WebSocket (Judge): ', e instanceof Error ? e.message : e);
             // 向客户端发送错误信息
-            const errorMsg = e instanceof Error ? e.message : 'Unknown error';
+            const errorMsg = e instanceof Error ? e.message : String(e);
             try {
                 ws.send(JSON.stringify({ error: errorMsg }));
             } catch (_) {

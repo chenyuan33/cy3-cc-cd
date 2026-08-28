@@ -244,13 +244,16 @@ export default {
     expectedOutput: 'Expected Output',
     actualOutput: 'Actual Output',
     stderr: 'Standard Error',
-    ideStatus_WrongAnswer: 'Wrong Answer',
+    ideStatus_running: 'Running...',
+    ideSelectLanguage: 'Please select a language',
+    ideWebSocketError: 'WebSocket error',
+    ideErrorPrefix: 'Error: ',
+    ideStatus_Unknown: 'Unknown',
     ideStatus_Accepted: 'Accepted',
+    ideStatus_WrongAnswer: 'Wrong Answer',
     ideStatus_CompilationError: 'Compilation Error',
     ideStatus_RuntimeError: 'Runtime Error',
     ideStatus_TimeLimitExceeded: 'Time Limit Exceeded',
     ideStatus_MemoryLimitExceeded: 'Memory Limit Exceeded',
-    ideStatus_InternalError: 'Internal Error',
-    ideStatus_running: 'Running...',
-    ideSelectLanguage: 'Please select a language'
+    ideStatus_InternalError: 'Internal Error'
 } as Record<string, string>;

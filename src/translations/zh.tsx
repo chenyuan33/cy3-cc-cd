@@ -244,13 +244,16 @@ export default {
     expectedOutput: '预期输出',
     actualOutput: '实际输出',
     stderr: '标准错误',
-    ideStatus_WrongAnswer: '答案错误',
+    ideStatus_running: '运行中...',
+    ideSelectLanguage: '请选择一种语言',
+    ideWebSocketError: 'WebSocket 错误',
+    ideErrorPrefix: '错误：',
+    ideStatus_Unknown: '未知状态',
     ideStatus_Accepted: '通过',
+    ideStatus_WrongAnswer: '答案错误',
     ideStatus_CompilationError: '编译错误',
     ideStatus_RuntimeError: '运行时错误',
     ideStatus_TimeLimitExceeded: '时间超限',
     ideStatus_MemoryLimitExceeded: '内存超限',
-    ideStatus_InternalError: '内部错误',
-    ideStatus_running: '运行中...',
-    ideSelectLanguage: '请选择一种语言'
+    ideStatus_InternalError: '内部错误'
 } as Record<string, string>;

@@ -12,21 +12,23 @@ app.get('/', c => {
         return loginRequired(c);
     }
     const locale = c.get('locale');
+    const ideKeys = Object.keys(translations[locale] || {}).filter(k =>
+        k.startsWith('ideStatus_') || k === 'ideSelectLanguage' || k === 'ideErrorPrefix' || k === 'ideWebSocketError'
+    );
+    const ideTranslationsObj = ideKeys.reduce((acc, k) => {
+        acc[k] = getText(locale, k);
+        return acc;
+    }, {} as Record<string, string>);
+
     return c.render(<Card>
         <CodeMirrorInit />
         <CodeMirrorLangInit lang='clike' />
         <script dangerouslySetInnerHTML={{
             __html: `
-				const ideTranslations = {
-					${Object.keys(translations[locale] || {})
-                    .filter(k => k.startsWith('ideStatus_') || k === 'ideSelectLanguage')
-                    .map(k => {
-                        const key = k === 'ideSelectLanguage' ? 'selectLanguage' : k.replace('ideStatus_', '').replace(/_/g, ' ');
-                        return `"${key}": "${getText(locale, k)}"`;
-                    })
-                    .join(',\n')}
-				};
-			`
+                const ideTranslations = ${JSON.stringify(ideTranslationsObj)};
+                const timeLimitDefault = ${timeLimitDefault};
+                const memoryLimitDefault = ${memoryLimitDefault};
+            `
         }} />
         <script src='/ide.js' />
         <h1>{getText(locale, 'ide')}</h1>
@@ -54,27 +56,23 @@ app.get('/', c => {
         </div>
         <CodeMirrorEditor id='code' height='400px' mode='text/x-c++src' />
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
-            {/* 标准输入 */}
             <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
                 <h2 style={{ display: 'inline-block' }}>{getText(locale, 'stdin')}</h2>
                 <button style={{ position: 'absolute', right: '10px', top: '20px' }} onclick='run()'>{getText(locale, 'run')}</button>
                 <CodeMirrorEditor id='stdin' height='100px' mode='text/plain' style={{ overflow: 'auto' }} />
             </div>
 
-            {/* 预期输出 */}
             <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
                 <h2 style={{ display: 'inline-block' }}>{getText(locale, 'expectedOutput')}</h2>
-                <span id="result" style={{ float: 'right', fontSize: '14px', color: '#4CAF50', lineHeight: '1.5' }}></span>
+                <span style={{ position: 'absolute', right: '10px', top: '20px' }} id='result'></span>
                 <CodeMirrorEditor id='expectedOutput' height='100px' mode='text/plain' style={{ overflow: 'auto' }} />
             </div>
 
-            {/* 实际输出 */}
             <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
                 <h2>{getText(locale, 'actualOutput')}</h2>
                 <CodeMirrorEditor id='actualOutput' height='100px' mode='text/plain' style={{ overflow: 'auto' }} readOnly={true} />
             </div>
 
-            {/* 标准错误 */}
             <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
                 <h2>{getText(locale, 'stderr')}</h2>
                 <CodeMirrorEditor id='stderr' height='100px' mode='text/plain' style={{ overflow: 'auto' }} readOnly={true} />

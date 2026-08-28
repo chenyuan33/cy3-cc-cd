@@ -14,9 +14,9 @@ async function loadLanguages() {
 document.addEventListener('DOMContentLoaded', loadLanguages);
 
 const run = () => {
-    const codeEl = document.getElementById('code');
-    const stdinEl = document.getElementById('stdin');
-    const expectedOutputEl = document.getElementById('expectedOutput');
+    const codeEditor = window['CodeMirrorEditor_code'];
+    const stdinEditor = window['CodeMirrorEditor_stdin'];
+    const expectedOutputEditor = window['CodeMirrorEditor_expectedOutput'];
     const versionSelect = document.getElementById('cxxVersion');
     const timeLimitEl = document.getElementById('timeLimit');
     const memoryLimitEl = document.getElementById('memoryLimit');
@@ -24,16 +24,16 @@ const run = () => {
 
     const language = versionSelect.value;
     if (!language) {
-        alert(window.ideTranslations.selectLanguage || 'Please select a language');
+        alert(ideTranslations.ideSelectLanguage);
         return;
     }
 
-    const input = stdinEl.value ?? '';
-    const output = expectedOutputEl.value ?? '';
-    let timeLimit = parseInt(timeLimitEl.value) || 1000;
-    let memoryLimit = parseInt(memoryLimitEl.value) || 256;
-    if (timeLimit < 1) timeLimit = 1000;
-    if (memoryLimit < 16) memoryLimit = 256;
+    const input = stdinEditor ? stdinEditor.getValue() : '';
+    const output = expectedOutputEditor ? expectedOutputEditor.getValue() : '';
+    let timeLimit = parseInt(timeLimitEl.value) || timeLimitDefault;
+    let memoryLimit = parseInt(memoryLimitEl.value) || memoryLimitDefault;
+    if (timeLimit < 1) timeLimit = timeLimitDefault;
+    if (memoryLimit < 16) memoryLimit = memoryLimitDefault;
     if (memoryLimit > 2048) memoryLimit = 2048;
 
     const url = new URL('/ws/ide-judge', location.href);
@@ -43,32 +43,36 @@ const run = () => {
     judger.addEventListener('open', () => {
         judger.send(JSON.stringify({
             language: language,
-            code: codeEl.value,
+            code: codeEditor ? codeEditor.getValue() : '',
             test_cases: [{ input, output }],
             time_limit_ms: timeLimit,
             memory_limit_mb: memoryLimit
         }));
-        resultEl.innerHTML = window.ideTranslations.running || 'running';
+        resultEl.innerHTML = ideTranslations.ideStatus_running;
     });
 
     judger.addEventListener('message', ({ data: dataString }) => {
         const data = JSON.parse(dataString);
         if (data.error) {
-            resultEl.innerHTML = 'Error: ' + data.error;
+            resultEl.innerHTML = ideTranslations.ideErrorPrefix + data.error;
             return;
         }
         const result = data.results && data.results.length ? data.results[0] : {};
-        const status = window.ideTranslations[result.status] || result.status || data.status;
+        const rawStatus = result.status || data.status || 'InternalError';
+        const statusKey = 'ideStatus_' + rawStatus.replace(/ /g, '');
+        const status = ideTranslations[statusKey] || rawStatus;
         const stdout = result.stdout ?? '';
         const stderr = result.stderr ?? '';
         const timeMs = result.time_ms ?? data.time_ms;
 
         resultEl.innerHTML = status + (timeMs ? '<br />' + timeMs + 'ms' : '');
-        CodeMirrorEditor_actualOutput.setValue(stdout);
-        CodeMirrorEditor_stderr.setValue(stderr);
+        const actualOutputEditor = window['CodeMirrorEditor_actualOutput'];
+        const stderrEditor = window['CodeMirrorEditor_stderr'];
+        if (actualOutputEditor) actualOutputEditor.setValue(stdout);
+        if (stderrEditor) stderrEditor.setValue(stderr);
     });
 
     judger.addEventListener('error', () => {
-        resultEl.innerHTML = 'WebSocket error';
+        resultEl.innerHTML = ideTranslations.ideWebSocketError;
     });
 };
