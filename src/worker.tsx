@@ -121,6 +121,15 @@ app.use(jsxRenderer(async ({ children, title }) => {
 					serverConnectStatusConnected: '${getText(locale, 'serverConnectStatusConnected')}',
 					serverConnectStatusFailed: '${getText(locale, 'serverConnectStatusFailed')}',
 				};
+                const ideTranslations = {
+                    ${Object.keys(translations[locale] || {})
+                        .filter(k => k.startsWith('ideStatus_'))
+                        .map(k => {
+                            const status = k.replace('ideStatus_', '').replace(/_/g, ' ');
+                            return `"${status}": "${getText(locale, k)}"`;
+                        })
+                        .join(',\n')}
+                };
 			` }}></script>
             <script src='/helper.js'></script>
             <title>{title} - cy3's site</title>
@@ -278,10 +287,10 @@ app.use(jsxRenderer(async ({ children, title }) => {
                     <i class='fa-solid fa-ticket'></i>
                     <span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
                 </a></p>
-				<p><a href='/ide'>
-					<i class='fa-solid fa-code'></i>
-					<span class='sidebarTitle'>{getText(locale, 'ide')}</span>
-				</a></p>
+                <p><a href='/ide'>
+                    <i class='fa-solid fa-code'></i>
+                    <span class='sidebarTitle'>{getText(locale, 'ide')}</span>
+                </a></p>
 
                 {/* 权限更新 */}
                 <p><a href='/judgement'>
