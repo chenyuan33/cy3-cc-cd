@@ -1,12 +1,11 @@
 import { html } from 'hono/html';
 import { type CSSProperties, type FC } from 'hono/jsx';
+import { CodeMirrorEditor, CodeMirrorInit, CodeMirrorLangInit } from './codemirror';
 
 export const MdInit: FC<{}> = () => <>
-    {/* CodeMirror 核心（cdnjs） */}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/codemirror.min.js" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/codemirror.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    {/* CodeMirror Markdown 模式（cdnjs） */}
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/mode/markdown/markdown.min.js"></script>
+    {/* CodeMirror 核心 */}
+	<CodeMirrorInit />
+	<CodeMirrorLangInit lang='markdown' />
     {/* 自定义编辑器样式 */}
     <link rel="stylesheet" href="/md/editor.css" />
     {/* KaTeX */}
@@ -30,68 +29,28 @@ export const MdEditor: FC<{
     return <>
         <div class='mdeditor-div' style={{ height: height, ...style }}>
             <div class='mdeditor-input-cell'>
-                <textarea class='mdeditor-input' id={'mdeditor-input-' + id} name={name} required={required}>{initialCode}</textarea>
+				<CodeMirrorEditor
+					id={'mdeditor-input-' + id}
+					className='mdeditor-input'
+					name={name}
+					required={required}
+					initialCode={initialCode}
+					height={height}
+					mode='markdown'
+					onchange={`async () => document.getElementById('mdeditor-output-${id}').innerHTML = await mdToHtml(document.getElementById('mdeditor-input-${id}').value)`}
+					extraKeys={`{
+						"Ctrl-B": function(cm) { wrapSelection(cm, '**', '**'); },
+						"Ctrl-U": function(cm) { wrapSelection(cm, '<u>', '</u>'); },
+						"Ctrl-I": function(cm) { wrapSelection(cm, '*', '*'); },
+						"Ctrl-Alt-X": function(cm) { wrapSelection(cm, '~~', '~~'); }
+					}`}
+				/>
             </div>
             <div class='mdeditor-output' id={'mdeditor-output-' + id}>{{
                 'en': 'Loading...',
                 'zh': '少女祈祷中...'
             }[locale]}</div>
         </div>
-        {html`<script>
-      document.addEventListener('DOMContentLoaded', () => {
-        const inputId = '${'mdeditor-input-' + id}';
-        const outputId = '${'mdeditor-output-' + id}';
-        const textarea = document.getElementById(inputId);
-        const outputEl = document.getElementById(outputId);
-
-        // 辅助函数：用前后缀包裹选中文本，并正确选中包裹后的内容
-        function wrapSelection(editor, before, after) {
-          const selection = editor.getSelection();
-          if (selection === '') return;
-          // 获取选区的起始位置（行列对象）
-          const start = editor.getCursor(true);
-          const end = editor.getCursor(false);
-          // 替换选中的文本
-          editor.replaceSelection(before + selection + after);
-          // 计算新的选区结束位置：从 start 开始，偏移 before.length + selection.length + after.length
-          // 使用 indexFromPos 和 posFromIndex 处理跨行情况
-          const doc = editor.getDoc();
-          const startIndex = doc.indexFromPos(start);
-          const newEndIndex = startIndex + before.length + selection.length + after.length;
-          const newEnd = doc.posFromIndex(newEndIndex);
-          // 设置选区为新包裹的整个内容
-          editor.setSelection(start, newEnd);
-        }
-
-        const editor = CodeMirror.fromTextArea(textarea, {
-          lineNumbers: true,
-          mode: 'markdown',
-          theme: 'default',
-          extraKeys: {
-            "Ctrl-B": function(cm) { wrapSelection(cm, '**', '**'); },
-            "Ctrl-U": function(cm) { wrapSelection(cm, '<u>', '</u>'); },
-            "Ctrl-I": function(cm) { wrapSelection(cm, '*', '*'); },
-            "Ctrl-Alt-X": function(cm) { wrapSelection(cm, '~~', '~~'); }
-          }
-        });
-
-        const getOutput = async () => {
-          outputEl.innerHTML = await mdToHtml(textarea.value);
-        };
-
-        let timer = null;
-        editor.on('change', () => {
-          editor.save();
-          clearTimeout(timer);
-          timer = setTimeout(() => {
-            getOutput();
-          }, 250);
-        });
-
-        editor.setSize(null, '${height}');
-        getOutput();
-      });
-    </script>`}
     </>;
 };
 

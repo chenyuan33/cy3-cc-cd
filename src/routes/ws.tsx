@@ -28,4 +28,40 @@ app.get('/', upgradeWebSocket(c => {
 		}
 	};
 }));
+app.get('/ide-judge', upgradeWebSocket(c => ({ // https://apidoc.oj.cqiming.com/
+	async onMessage(evt, ws) {
+		try {
+			if (c.get('currentUser') && typeof evt.data === 'string') {
+				const { code, input } = JSON.parse(evt.data);
+				ws.send(JSON.stringify(((await (await fetch("https://judge.cqiming.com/api/v1/judgments/", {
+					method: "POST",
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({
+						language: "cpp",
+						code,
+						test_cases: [
+							{
+								input,
+								output: ""
+							}
+						],
+						time_limit_ms: 1000,
+						memory_limit_mb: 512
+					})
+				})).json()) as any).results[0]));
+			}
+		} catch (e) {
+			console.error('An error occurred with WebSocket (Judge): ', e instanceof Error ? e.message : e);
+		}
+	},
+	onClose(evt, ws) {
+		ws.close();
+	},
+	onError(evt, ws) {
+		console.error('An error occurred with WebSocket (Judge): ', evt);
+		ws.close(1011);
+	}
+})));
 export default app;

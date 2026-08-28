@@ -21,6 +21,7 @@ import ticketRoutes from './routes/ticket';
 import chatRoutes from './routes/chat';
 import adminRoutes from './routes/admin';
 import judgementRoutes from './routes/judgement';
+import ideRoutes from './routes/ide';
 const app = new Hono<AppEnv>();
 app.use(async (c, next) => {
     c.set('reqBody', c.req.method === 'POST' || c.req.method === 'PUT' ?
@@ -277,6 +278,10 @@ app.use(jsxRenderer(async ({ children, title }) => {
                     <i class='fa-solid fa-ticket'></i>
                     <span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
                 </a></p>
+				<p><a href='/ide'>
+					<i class='fa-solid fa-code'></i>
+					<span class='sidebarTitle'>{getText(locale, 'ide')}</span>
+				</a></p>
 
                 {/* 权限更新 */}
                 <p><a href='/judgement'>
@@ -380,13 +385,14 @@ app.get('/private-message', (c) => {
 });
 app.route('/api', apisRoutes);
 app.route('/ws', webSocketRoutes);
+app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
 app.route('/chat', chatRoutes);
-app.route('/admin', adminRoutes);
 app.route('/judgement', judgementRoutes);
+app.route('/ide', ideRoutes);
 app.onError((err, c) => {
     console.error(err);
     return errorHTML(c, err, 500);
