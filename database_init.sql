@@ -17,7 +17,8 @@ CREATE TABLE users (
     checkin_today_bad1 INTEGER, 
     checkin_today_bad2 INTEGER, 
     name_color_light TEXT NOT NULL DEFAULT "0066cc", 
-    name_color_dark TEXT NOT NULL DEFAULT "66b2ff"
+    name_color_dark TEXT NOT NULL DEFAULT "66b2ff",
+	tag TEXT
 );
 CREATE TABLE feed (
     id INTEGER PRIMARY KEY,

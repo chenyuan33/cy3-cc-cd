@@ -79,8 +79,8 @@ export default {
     userTagBanned: 'Banned user',
     userTagAdmin: 'Admin',
     userSettings: 'User settings',
+	userSettingsGeneral: 'General Settings',
     userSettingsEnableBrowserNotification: 'Enable Browser Notifications',
-    userSettingsChangeNameColor: 'Change Username Color',
     userSettingsChangeNameColorLight: 'Username Color in Light Mode',
     userSettingsChangeNameColorDark: 'Username Color in Dark Mode',
     userSettingsChangePassword: 'Change Password',
@@ -236,5 +236,6 @@ export default {
     notificationNameViolationUnset: 'Your username has been unmarked as violating',
     operatorLabel: 'Operator',
     selectConversation: 'Select a conversation',
-    userNotFound: 'User "{username}" not found'
+    userNotFound: 'User "{username}" not found',
+	tag: 'Tag'
 } as Record<string, string>;

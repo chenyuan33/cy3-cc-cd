@@ -6,7 +6,8 @@ export type userInfo = {
 	username_violation: number,
 	name_color_light: string,
 	name_color_dark: string,
-	permission: number
+	permission: number,
+	tag: string | null
 };
 export type AppEnv = {
 	Variables: {

@@ -104,18 +104,14 @@ app.get('/settings', async c => {
                     'align-items': 'center',
                     width: '300px'
                 }}>
+                    <h2>{getText(locale, 'userSettingsGeneral')}</h2>
                     <button onclick='Notification.requestPermission()'>{getText(locale, 'userSettingsEnableBrowserNotification')}</button>
-                </Card>
-                <Card style={{
-                    display: 'inline-flex',
-                    'flex-direction': 'column',
-                    'align-items': 'center',
-                    width: '300px'
-                }}>
-                    <h2>{getText(locale, 'userSettingsChangeNameColor')}</h2>
-                    <Form action='/api/user/change-name-color' method='post' inputs={[
-                        { id: 'nameColorLight', name: 'light', label: getText(locale, 'userSettingsChangeNameColorLight'), main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_light }, required: true },
-                        { id: 'nameColorDark', name: 'dark', label: getText(locale, 'userSettingsChangeNameColorDark'), main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_dark }, required: true }
+                    <Form action='/api/user/general-settings' method='post' inputs={[
+                        { id: 'nameColorLight', name: 'nameColorLight', label: getText(locale, 'userSettingsChangeNameColorLight'), main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_light }, required: true },
+                        { id: 'nameColorDark', name: 'nameColorDark', label: getText(locale, 'userSettingsChangeNameColorDark'), main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_dark }, required: true },
+						...((currentUser.permission & permissionAdmin) ? [
+							{ id: 'tag', name: 'tag', label: getText(locale, 'tag'), main: ({ type: 'input', inputType: 'text', value: currentUser.tag || '' } as { type: 'input', inputType: 'text', value: string }) }
+						] : [])
                     ]} submit={{ content: getText(locale, 'save') }} />
                 </Card>
                 <Card style={{

@@ -79,8 +79,8 @@ export default {
     userTagBanned: '封禁用户',
     userTagAdmin: '管理员',
     userSettings: '用户设置',
+	userSettingsGeneral: '常规设置',
     userSettingsEnableBrowserNotification: '启用浏览器通知',
-    userSettingsChangeNameColor: '更改用户名颜色',
     userSettingsChangeNameColorLight: '浅色模式下的用户名颜色',
     userSettingsChangeNameColorDark: '深色模式下的用户名颜色',
     userSettingsChangePassword: '更改密码',
@@ -236,5 +236,6 @@ export default {
     notificationNameViolationUnset: '您的用户名已取消违规标记',
     operatorLabel: '操作者',
     selectConversation: '请选择对话或搜索用户',
-    userNotFound: '未找到用户 “{username}”'
+    userNotFound: '未找到用户 “{username}”',
+	tag: 'Tag'
 } as Record<string, string>;

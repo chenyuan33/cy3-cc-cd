@@ -6,7 +6,7 @@ import { permissionAdmin, permissionVisit } from "../settings";
 
 export const userQuery = async (uid: number, c: ContextType): Promise<userInfo | null> =>
     await (c.env as any).db
-        .prepare('SELECT id, name, created_at, permission, username_violation, name_color_light, name_color_dark FROM users WHERE id = ?')
+        .prepare('SELECT id, name, created_at, permission, username_violation, name_color_light, name_color_dark, tag FROM users WHERE id = ?')
         .bind(uid)
         .first();
 
@@ -38,10 +38,11 @@ export const User: FC<{ user: userInfo | number | null; c: ContextType; linkable
             return resolvedUser ? <User user={resolvedUser} c={c} linkable={linkable} /> : <span>{getText(locale, 'userUnknown')}</span>;
         }
 
-        const tag = user.permission & permissionAdmin ? getText(locale, 'userTagAdmin') : null;
+        const tag = user.tag || (user.permission & permissionAdmin ? getText(locale, 'userTagAdmin') : null);
         const content = (
             <>
                 {user.permission & permissionVisit ? <></> : <i class='fa-solid fa-ban' style={{ color: 'red' }}></i>}
+                {user.permission & permissionAdmin ? <i class='fa-solid fa-shield' style={{ color: 'gold' }}></i> : <></>}
                 <strong style={{ color: `light-dark(#${user.name_color_light}, #${user.name_color_dark})` }}>
                     {getDisplayUsername(user, locale)}
                 </strong>
