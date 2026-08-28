@@ -48,7 +48,7 @@ app.get('/', async c => {
 		</Card>
 		<div style={{ display: 'inline-block', flex: 1 }}>
 			{results.length ? results.map(({ id, uid, category, title, created_at, pin }: { id: number, uid: number, category: string, title: string, created_at: string, pin: number }) => <Card>
-				{pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'gold' }}></i> : <></>}
+				{pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'red' }}></i> : <></>}
 				<a href={'/discussion/' + id}>{title}</a><br />
 				{renderTemplate(getText(c.get('locale'), 'discussionItemDescription'), {
 					__USER__: <User c={c} user={uid} />,
