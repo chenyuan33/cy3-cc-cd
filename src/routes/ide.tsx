@@ -6,7 +6,6 @@ import { CodeMirrorEditor, CodeMirrorInit, CodeMirrorLangInit } from "../compone
 import { getText, translations } from "../translations";
 
 const app = new Hono<AppEnv>();
-
 app.get('/', c => {
     if (!c.get('currentUser')) {
         return loginRequired(c);
@@ -14,29 +13,22 @@ app.get('/', c => {
     const locale = c.get('locale');
     const timeLimitMax = parseInt(getText(locale, 'timeLimitMax'));
     const memoryLimitMax = parseInt(getText(locale, 'memoryLimitMax'));
-
-    // 构建 ideTranslations 对象（用于前端）
-    const ideStatusKeys = Object.keys(translations[locale] || {})
-        .filter(k => k.startsWith('ideStatus_'));
-    const ideTranslationsObj: Record<string, string> = {};
-    ideStatusKeys.forEach(k => {
-        const status = k.replace('ideStatus_', '').replace(/_/g, ' ');
-        ideTranslationsObj[status] = getText(locale, k);
-    });
-    // 额外添加 running 状态（非 API 状态）
-    ideTranslationsObj['running'] = getText(locale, 'ideStatus_running');
-
-    // 将对象转为安全的 JSON 字符串（用于嵌入）
-    const ideTranslationsJson = JSON.stringify(ideTranslationsObj)
-        .replace(/</g, '\\u003c') // 防止 XSS
-        .replace(/>/g, '\\u003e');
-
     return c.render(<Card>
         <CodeMirrorInit />
         <CodeMirrorLangInit lang='clike' />
         <script src='/ide.js' />
         <script dangerouslySetInnerHTML={{
-            __html: `window.ideTranslations = ${ideTranslationsJson};`
+            __html: `
+				const ideTranslations = {
+					${Object.keys(translations[locale] || {})
+                    .filter(k => k.startsWith('ideStatus_'))
+                    .map(k => {
+                        const status = k.replace('ideStatus_', '').replace(/_/g, ' ');
+                        return `"${status}": "${getText(locale, k)}"`;
+                    })
+                    .join(',\n')}
+				};
+			`
         }} />
         <h1>{getText(locale, 'ide')}</h1>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', marginBottom: '10px', alignItems: 'center' }}>
@@ -64,7 +56,8 @@ app.get('/', c => {
         <CodeMirrorEditor id='code' height='400px' mode='text/x-c++src' />
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
             <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
-                <h2>{getText(locale, 'stdin')}</h2>
+                <h2 style={{ display: 'inline-block' }}>{getText(locale, 'stdin')}</h2>
+                <span id="result" style={{ marginLeft: '10px', fontSize: '14px', color: '#4CAF50' }}></span>
                 <button style={{ position: 'absolute', right: '10px', top: '20px' }} onclick='run()'>{getText(locale, 'run')}</button>
                 <CodeMirrorEditor id='stdin' height='100px' mode='text/plain' style={{ overflow: 'auto' }} />
             </div>
@@ -83,5 +76,4 @@ app.get('/', c => {
         </div>
     </Card>, { title: getText(locale, 'ide') });
 });
-
 export default app;
