@@ -53,7 +53,7 @@ app.get('/', c => {
                 />
             </div>
         </div>
-        <CodeMirrorEditor id='code' height='400px' mode='text/x-c++src' />
+        <CodeMirrorEditor id='code' height='400px' mode='text/plain' />  {/* 初始模式，将由 API 动态设置 */}
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px' }}>
             <div style={{ flex: 1, minWidth: '200px', position: 'relative' }}>
                 <h2 style={{ display: 'inline-block' }}>{getText(locale, 'stdin')}</h2>
