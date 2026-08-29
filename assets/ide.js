@@ -1,3 +1,26 @@
+const loadedScripts = new Set();
+
+function loadModeScript(scriptName, callback) {
+    if (!scriptName) {
+        if (callback) callback();
+        return;
+    }
+    if (loadedScripts.has(scriptName)) {
+        if (callback) callback();
+        return;
+    }
+    const script = document.createElement('script');
+    script.src = `https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/mode/${scriptName}/${scriptName}.min.js`;
+    script.onload = () => {
+        loadedScripts.add(scriptName);
+        if (callback) callback();
+    };
+    script.onerror = () => {
+        if (callback) callback();
+    };
+    document.head.appendChild(script);
+}
+
 async function loadLanguages() {
     const select = document.getElementById('cxxVersion');
     const response = await fetch('/api/languages');
@@ -7,7 +30,29 @@ async function loadLanguages() {
         const option = document.createElement('option');
         option.value = lang.value;
         option.textContent = lang.label;
+        option.dataset.editorMode = lang.editorMode || 'text/plain';
+        option.dataset.codemirrorScript = lang.codemirrorScript || '';
         select.appendChild(option);
+    });
+
+    const firstOption = select.options[0];
+    if (firstOption && firstOption.dataset.codemirrorScript) {
+        loadModeScript(firstOption.dataset.codemirrorScript);
+    } else {
+        loadModeScript('clike');
+    }
+
+    select.addEventListener('change', function () {
+        const selected = this.options[this.selectedIndex];
+        if (!selected) return;
+        const editorMode = selected.dataset.editorMode || 'text/plain';
+        const scriptName = selected.dataset.codemirrorScript;
+        const codeEditor = window['CodeMirrorEditor_code'];
+        if (!codeEditor) return;
+        codeEditor.setOption('mode', editorMode);
+        if (scriptName) {
+            loadModeScript(scriptName);
+        }
     });
 }
 

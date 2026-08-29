@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import { type AppEnv } from "../types";
 import { loginRequired } from "./errorPages";
 import { Card } from "../components/card";
-import { CodeMirrorEditor, CodeMirrorInit, CodeMirrorLangInit } from "../components/codemirror";
+import { CodeMirrorEditor, CodeMirrorInit } from "../components/codemirror";
 import { getText, translations } from "../translations";
 import { timeLimitMax, memoryLimitMax, timeLimitDefault, memoryLimitDefault } from "../settings";
 
@@ -22,7 +22,6 @@ app.get('/', c => {
 
     return c.render(<Card>
         <CodeMirrorInit />
-        <CodeMirrorLangInit lang='clike' />
         <script dangerouslySetInnerHTML={{
             __html: `
                 const ideTranslations = ${JSON.stringify(ideTranslationsObj)};
