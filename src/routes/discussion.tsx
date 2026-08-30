@@ -12,11 +12,12 @@ import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../settings
 import { MdEditor, MdInit, MdRender } from "../components/mdeditor";
 import { html } from "hono/html";
 import { PostButton, ReplyButton } from "../components/button";
+import { discussionCategories } from "./api/discussion";
 
 const app = new Hono<AppEnv>();
 app.get('/', async c => {
 	const category = c.get('reqBody').category, env = c.env as any;
-	if (category && !['announcement', 'other'].includes(category)) {
+	if (category && !(category in discussionCategories)) {
 		return notFound(c);
 	}
 	const perPage = 20;
@@ -40,8 +41,7 @@ app.get('/', async c => {
 					type: 'select',
 					options: [
 						{ value: '', label: getText(c.get('locale'), 'allCategories'), selected: !category },
-						{ value: 'announcement', label: getText(c.get('locale'), 'discussionCategoryName_announcement'), selected: category === 'announcement' },
-						{ value: 'other', label: getText(c.get('locale'), 'discussionCategoryName_other'), selected: category === 'other' }
+						...(Object.entries(discussionCategories).map(([key]) => ({ value: key, label: getText(c.get('locale'), 'discussionCategoryName_' + key), selected: category === key })))
 					]
 				}
 			}]} submit={{ content: getText(c.get('locale'), 'filter') }} locale={c.get('locale')} />
@@ -82,10 +82,7 @@ app.get('/post', c => {
 				main: {
 					type: 'select',
 					optionGroups: [],
-					options: [
-						{ value: 'announcement', label: getText(c.get('locale'), 'discussionCategoryName_announcement'), selected: category === 'announcement', disabled: !(currentUser.permission & permissionAdmin) },
-						{ value: 'other', label: getText(c.get('locale'), 'discussionCategoryName_other'), selected: category === 'other' }
-					]
+					options: Object.entries(discussionCategories).map(([key, check]) => ({ value: key, label: getText(c.get('locale'), 'discussionCategoryName_' + key), selected: category === key, disabled: !check(currentUser) }))
 				}
 			},
 			{ id: 'title', name: 'title', label: getText(c.get('locale'), 'discussionTitle'), main: { type: 'input', inputType: 'text' }, required: true },
