@@ -16,8 +16,9 @@ export const CodeMirrorEditor: FC<{
 	mode: string,
 	onchange?: string,
 	extraKeys?: string,
-	style?: CSSProperties
-}> = ({ id, className, name, required = false, initialCode = '', height, mode, onchange = '() => {}', extraKeys = '{}', style }) => <div style={style}>
+	style?: CSSProperties,
+	readOnly?: boolean
+}> = ({ id, className, name, required = false, initialCode = '', height, mode, onchange = '() => {}', extraKeys = '{}', style, readOnly = false }) => <div style={style}>
 	<textarea id={id} class={className} name={name} required={required}>{initialCode}</textarea>
-	<script dangerouslySetInnerHTML={{ __html: `loadCodeMirror('${id}', '${height}', '${mode}', ${onchange}, ${extraKeys});` }} />
+	<script dangerouslySetInnerHTML={{ __html: `loadCodeMirror('${id}', '${height}', '${mode}', ${onchange}, ${extraKeys}, ${readOnly});` }} />
 </div>;

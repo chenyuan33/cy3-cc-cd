@@ -16,15 +16,14 @@ function wrapSelection(editor, before, after) {
 	editor.setSelection(start, newEnd);
 }
 
-const loadCodeMirror = (id, height, mode, onchange, extraKeys) => document.addEventListener('DOMContentLoaded', () => {
-	const textarea = document.getElementById(id);
-
-	const editor = CodeMirror.fromTextArea(textarea, {
+const loadCodeMirror = (id, height, mode, onchange, extraKeys, readOnly) => document.addEventListener('DOMContentLoaded', () => {
+	const editor = CodeMirror.fromTextArea(document.getElementById(id), {
 		lineNumbers: true,
 		lineWrapping: true,
 		mode,
 		theme: 'default',
-		extraKeys
+		extraKeys,
+		readOnly
 	});
 
 	let timer = null;

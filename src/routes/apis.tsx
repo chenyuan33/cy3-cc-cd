@@ -10,6 +10,7 @@ app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
+app.get('/support-langs', async c => c.json(await ((await fetch('https://judge.cqiming.com/languages/')).json())));
 app.post('/check-in', async c => {
     const env = c.env as any, currentUser = c.get('currentUser');
     if (!currentUser) {

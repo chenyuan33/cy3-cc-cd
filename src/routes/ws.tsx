@@ -1,6 +1,7 @@
 import { Hono } from "hono";
 import { type AppEnv } from "../types";
 import { upgradeWebSocket } from "hono/cloudflare-workers";
+import { memoryLimitMax, timeLimitMax } from "../settings";
 
 const app = new Hono<AppEnv>();
 app.get('/', upgradeWebSocket(c => {
@@ -32,23 +33,23 @@ app.get('/ide-judge', upgradeWebSocket(c => ({ // https://apidoc.oj.cqiming.com/
 	async onMessage(evt, ws) {
 		try {
 			if (c.get('currentUser') && typeof evt.data === 'string') {
-				const { code, input } = JSON.parse(evt.data);
+				const { lang, timeLimit, memoryLimit, code, stdin, expectedOutput } = JSON.parse(evt.data);
 				ws.send(JSON.stringify(((await (await fetch("https://judge.cqiming.com/api/v1/judgments/", {
 					method: "POST",
 					headers: {
 						'Content-Type': 'application/json'
 					},
 					body: JSON.stringify({
-						language: "cpp",
+						language: lang,
 						code,
 						test_cases: [
 							{
-								input,
-								output: ""
+								input: stdin,
+								output: expectedOutput
 							}
 						],
-						time_limit_ms: 1000,
-						memory_limit_mb: 512
+						time_limit_ms: Math.max(0, Math.min(timeLimit, timeLimitMax)),
+						memory_limit_mb: Math.max(0, Math.min(memoryLimit, memoryLimitMax))
 					})
 				})).json()) as any).results[0]));
 			}
