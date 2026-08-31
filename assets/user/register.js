@@ -1,9 +1,7 @@
 let ckusedTimeout = null;
 const checks = {
 	length: x => x.length >= 3 && x.length <= 30,
-	consist: x => !x.length || /^[A-Za-z0-9._-]+$/.test(x),
-	start: x => !/^[0-9]/.test(x),
-	used: x => !checks.length(x) || !checks.consist(x) || !checks.start(x) || null
+	used: x => !checks.length(x) || null
 }, checkname = async () => {
 	const uname = document.getElementById('name').value;
 	document.querySelector('button').disabled = true;

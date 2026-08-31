@@ -1,9 +1,15 @@
 import { Hono } from "hono";
-import type { AppEnv } from "../../types";
+import type { AppEnv, userInfo } from "../../types";
 import { accessDenied, emailVerifyRequired, errorHTML, loginRequired, muted, notFound } from "../errorPages";
 import { getText } from "../../translations";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../../settings";
 import { processAt } from "../../at";
+
+export const discussionCategories = {
+	announcement: (user: userInfo) => user.permission & permissionAdmin,
+	general: () => true,
+	academic: () => true
+};
 const app = new Hono<AppEnv>();
 app.post('/post', async c => {
 	const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { category, title, content } = c.get('reqBody');
@@ -25,11 +31,11 @@ app.post('/post', async c => {
 	if (!content) {
 		return errorHTML(c, getText(locale, 'contentRequired'));
 	}
-	if (category === 'announcement' && !(currentUser.permission & permissionAdmin)) {
-		return accessDenied(c);
-	}
-	if (!['announcement', 'other'].includes(category)) {
+	if (!(category in discussionCategories)) {
 		return notFound(c);
+	}
+	if (!discussionCategories[category as keyof typeof discussionCategories](currentUser)) {
+		return accessDenied(c);
 	}
 	return c.redirect('/discussion/' + (await env.db.prepare('INSERT INTO discussion (uid, category, title, content) VALUES (?, ?, ?, ?) RETURNING id').bind(currentUser.id, category, title, content).first()).id, 303);
 });

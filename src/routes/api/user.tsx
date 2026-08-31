@@ -9,6 +9,7 @@ import { Card } from "../../components/card";
 import { raw } from "hono/html";
 import { getDisplayUsername, User } from "../../components/user";
 import { createSubmitHandler } from "../../components/form";
+import { permissionAdmin } from "../../settings";
 
 const app = new Hono<AppEnv>();
 const validateUsername = (name: string, locale: string) => {
@@ -18,12 +19,12 @@ const validateUsername = (name: string, locale: string) => {
 	if (name.trim().length < 3 || name.trim().length > 30) {
 		return getText(locale, 'registerUsernameLength');
 	}
-	if (!/^[A-Za-z0-9._-]*$/.test(name.trim())) {
-		return getText(locale, 'registerUsernameFormat');
-	}
-	if (/^[0-9]/.test(name.trim())) {
-		return getText(locale, 'registerUsernameStartWithNumber');
-	}
+	// if (!/^[A-Za-z0-9._-]*$/.test(name.trim())) {
+	// 	return getText(locale, 'registerUsernameFormat');
+	// }
+	// if (/^[0-9]/.test(name.trim())) {
+	// 	return getText(locale, 'registerUsernameStartWithNumber');
+	// }
 	return null;
 };
 const login = async (uid: number, c: ContextType) => {
@@ -35,12 +36,6 @@ const login = async (uid: number, c: ContextType) => {
 	}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`);
 	return c.redirect('/');
 };
-// app.get('/test', async c => c.render(await new SignJWT({ uid: 54 })
-// 		.setProtectedHeader({ alg: 'HS256' })
-// 		.setIssuedAt()
-// 		.setExpirationTime('30d')
-// 		.sign(new TextEncoder().encode((c.env as any).JWT_SECRET))
-// 	, { title: '1' }));
 app.post('/register', async c => {
 	const locale = c.get('locale'), reqBody = c.get('reqBody');
 	if (c.get('currentUser')) {
@@ -86,16 +81,22 @@ app.get('/logout', c => {
 	c.header('Set-Cookie', 'session=; HttpOnly; Secure; SameSite=strict; Path=/; Max-Age=0');
 	return c.redirect('/');
 });
-app.post('/change-name-color', async c => {
-	const currentUser = c.get('currentUser'), { light, dark } = c.get('reqBody'), env = c.env as any;
+app.post('/general-settings', async c => {
+	const currentUser = c.get('currentUser'), { nameColorLight, nameColorDark, tag } = c.get('reqBody'), env = c.env as any;
 	if (!currentUser) {
 		return loginRequired(c);
 	}
-	console.log(light, dark);
-	if (!light || !dark || !/^#[0-9a-f]{6}$/.test(light) || !/^#[0-9a-f]{6}$/.test(dark)) {
+	console.log(nameColorLight, nameColorDark);
+	if (!nameColorLight || !nameColorDark || !/^#[0-9a-f]{6}$/.test(nameColorLight) || !/^#[0-9a-f]{6}$/.test(nameColorDark)) {
 		return notFound(c);
 	}
-	await env.db.prepare('UPDATE users SET name_color_light = ?, name_color_dark = ? WHERE id = ?').bind(light.substring(1), dark.substring(1), currentUser.id).run();
+	if (!(currentUser.permission & permissionAdmin) && tag) {
+		return accessDenied(c);
+	}
+	await env.db.prepare('UPDATE users SET name_color_light = ?, name_color_dark = ? WHERE id = ?').bind(nameColorLight.substring(1), nameColorDark.substring(1), currentUser.id).run();
+	if (currentUser.permission & permissionAdmin) {
+		await env.db.prepare('UPDATE users SET tag = ? WHERE id = ?').bind(tag, currentUser.id).run();
+	}
 	return c.redirect('/user/settings');
 });
 app.post('/change-username', async c => {

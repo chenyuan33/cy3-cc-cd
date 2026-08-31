@@ -18,10 +18,11 @@ import userRoutes from './routes/user';
 import feedRoutes from './routes/feed';
 import discussionRoutes from './routes/discussion';
 import ticketRoutes from './routes/ticket';
-import privateMessageRoutes from './routes/privateMessage';
+import chatRoutes from './routes/chat';
 import adminRoutes from './routes/admin';
 import judgementRoutes from './routes/judgement';
 import fileRoutes from './routes/file';
+import ideRoutes from './routes/ide';
 const app = new Hono<AppEnv>();
 app.use(async (c, next) => {
     c.set('reqBody', c.req.method === 'POST' || c.req.method === 'PUT' ?
@@ -111,7 +112,8 @@ app.use(jsxRenderer(async ({ children, title }) => {
             <link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
             <link rel='stylesheet' type='text/css' href='/style.css' />
             <link rel='icon' type='image/x-icon' href='/favicon.ico' />
-			<script dangerouslySetInnerHTML={{ __html: `
+            <script dangerouslySetInnerHTML={{
+                __html: `
 				const helperScriptTranslations = {
 					notificationTitle_notification: '${getText(locale, 'notificationTitle_notification')}',
 					notificationTitle_privateMessage: '${getText(locale, 'notificationTitle_privateMessage')}',
@@ -141,12 +143,12 @@ app.use(jsxRenderer(async ({ children, title }) => {
                 zIndex: 2
             }}>
                 {/* 最左侧网站图标，点击跳转首页 */}
-				<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-					<a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
-						<img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
-					</a>
-					<i class='fa-solid fa-server' style={{ fontSize: '20px', color: 'yellow' }} title={getText(locale, 'serverConnectStatusConnecting')} id='serverConnectStatus'></i>
-				</div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+                    <a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
+                        <img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
+                    </a>
+                    <i class='fa-solid fa-server' style={{ fontSize: '20px', color: 'yellow' }} title={getText(locale, 'serverConnectStatusConnecting')} id='serverConnectStatus'></i>
+                </div>
 
                 {/* 右侧用户相关元素 */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
@@ -172,7 +174,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
                             ) : null}
 
                             {/* 私信图标（位于管理面板右侧、铃铛左侧） */}
-                            <a href='/private-message' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
+                            <a href='/chat' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
                                 <span style={{ position: 'relative', display: 'inline-block' }}>
                                     <i class='fa-solid fa-envelope' style={{ fontSize: '20px' }}></i>
                                     {privateMessageCount ? (
@@ -277,6 +279,10 @@ app.use(jsxRenderer(async ({ children, title }) => {
                     <i class='fa-solid fa-ticket'></i>
                     <span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
                 </a></p>
+				<p><a href='/ide'>
+					<i class='fa-solid fa-code'></i>
+					<span class='sidebarTitle'>{getText(locale, 'ide')}</span>
+				</a></p>
 
                 {/* 权限更新 */}
                 <p><a href='/judgement'>
@@ -360,7 +366,7 @@ app.get('/', async c => {
             <Card>
                 <h2>{getText(locale, 'homeRecentDiscussions')}</h2>
                 {discussions.length ? discussions.map(({ id, uid, category, title, created_at, pin }: { id: number, uid: number, category: string, title: string, created_at: string, pin: number }) => <Card>
-                    {pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'gold' }}></i> : <></>}
+                    {pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'red' }}></i> : <></>}
                     <a href={'/discussion/' + id}>{title}</a><br />
                     {renderTemplate(getText(locale, 'discussionItemDescription'), {
                         __USER__: <User c={c} user={uid} />,
@@ -372,16 +378,23 @@ app.get('/', async c => {
         </div>
     </>, { title: getText(locale, 'home') });
 });
+app.get('/private-message', (c) => {
+    const query = c.req.query();
+    const searchParams = new URLSearchParams(query).toString();
+    const suffix = searchParams ? '?' + searchParams : '';
+    return c.redirect('/chat' + suffix, 301);
+});
 app.route('/api', apisRoutes);
 app.route('/ws', webSocketRoutes);
+app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
-app.route('/private-message', privateMessageRoutes);
-app.route('/admin', adminRoutes);
+app.route('/chat', chatRoutes);
 app.route('/judgement', judgementRoutes);
 app.route('/file', fileRoutes);
+app.route('/ide', ideRoutes);
 app.onError((err, c) => {
     console.error(err);
     return errorHTML(c, err, 500);
