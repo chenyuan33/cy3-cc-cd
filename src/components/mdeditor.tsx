@@ -16,16 +16,17 @@ export const MdInit: FC<{}> = () => <>
     {/* 主渲染脚本（内部） */}
     <script src="/md/md.js"></script>
 </>;
-
+let mdeditorid = 0;
 export const MdEditor: FC<{
     initialCode?: string,
-    id: string,
+    id?: string | undefined,
     name?: string | undefined,
     required?: boolean,
     height?: string,
     locale?: string | undefined,
     style?: CSSProperties
 }> = ({ initialCode = '', id, name = '', required = false, height = '300px', locale = 'en', style = {} }) => {
+	id = id || 'mdeditor-' + ++mdeditorid;
     return <>
         <div class='mdeditor-div' style={{ height: height, ...style }}>
             <div class='mdeditor-input-cell'>

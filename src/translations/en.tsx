@@ -250,5 +250,13 @@ export default {
     operatorLabel: 'Operator',
     selectConversation: 'Select a conversation',
     userNotFound: 'User "{username}" not found',
-	tag: 'Tag'
+	tag: 'Tag',
+	upload: 'Upload',
+	userSpace: 'User __USER__\'s Personal Space',
+	fileUpload: 'File Upload',
+	fileGoToFolder: 'Create or go to a folder:',
+	fileName: 'File Name',
+	fileSize: 'File Size / Bytes',
+	fileOperations: 'Operations',
+	fileFolderEmpty: 'The folder is empty now.'
 } as Record<string, string>;

@@ -250,5 +250,13 @@ export default {
     operatorLabel: '操作者',
     selectConversation: '请选择对话或搜索用户',
     userNotFound: '未找到用户 “{username}”',
-	tag: 'Tag'
+	tag: 'Tag',
+	upload: '上传',
+	userSpace: '用户 __USER__ 的个人空间',
+	fileUpload: '文件上传',
+	fileGoToFolder: '创建或进入目录：',
+	fileName: '文件名',
+	fileSize: '大小 / 字节',
+	fileOperations: '操作',
+	fileFolderEmpty: '目录为空。'
 } as Record<string, string>;
