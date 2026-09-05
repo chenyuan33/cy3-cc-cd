@@ -30,9 +30,9 @@
 
 </a>
 
-<div style="display: flex; justify-content: center;">
+<p align="center">
   <a href="https://www.star-history.com/?repos=chenyuan33%2Fcy3-cc-cd&type=date&legend=top-left">Star History</a>
-</div>
+</p>
 
 A website deployed on Cloudflare Workers.
 
