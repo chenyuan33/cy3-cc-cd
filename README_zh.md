@@ -20,6 +20,8 @@
   <img alt="GitHub watchers" src="https://img.shields.io/github/watchers/chenyuan33/cy3-cc-cd?style=social" />
 </p>
 
+<p align="center">
+
 <a href="https://www.star-history.com/?repos=chenyuan33%2Fcy3-cc-cd&type=date&legend=top-left">
 
  <picture>
@@ -30,8 +32,8 @@
 
 </a>
 
-<p align="center">
   <a href="https://www.star-history.com/?repos=chenyuan33%2Fcy3-cc-cd&type=date&legend=top-left">Star History</a>
+
 </p>
 
 一个网站。部署在 Cloudflare Worker 上。
