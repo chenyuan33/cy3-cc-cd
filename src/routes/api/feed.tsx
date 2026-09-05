@@ -22,7 +22,7 @@ app.post('/reply', async c => {
 	}
 	const parent_id = parseInt(reqBody.parent_id || '0') || 0;
 	const { id } = await env.db.prepare('INSERT INTO feed (parent_id, uid, content) VALUES (?, ?, ?) RETURNING id').bind(parent_id, currentUser.id, reqBody.content).first();
-	processAt(c, reqBody.content, '/feed/' + id);
+	await processAt(c, reqBody.content, '/feed/' + id);
 	const { uid: parent_uid } = await env.db.prepare('SELECT uid FROM feed WHERE id = ?').bind(parent_id).first();
 	if (parent_id && parent_uid !== currentUser.id) {
 		await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "feed-reply", ?)').bind(parent_uid, JSON.stringify({

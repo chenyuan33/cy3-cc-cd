@@ -1,7 +1,20 @@
 import type { ContextType } from "./types";
 
-export const processAt = async (c: ContextType, markdown: string, link: string) => {
-	const at = new Set(), env = c.env as any;
-	markdown.matchAll(/@@(\d+)/g).forEach(([_, uid]) => at.add(uid));
-	at.forEach(async uid => await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "at", ?)').bind(uid, JSON.stringify({ uid: c.get('currentUser')?.id, link: link })).run());
+export const processAt = (c: ContextType, markdown: string, link: string) => {
+    const currentUser = c.get('currentUser');
+    if (!currentUser) return;
+    const uids = (markdown.match(/@@(\d+)/g) || []).map(m => m.slice(2));
+    if (!uids.length) return;
+
+    const env = c.env as any;
+    const task = async () => {
+        await Promise.all(uids.map(uid =>
+            env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "at", ?)')
+                .bind(uid, JSON.stringify({ uid: currentUser.id, link }))
+                .run()
+        ));
+    };
+    const ctx = (c as any).executionCtx;
+    if (ctx?.waitUntil) ctx.waitUntil(task().catch(() => { }));
+    else task().catch(() => { });
 };
