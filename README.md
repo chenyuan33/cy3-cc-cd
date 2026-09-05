@@ -4,7 +4,7 @@
 
 <p align="center">
   <a href="/LICENSE">
-    <img alt="License" src="https://img.shields.io/badge/license-MIT-green.svg" />
+    <img alt="GitHub License" src="https://img.shields.io/github/license/chenyuan33/cy3-cc-cd" />
   </a>
   <img alt="Language" src="https://img.shields.io/badge/language-TypeScript-blue" />
   <img alt="Frontend" src="https://img.shields.io/badge/frontend-Hono+JSX-blue?style=flat&logo=hono" />
