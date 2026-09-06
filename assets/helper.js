@@ -1,4 +1,16 @@
-const switchLight = () => {
+function getActiveColorScheme() {
+  const probe = document.createElement('div');
+  probe.style.position = 'absolute';
+  probe.style.visibility = 'hidden';
+  probe.style.pointerEvents = 'none';
+  probe.style.width = '0';
+  probe.style.height = '0';
+  probe.style.backgroundColor = 'light-dark(black, white)';
+  document.body.appendChild(probe);
+  const bgColor = getComputedStyle(probe).backgroundColor;
+  document.body.removeChild(probe);
+}
+const CodeMirrorEditors = [], switchLight = () => {
 	switch (localStorage.lightMode) {
 		case 'dark':
 			localStorage.lightMode = 'system';
@@ -34,6 +46,18 @@ const switchLight = () => {
 			document.getElementById('lightSwitchIcon').classList = 'fa-solid fa-circle-half-stroke';
 			break;
 	}
+	const probe = document.createElement('div');
+	probe.style.position = 'absolute';
+	probe.style.visibility = 'hidden';
+	probe.style.pointerEvents = 'none';
+	probe.style.width = '0';
+	probe.style.height = '0';
+	probe.style.backgroundColor = 'light-dark(black, white)';
+	document.body.appendChild(probe);
+	const bgColor = getComputedStyle(probe).backgroundColor;
+	document.body.removeChild(probe);
+	const CodeMirrorTheme = ['rgb(0, 0, 0)'].includes(bgColor) ? 'duotone-light' : 'duotone-dark';
+	CodeMirrorEditors.forEach(editor => editor.setOption('theme', CodeMirrorTheme));
 }, setPage = page => {
 	const url = new URL(location.href);
 	url.searchParams.set('page', page);

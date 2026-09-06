@@ -2,7 +2,9 @@ import type { CSSProperties, FC } from "hono/jsx";
 
 export const CodeMirrorInit: FC<{}> = () => <>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/codemirror.min.js" referrerpolicy="no-referrer"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/codemirror.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/theme/duotone-light.min.css" integrity="sha512-CrBJpdo9/GF2l/bEXlyJhJt8DIvEGIR5pF8vBpZonvuFJUT5+Fb2w3W7r38aIFVIuKiny9CFpnYx6pO7eQ2/Vw==" crossorigin="anonymous" referrerpolicy="no-referrer"></link>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/theme/duotone-dark.min.css" integrity="sha512-BS63gdA/zLj7l9qvmKZ1tcbJNL31CxcOBi2bT63Qzh4i92QEm9Hk8/gQdgaNy5xhthx+ss5CDuzevK/qWMm/Hg==" crossorigin="anonymous" referrerpolicy="no-referrer"></link>
+	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/codemirror.min.css" crossorigin="anonymous" referrerpolicy="no-referrer" />
 	<script src='/codemirror_loader.js'></script>
 </>;
 export const CodeMirrorLangInit: FC<{ lang: string }> = ({ lang }) => <script src={`https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.21/mode/${lang}/${lang}.min.js`}></script>;

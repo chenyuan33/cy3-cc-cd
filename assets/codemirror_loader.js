@@ -16,7 +16,7 @@ function wrapSelection(editor, before, after) {
 	editor.setSelection(start, newEnd);
 }
 
-const loadCodeMirror = (id, height, mode, onchange, extraKeys, readOnly) => document.addEventListener('DOMContentLoaded', () => {
+const loadCodeMirror = (id, height, mode, onchange, extraKeys, readOnly) => {
 	const editor = CodeMirror.fromTextArea(document.getElementById(id), {
 		lineNumbers: true,
 		lineWrapping: true,
@@ -37,4 +37,5 @@ const loadCodeMirror = (id, height, mode, onchange, extraKeys, readOnly) => docu
 	onchange();
 
 	window['CodeMirrorEditor_' + id] = editor;
-});
+	CodeMirrorEditors.push(editor);
+};

@@ -38,7 +38,7 @@ export const MdEditor: FC<{
 					initialCode={initialCode}
 					height={height}
 					mode='markdown'
-					onchange={`async () => document.getElementById('mdeditor-output-${id}').innerHTML = await mdToHtml(document.getElementById('mdeditor-input-${id}').value)`}
+					onchange={`mdeditorOutputRefresh('${id}')`}
 					extraKeys={`{
 						"Ctrl-B": function(cm) { wrapSelection(cm, '**', '**'); },
 						"Ctrl-U": function(cm) { wrapSelection(cm, '<u>', '</u>'); },
