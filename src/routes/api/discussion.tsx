@@ -100,7 +100,7 @@ app.post('/reply', async c => {
 	const parent_id_ = parseInt(parent_id_got ?? '');
 	const parent_id = Number.isNaN(parent_id_) ? null : parent_id_;
 	const { id } = await env.db.prepare('INSERT INTO discussion_reply (discussion_id, parent_id, uid, content) VALUES (?, ?, ?, ?) RETURNING id').bind(discussion_id, parent_id, currentUser.id, content).first();
-	processAt(c, content, '/discussion/reply/' + id);
+	await processAt(c, content, '/discussion/reply/' + id);
 	if (parent_id !== null) {
 		const { uid: parent_uid } = parent_id
 			? await env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(parent_id).first()

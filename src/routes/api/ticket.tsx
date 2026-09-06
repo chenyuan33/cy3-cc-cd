@@ -103,7 +103,7 @@ app.post('/reply', async c => {
 	}
 	const { id } = await env.db.prepare('INSERT INTO ticket_reply (ticket_id, parent_id, uid, content, set_status, set_assignee) VALUES (?, ?, ?, ?, ?, ?) RETURNING id').bind(ticket_id, parent_id, currentUser.id, content, set_status ?? null, set_assignee ?? null).first();
 	if (content) {
-		processAt(c, content, '/ticket/reply/' + id);
+		await processAt(c, content, '/ticket/reply/' + id);
 	}
 	if (set_status) {
 		await env.db.prepare('UPDATE ticket SET status = ? WHERE id = ?').bind(set_status, ticket_id).run();
