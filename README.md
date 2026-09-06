@@ -2,9 +2,36 @@
 
 [English](/README.md) | [Chinese](/README_zh.md)
 
-[![GitHub License](https://img.shields.io/github/license/chenyuan33/cy3-cc-cd)](/LICENSE)
+<p align="center">
+  <a href="/LICENSE">
+    <img alt="GitHub License" src="https://img.shields.io/github/license/chenyuan33/cy3-cc-cd" />
+  </a>
+  <img alt="Language" src="https://img.shields.io/badge/language-TypeScript%20JSX-blue" />
+  <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white" />
+  <img alt="Hono" src="https://img.shields.io/badge/Hono-e36002?logo=hono&logoColor=white" />
+  <img alt="Database" src="https://img.shields.io/badge/database-Cloudflare%20D1-brightgreen?style=flat&logo=sqlite" />
+  <img alt="Website" src="https://img.shields.io/badge/website-cy3.cc.cd-blue" />
+</p>
 
-![Star History](https://www.star-history.com/?repos=chenyuan33%2Fcy3-cc-cd&type=date&legend=top-left)
+<p align="center">
+  <img alt="GitHub stars" src="https://img.shields.io/github/stars/chenyuan33/cy3-cc-cd?style=social" />
+  <img alt="GitHub forks" src="https://img.shields.io/github/forks/chenyuan33/cy3-cc-cd?style=social" />
+  <img alt="GitHub watchers" src="https://img.shields.io/github/watchers/chenyuan33/cy3-cc-cd?style=social" />
+</p>
+
+<p align="center">
+  <a href="https://www.star-history.com/?repos=chenyuan33%2Fcy3-cc-cd&type=date&legend=top-left">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=chenyuan33/cy3-cc-cd&type=date&theme=dark&legend=top-left" />
+    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=chenyuan33/cy3-cc-cd&type=date&legend=top-left" />
+    <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=chenyuan33/cy3-cc-cd&type=date&legend=top-left" />
+  </picture>
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.star-history.com/?repos=chenyuan33%2Fcy3-cc-cd&type=date&legend=top-left">Star History</a>
+</p>
 
 A website deployed on Cloudflare Workers.
 
@@ -80,3 +107,4 @@ We welcome contributions. Please follow these steps:
 5. Open a Pull Request
 
 Please ensure you have tested your changes appropriately before opening a Pull Request.
+
