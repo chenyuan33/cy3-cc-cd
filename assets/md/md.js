@@ -1,9 +1,16 @@
+const mdeditorOutputRefresh = id => () => {
+	const refresher = async () => document.getElementById('mdeditor-output-' + id).innerHTML = await mdToHtml(document.getElementById('mdeditor-input-' + id).value);
+	if (document.readyState === 'loading') {
+		document.addEventListener('DOMContentLoaded', refresher);
+	} else {
+		refresher();
+	}
+};
 const inlineMdToHtml = async (md, options) => {
     options ??= {};
     options.safe ??= true;
     options.allowHtml ??= true;
     const codes = [], maths = [], signs = [], users = new Set(), usersObject = {};
-    const mathObjects = [];
 
     let html = md
         .replaceAll(/(?<!`)(`+)(.*?)\1(?!`)/g, (_, __, code) => {
@@ -11,12 +18,12 @@ const inlineMdToHtml = async (md, options) => {
             return `\x00CODE_${codes.length - 1}\x00`;
         })
         .replaceAll(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
-            mathObjects.push({ math, displayMode: true });
-            return `\x00MATH_${mathObjects.length - 1}\x00`;
+            maths.push({ math, displayMode: true });
+            return `\x00MATH_${maths.length - 1}\x00`;
         })
         .replaceAll(/\$(.*?)\$/g, (_, math) => {
-            mathObjects.push({ math, displayMode: false });
-            return `\x00MATH_${mathObjects.length - 1}\x00`;
+            maths.push({ math, displayMode: false });
+            return `\x00MATH_${maths.length - 1}\x00`;
         })
         .replaceAll(/\\(.)/g, (_, sign) => {
             signs.push(sign);
@@ -41,18 +48,7 @@ const inlineMdToHtml = async (md, options) => {
         .replaceAll(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
 
     for (let uid of users) {
-        try {
-            const resp = await fetch('/api/user/uidToHtml?id=' + uid);
-            if (!resp.ok) {
-                console.warn('获取用户 HTML 失败 (uid=' + uid + '):', resp.status);
-                usersObject[uid] = `<a href="/user/${uid}">用户${uid}</a>`;
-            } else {
-                usersObject[uid] = await resp.text();
-            }
-        } catch (e) {
-            console.error('请求出错 (uid=' + uid + '):', e);
-            usersObject[uid] = `<a href="/user/${uid}">用户${uid}</a>`;
-        }
+        usersObject[uid] = await (await fetch('/api/user/uidToHtml?id=' + uid)).text();
     }
 
     if (!options.allowHtml) {
@@ -61,12 +57,8 @@ const inlineMdToHtml = async (md, options) => {
     html = html
         .replaceAll(/\x00CODE_(\d+)\x00/g, (_, idx) => `<code>${codes[parseInt(idx)]}</code>`)
         .replaceAll(/\x00MATH_(\d+)\x00/g, (_, idx) => {
-            const { math, displayMode } = mathObjects[parseInt(idx)];
-            try {
-                return katex.renderToString(math, { throwOnError: false, displayMode });
-            } catch (_) {
-                return `<span style="color:red;">KaTeX error: ${math}</span>`;
-            }
+            const { math, displayMode } = maths[parseInt(idx)];
+            return katex.renderToString(math, { throwOnError: false, displayMode });
         })
         .replaceAll(/\x00SIGN_(\d+)\x00/g, (_, idx) => signs[idx])
         .replaceAll(/\x00USER_(\d+)\x00/g, (_, uid) => usersObject[uid]);
