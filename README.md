@@ -13,7 +13,6 @@
   <img alt="Website" src="https://img.shields.io/badge/website-cy3.cc.cd-blue" />
 </p>
 
-
 <p align="center">
   <img alt="GitHub stars" src="https://img.shields.io/github/stars/chenyuan33/cy3-cc-cd?style=social" />
   <img alt="GitHub forks" src="https://img.shields.io/github/forks/chenyuan33/cy3-cc-cd?style=social" />
