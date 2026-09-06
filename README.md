@@ -6,13 +6,12 @@
   <a href="/LICENSE">
     <img alt="GitHub License" src="https://img.shields.io/github/license/chenyuan33/cy3-cc-cd" />
   </a>
-  <img alt="Language" src="https://img.shields.io/badge/language-TypeScript-blue" />
-  <img alt="Frontend" src="https://img.shields.io/badge/frontend-Hono+JSX-blue?style=flat&logo=hono" />
-  <img alt="Backend" src="https://img.shields.io/badge/backend-Hono-orange" />
+  <img alt="Language" src="https://img.shields.io/badge/language-TypeScript%20JSX-blue" />
+  <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white" />
+  <img alt="Hono" src="https://img.shields.io/badge/hono-e36002?logo=hono&logoColor=white" />
   <img alt="Database" src="https://img.shields.io/badge/database-Cloudflare%20D1-brightgreen?style=flat&logo=sqlite" />
   <img alt="Website" src="https://img.shields.io/badge/website-cy3.cc.cd-blue" />
 </p>
-
 
 <p align="center">
   <img alt="GitHub stars" src="https://img.shields.io/github/stars/chenyuan33/cy3-cc-cd?style=social" />
