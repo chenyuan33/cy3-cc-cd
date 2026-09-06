@@ -13,7 +13,7 @@ import { renderTemplate } from "../components/renderTemplate";
 const app = new Hono<AppEnv>();
 app.get('/:path{.*}', async c => {
 	const currentUser = c.get('currentUser'), path = decodeURIComponent(c.req.param('path')), locale = c.get('locale'), env = c.env as any, currentPage = parseInt(c.get('reqBody').page || '1') || 1;
-	if (!currentUser || currentUser.id !== 1 && !path.startsWith('/user/' + currentUser.id)) {
+	if (!currentUser || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id)) {
 		return accessDenied(c);
 	}
 	const client = new S3Client({
@@ -96,6 +96,6 @@ app.get('/:path{.*}', async c => {
 				</tr> : <></>)}
 			</tbody>
 		</table> : <p>{getText(locale, 'fileFolderEmpty')}</p>}
-	</Card>, { title: 'upload file' });
+	</Card>, { title: getText(locale, 'fileUpload') });
 });
 export default app;

@@ -55,6 +55,18 @@
 
 找 @cqiming (https://cy3.cc.cd/user/8) 获取 token 和 token user 并添加为 .env 中 `EMAIL_VERIFY_TOKEN` 和 `EMAIL_VERIFY_TOKEN_USER` 的值。
 
+### 文件上传
+
+注册一个 Backblaze 账号并填写 .env：
+
+``` 
+B2_APPLICATION_KEY_ID=<application key ID>
+B2_SECRET_ACCESS_KEY=<secret access key>
+B2_ENDPOINT="https://s3.<Region>.backblazeb2.com"
+B2_BUCKET_NAME=<Bucket Name>
+B2_REGION=<Region>
+```
+
 ## 贡献指南
 
 建议或 Bug 反馈可以在 [Issues](https://github.com/chenyuan33/cy3-cc-cd/issues/new) 或[工单](https://cy3.cc.cd/ticket)中提出。

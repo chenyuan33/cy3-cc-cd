@@ -55,6 +55,18 @@ After initializing the database, open `/admin` and submit four check-in text ent
 
 Contact @cqiming (https://cy3.cc.cd/user/8) to obtain a token and token user, then add them as the values for `EMAIL_VERIFY_TOKEN` and `EMAIL_VERIFY_TOKEN_USER` in your `.env` file.
 
+### File Upload
+
+Register a Backblaze Account and fill .env:
+
+``` 
+B2_APPLICATION_KEY_ID=<application key ID>
+B2_SECRET_ACCESS_KEY=<secret access key>
+B2_ENDPOINT="https://s3.<Region>.backblazeb2.com"
+B2_BUCKET_NAME=<Bucket Name>
+B2_REGION=<Region>
+```
+
 ## Contributing
 
 Suggestions or bug reports can be submitted via [Issues](https://github.com/chenyuan33/cy3-cc-cd/issues/new) or [Tickets](https://cy3.cc.cd/ticket).
