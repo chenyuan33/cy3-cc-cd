@@ -37,7 +37,7 @@ app.get('/', async (c) => {
     const totalPage = Math.ceil(total / perPage);
 
     const { results: users } = await env.db
-        .prepare('SELECT id, name, permission, name_color_light, name_color_dark FROM users ORDER BY id LIMIT ? OFFSET ?')
+        .prepare('SELECT id, permission FROM users ORDER BY id LIMIT ? OFFSET ?')
         .bind(perPage, offset)
         .all();
 
@@ -134,24 +134,24 @@ app.get('/', async (c) => {
                     </tr>
                 </thead>
                 <tbody id="userTableBody">
-                    {users.map((user: any) => {
-                        const isSelf = user.id === currentUser.id;
+                    {users.map(({ id, permission }: { id: number, permission: number }) => {
+                        const isSelf = id === currentUser.id;
                         return (
-                            <tr key={user.id} style={{ borderBottom: '1px solid #eee', opacity: isSelf ? 0.6 : 1 }}>
-                                <td style={{ padding: '8px' }}><input type="checkbox" class="user-checkbox" data-userid={user.id} style={{ display: 'none' }} /></td>
-                                <td style={{ padding: '8px' }}>{user.id}</td>
+                            <tr key={id} style={{ borderBottom: '1px solid #eee', opacity: isSelf ? 0.6 : 1 }}>
+                                <td style={{ padding: '8px' }}><input type="checkbox" class="user-checkbox" data-userid={id} style={{ display: 'none' }} /></td>
+                                <td style={{ padding: '8px' }}>{id}</td>
                                 <td style={{ padding: '8px' }}>
-                                    <User user={user} c={c} />
+                                    <User user={id} c={c} />
                                 </td>
                                 {permLabels.map(p => {
-                                    const has = !!(user.permission & p.bit);
+                                    const has = !!(permission & p.bit);
                                     const isAdminBit = (p.bit === permissionAdmin);
                                     const canModify = !isSelf && (!isAdminBit || currentUser.id === 1);
                                     return (
                                         <td key={p.bit} style={{ padding: '8px', cursor: canModify ? 'pointer' : 'default' }}>
                                             <span
                                                 className="perm-toggle"
-                                                data-userid={user.id}
+                                                data-userid={id}
                                                 data-bit={p.bit}
                                                 data-enabled={has ? 'true' : 'false'}
                                                 data-canmodify={canModify ? 'true' : 'false'}
