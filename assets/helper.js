@@ -1,15 +1,3 @@
-function getActiveColorScheme() {
-  const probe = document.createElement('div');
-  probe.style.position = 'absolute';
-  probe.style.visibility = 'hidden';
-  probe.style.pointerEvents = 'none';
-  probe.style.width = '0';
-  probe.style.height = '0';
-  probe.style.backgroundColor = 'light-dark(black, white)';
-  document.body.appendChild(probe);
-  const bgColor = getComputedStyle(probe).backgroundColor;
-  document.body.removeChild(probe);
-}
 const CodeMirrorEditors = [], switchLight = () => {
 	switch (localStorage.lightMode) {
 		case 'dark':
