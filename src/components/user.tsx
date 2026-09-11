@@ -42,7 +42,7 @@ export const User: FC<{ user: userInfo | number | null; c: ContextType; linkable
 		opacity: '60%',
 		'text-decoration-color': 'red'
 	}}>
-		{env.ENABLE_AVATAR === '1' ? <img src={`/file/user/${user.id}/avatar.png`} style={{ display: 'inline-block', height: '1.3em', width: '1.3em', borderRadius: '100%' }} onerror={`this.outerHTML='<div style="display:inline-flex;color:white;background-color:light-dark(#${user.name_color_light},#${user.name_color_dark});height:1.3em;width:1.3em;justify-content:center;border-radius:100%">${user.name[0]}</div>'`} /> : <></>}
+		{env.ENABLE_AVATAR === '1' ? <img src={`/file/user/${user.id}/avatar.png`} style={{ display: 'inline-block', height: '1.3em', width: '1.3em', borderRadius: '100%' }} onerror={`this.outerHTML='<div style="display:inline-flex;color:white;background-color:light-dark(#${user.name_color_light},#${user.name_color_dark});height:1.3em;width:1.3em;justify-content:center;border-radius:100%"><span style="font-size:80%">${user.name[0]}</span></div>'`} /> : <></>}
 		{user.permission & permissionVisit ? <></> : <i class='fa-solid fa-ban' style={{ color: 'red' }}></i>}
 		{user.permission & permissionAdmin ? <i class='fa-solid fa-shield' style={{ color: 'gold' }}></i> : <></>}
 		<strong style={{ color: `light-dark(#${user.name_color_light}, #${user.name_color_dark})` }}>
