@@ -35,6 +35,7 @@ app.get('/:path{.*}', async c => {
 				headers: {
 					'Content-Type': response.ContentType || 'application/octet-stream',
 					'Content-Length': response.ContentLength?.toString() || '',
+					'Cache-Control': 'public, max-age=3600, must-revalidate'
 				},
 			});
 		} catch {

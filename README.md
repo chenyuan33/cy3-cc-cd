@@ -94,6 +94,10 @@ B2_BUCKET_NAME=<Bucket Name>
 B2_REGION=<Region>
 ```
 
+### Avatars
+
+Once you have verified that the file upload feature is working properly, set `ENABLE_AVATAR` in `.env` to 1.
+
 ## Contributing
 
 Suggestions or bug reports can be submitted via [Issues](https://github.com/chenyuan33/cy3-cc-cd/issues/new) or [Tickets](https://cy3.cc.cd/ticket).

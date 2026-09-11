@@ -94,6 +94,10 @@ B2_BUCKET_NAME=<Bucket Name>
 B2_REGION=<Region>
 ```
 
+### 头像
+
+确保文件上传功能可以正常使用后将 `.env` 的 `ENABLE_AVATAR` 改为 1。
+
 ## 贡献指南
 
 建议或 Bug 反馈可以在 [Issues](https://github.com/chenyuan33/cy3-cc-cd/issues/new) 或[工单](https://cy3.cc.cd/ticket)中提出。
