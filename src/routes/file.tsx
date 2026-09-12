@@ -27,18 +27,19 @@ app.get('/:path{.*}', async c => {
 		forcePathStyle: true,
 	});
 	if (path && !path.endsWith('/')) {
+		c.header('Cache-Control', 'public, max-age=3600, must-revalidate');
 		try {
 			const response = await client.send(new GetObjectCommand({
 				Bucket: env.B2_BUCKET_NAME,
 				Key: path,
 			}));
-			return new Response(response.Body as ReadableStream, {
-				headers: {
-					'Content-Type': response.ContentType || 'application/octet-stream',
-					'Content-Length': response.ContentLength?.toString() || '',
-					'Cache-Control': 'public, max-age=3600, must-revalidate'
-				},
-			});
+			c.header('Content-Length', response.ContentLength?.toString() || '');
+			if (['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'video/mp4', 'audio/mpeg'].includes(response.ContentType || '')) {
+				c.header('Content-Type', response.ContentType);
+			} else {
+				c.header('Content-Type', 'application/octet-stream');
+			}
+			return c.body(response.Body as ReadableStream);
 		} catch {
 			return notFound(c);
 		}
