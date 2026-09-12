@@ -80,11 +80,11 @@ app.get('/:path{.*}', async c => {
 		<input id='goToFolder' type='text' />
 		&nbsp;
 		<button onclick={'location.href = document.getElementById("goToFolder").value + "/"'}>{getText(locale, 'go')}</button>
-		{(currentPageContent.CommonPrefixes || []).length || (currentPageContent.Contents || []).length ? <table>
+		{(currentPageContent.CommonPrefixes || []).length || (currentPageContent.Contents || []).length ? <table style={{ width: '100%' }}>
 			<thead><tr>
-				<th>{getText(locale, 'fileName')}</th>
-				<th>{getText(locale, 'fileSize')}</th>
-				<th>{getText(locale, 'fileOperations')}</th>
+				<th style={{ width: '100%' }}>{getText(locale, 'fileName')}</th>
+				<th style={{ whiteSpace: 'nowrap' }}>{getText(locale, 'fileSize')}</th>
+				<th style={{ whiteSpace: 'nowrap' }}>{getText(locale, 'fileOperations')}</th>
 			</tr></thead>
 			<tbody>
 				{(currentPageContent.CommonPrefixes || []).map(({ Prefix }) => Prefix ? <tr>

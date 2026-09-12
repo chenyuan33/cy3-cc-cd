@@ -118,14 +118,26 @@ code:not(pre code) {
 }
 
 /* Tables */
-table,
-thead,
-tbody,
-tr,
-th,
-td {
+table {
+	border-collapse: collapse;
+}
+
+thead tr {
+	border-bottom: solid 2px;
+}
+
+tbody tr {
+	border-bottom: solid 1px gray;
+}
+
+[data-markdown] table {
 	border: solid 1px;
 	border-spacing: 0;
+}
+
+[data-markdown] th,
+[data-markdown] td {
+	border: solid 1px;
 }
 
 th,

@@ -47,7 +47,7 @@ export const MdEditor: FC<{
 					}`}
 				/>
             </div>
-            <div class='mdeditor-output' id={'mdeditor-output-' + id}>{{
+            <div class='mdeditor-output' id={'mdeditor-output-' + id} data-markdown=''>{{
                 'en': 'Loading...',
                 'zh': '少女祈祷中...'
             }[locale]}</div>

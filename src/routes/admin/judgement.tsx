@@ -124,9 +124,9 @@ app.get('/', async (c) => {
                 </div>
             </div>
 
-            <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <table style={{ width: '100%' }}>
                 <thead>
-                    <tr style={{ borderBottom: '2px solid #ddd', textAlign: 'left' }}>
+                    <tr>
                         <th style={{ padding: '8px' }}><input type="checkbox" id="selectAll" style={{ display: 'none' }} /></th>
                         <th style={{ padding: '8px' }}>ID</th>
                         <th style={{ padding: '8px' }}>{getText(locale, 'username')}</th>
@@ -137,7 +137,7 @@ app.get('/', async (c) => {
                     {users.map(({ id, permission }: { id: number, permission: number }) => {
                         const isSelf = id === currentUser.id;
                         return (
-                            <tr key={id} style={{ borderBottom: '1px solid #eee', opacity: isSelf ? 0.6 : 1 }}>
+                            <tr key={id}>
                                 <td style={{ padding: '8px' }}><input type="checkbox" class="user-checkbox" data-userid={id} style={{ display: 'none' }} /></td>
                                 <td style={{ padding: '8px' }}>{id}</td>
                                 <td style={{ padding: '8px' }}>
