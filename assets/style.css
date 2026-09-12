@@ -275,15 +275,3 @@ header {
     box-shadow: 0 8px 32px light-dark(#00000019, #00000066);
     /* 与侧边栏阴影一致 */
 }
-
-#messageContainer>div>div {
-    max-width: 70% !important;
-    word-wrap: break-word;
-    word-break: break-word;
-}
-
-#messageContainer>div>div pre {
-    max-width: 100%;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
