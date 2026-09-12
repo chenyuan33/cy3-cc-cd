@@ -8,7 +8,7 @@
 }
 
 :root {
-	--is-dark: light-dark(black, white);
+    --is-dark: light-dark(black, white);
 }
 
 body {
@@ -191,7 +191,7 @@ tbody tr {
 
 th,
 td {
-    padding: 5px;
+    border: solid 1px;
 }
 
 /* Forms & Interactive */
