@@ -39,7 +39,7 @@ app.get('/register', c => {
                 }}>
                     <link rel='stylesheet' type='text/css' href='/user/register.css' />
                     <h1>{getText(c.get('locale'), 'register')}</h1>
-                    <Form action='/api/user/register' method='post' onsubmit='return checkpassword()' inputs={[
+                    <Form action='/api/user/register' method='post' id='registerForm' inputs={[
                         { id: 'name', name: 'name', label: getText(c.get('locale'), 'username'), main: { type: 'input', inputType: 'text', oninput: 'checkname()', autocomplete: 'username' }, required: true },
                         { id: 'password', name: 'password', label: getText(c.get('locale'), 'password'), main: { type: 'input', inputType: 'password', autocomplete: 'new-password' }, required: true },
                         { id: 'confirmPassword', label: getText(c.get('locale'), 'confirmPassword'), main: { type: 'input', inputType: 'password', autocomplete: 'new-password' }, required: true }
@@ -121,7 +121,7 @@ app.get('/settings', async c => {
                     width: '300px'
                 }}>
                     <h2>{getText(locale, 'userSettingsChangePassword')}</h2>
-                    <Form action='/api/user/change-password' method='post' onsubmit='return checkChangePassword()' inputs={[
+                    <Form action='/api/user/change-password' method='post' id='changePassword' inputs={[
                         { id: 'oldPassword', name: 'old', label: getText(locale, 'userSettingsChangePasswordOld'), main: { type: 'input', inputType: 'password', autocomplete: 'current-password' }, required: true },
                         { id: 'newPassword', name: 'new', label: getText(locale, 'userSettingsChangePasswordNew'), main: { type: 'input', inputType: 'password', autocomplete: 'new-password' }, required: true },
                         { id: 'confirmPassword', label: getText(locale, 'userSettingsChangePasswordConfirm'), main: { type: 'input', inputType: 'password', autocomplete: 'new-password' }, required: true }

@@ -194,6 +194,7 @@ export default {
     titleRequired: '标题不能为空',
     edit: '编辑',
     save: '保存',
+	ok: '确定',
     cancel: '取消',
     delete: '删除',
     deleteConfirm: '确定要删除吗？删除后将无法找回！',

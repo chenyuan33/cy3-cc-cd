@@ -9,6 +9,7 @@ import { getText } from "../translations";
 import { User } from "../components/user";
 import type { JSX } from "hono/jsx/jsx-runtime";
 import { renderTemplate } from "../components/renderTemplate";
+import { DeleteLink } from "../components/button";
 
 const app = new Hono<AppEnv>();
 app.get('/:path{.*}', async c => {
@@ -82,7 +83,7 @@ app.get('/:path{.*}', async c => {
 		<button onclick={'location.href = document.getElementById("goToFolder").value + "/"'}>{getText(locale, 'go')}</button>
 		{(currentPageContent.CommonPrefixes || []).length || (currentPageContent.Contents || []).length ? <table style={{ width: '100%' }}>
 			<thead><tr>
-				<th style={{ width: '100%' }}>{getText(locale, 'fileName')}</th>
+				<th style={{ textAlign: 'left', width: '100%' }}>{getText(locale, 'fileName')}</th>
 				<th style={{ whiteSpace: 'nowrap' }}>{getText(locale, 'fileSize')}</th>
 				<th style={{ whiteSpace: 'nowrap' }}>{getText(locale, 'fileOperations')}</th>
 			</tr></thead>
@@ -93,7 +94,7 @@ app.get('/:path{.*}', async c => {
 				{(currentPageContent.Contents || []).map(({ Key, Size }) => Key ? <tr>
 					<td><a href={'/file/' + Key}>{Key.substring(path.length)}</a></td>
 					<td>{Size}</td>
-					<td><a class='dangerousLink' href='javascript:void(0)' onclick={`confirm('${getText(locale, 'deleteConfirm')}') ? (location.href = '/api/file/delete/${Key}') : undefined`}>{getText(locale, 'delete')}</a></td>
+					<td><DeleteLink c={c} href={'/api/file/delete/' + Key} arg={{}} redirect='' /></td>
 				</tr> : <></>)}
 			</tbody>
 		</table> : <p>{getText(locale, 'fileFolderEmpty')}</p>}

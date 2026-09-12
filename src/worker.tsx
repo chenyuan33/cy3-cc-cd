@@ -112,17 +112,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
 			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
 			<link rel='stylesheet' type='text/css' href='/style.css' />
 			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
-			<script dangerouslySetInnerHTML={{
-				__html: `
-				const helperScriptTranslations = {
-					notificationTitle_notification: '${getText(locale, 'notificationTitle_notification')}',
-					notificationTitle_privateMessage: '${getText(locale, 'notificationTitle_privateMessage')}',
-					notificationBody_notification: '${getText(locale, 'notificationBody_notification')}',
-					notificationBody_privateMessage: '${getText(locale, 'notificationBody_privateMessage')}',
-					serverConnectStatusConnected: '${getText(locale, 'serverConnectStatusConnected')}',
-					serverConnectStatusFailed: '${getText(locale, 'serverConnectStatusFailed')}',
-				};
-			` }}></script>
+			<script dangerouslySetInnerHTML={{ __html: `const translations=${JSON.stringify(translations[locale])};` }}></script>
 			<script src='/helper.js'></script>
 			<title>{title} - cy3's site</title>
 		</head>

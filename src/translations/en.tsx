@@ -194,6 +194,7 @@ export default {
     titleRequired: 'Title is required',
     edit: 'Edit',
     save: 'Save',
+	ok: 'OK',
     cancel: 'Cancel',
     delete: 'Delete',
     deleteConfirm: 'Are you sure you want to delete? This cannot be undone!',

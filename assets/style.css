@@ -105,6 +105,55 @@ details[open]>summary {
 	border-radius: 5px;
 }
 
+/* Dialogs */
+
+.dialog {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+.dialog-bg {
+	background-color: black;
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	opacity: 0.5;
+}
+
+.dialog-main {
+	position: fixed;
+	border: solid;
+	border-radius: 10px;
+	background-color: light-dark(white, black);
+	padding: 50px;
+	max-height: 80%;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.dialog-close-btn {
+	position: absolute;
+	top: 30px;
+	right: 20px;
+	cursor: pointer;
+}
+
+.dialog-buttons {
+	text-align: center;
+	display: flex;
+	gap: 10px;
+}
+
 /* Code Blocks */
 pre {
 	overflow: auto;

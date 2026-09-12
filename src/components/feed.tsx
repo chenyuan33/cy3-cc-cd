@@ -8,7 +8,7 @@ import { html, raw } from "hono/html";
 import { MdEditor, MdRender } from "./mdeditor";
 import { enableEmailVerify } from "../settings";
 import { createSubmitHandler } from "./form";
-import { ReplyButton } from "./button";
+import { DeleteButton, ReplyButton } from "./button";
 
 export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, repliesCount?: number, pathIds?: Set<number> }> = async ({ c, id, recursionDepth = 5, repliesCount = 5, pathIds = new Set<number>() }) => {
 	if (pathIds.has(id) || recursionDepth <= 0 || !id) {
@@ -35,7 +35,7 @@ export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, rep
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <>
 				<button type='button' onclick={`document.getElementById('feed-edit-${id}').dataset.vis *= -1`}>{getText(locale, 'edit')}</button>
 				&nbsp;
-				<button class='dangerousButton' onclick={`confirm('${getText(locale, 'deleteConfirm')}') ? (fetch('/api/feed/delete', { method: 'POST', body: 'id=${id}' }).then(() => location.reload())) : undefined`}>{getText(locale, 'delete')}</button>
+				<DeleteButton c={c} href='/api/feed/delete' arg={{ id }} redirect='' />
 			</> : <></>}
 		</div>
 		<div><MdRender markdown={content} /></div>

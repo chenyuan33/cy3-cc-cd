@@ -10,7 +10,7 @@ import { Time } from "../components/time";
 import { html } from "hono/html";
 import { Pages } from "../components/pages";
 import { createSubmitHandler } from "../components/form";
-import { PostButton, ReplyButton } from "../components/button";
+import { DeleteButton, PostButton, ReplyButton } from "../components/button";
 
 const app = new Hono<AppEnv>();
 app.get('/:feed_id{[1-9][0-9]*}?', async c => {
@@ -45,7 +45,7 @@ app.get('/:feed_id{[1-9][0-9]*}?', async c => {
 				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <>
 					<button type='button' onclick={`document.getElementById('feed-edit-${feed_id}').dataset.vis *= -1`}>{getText(locale, 'edit')}</button>
 					&nbsp;
-					<button class='dangerousButton' onclick={`confirm('${getText(locale, 'deleteConfirm')}') ? (fetch('/api/feed/delete', { method: 'POST', body: 'id=${feed_id}' }).then(() => location.href = '/feed')) : undefined`}>{getText(locale, 'delete')}</button>
+					<DeleteButton c={c} href='/api/feed/delete' arg={{ id: feed_id }} redirect='/feed' />
 				</> : <></>}
 				<div><MdRender markdown={content} /></div>
 				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'feed-edit-' + feed_id} data-vis='-1' method='post' action='/api/feed/edit' onsubmit={createSubmitHandler()}>

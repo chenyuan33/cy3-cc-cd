@@ -21,9 +21,9 @@
                 const bit = parseInt(this.dataset.bit);
                 const isAdminBit = (bit === window.__permissionAdmin);
                 if (isAdminBit && window.__currentUserId !== 1) {
-                    alert(window.__onlySuperAdmin);
+                    await createAlert(window.__onlySuperAdmin);
                 } else {
-                    alert(window.__cannotModify);
+                    await createAlert(window.__cannotModify);
                 }
                 return;
             }
@@ -41,7 +41,7 @@
             const confirmMsg = currentHas
                 ? window.__confirmRevoke.replace(/\{userId\}/g, userId).replace(/\{permName\}/g, permName)
                 : window.__confirmGrant.replace(/\{userId\}/g, userId).replace(/\{permName\}/g, permName);
-            if (!confirm(confirmMsg)) return;
+            if (!await createConfirm(confirmMsg)) return;
 
             try {
                 const response = await fetch('/admin/judgement/toggle', {
@@ -51,13 +51,13 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    alert(window.__operationSuccess);
+                    await createAlert(window.__operationSuccess);
                     location.reload();
                 } else {
-                    alert(window.__operationFailed + (result.error || ''));
+                    await createAlert(window.__operationFailed + (result.error || ''));
                 }
             } catch (e) {
-                alert(window.__operationFailed + e.message);
+                await createAlert(window.__operationFailed + e.message);
             }
         });
     });
@@ -108,13 +108,13 @@
     document.getElementById('batchExecuteBtn').addEventListener('click', async function () {
         const selected = document.querySelectorAll('.user-checkbox:checked');
         if (selected.length === 0) {
-            alert(window.__batchSelectUsers);
+            await createAlert(window.__batchSelectUsers);
             return;
         }
         const userIds = Array.from(selected).map(cb => cb.dataset.userid);
         const selectedOptions = Array.from(permSelect.selectedOptions);
         if (selectedOptions.length === 0) {
-            alert(window.__batchSelectPerms);
+            await createAlert(window.__batchSelectPerms);
             return;
         }
         const bits = selectedOptions.map(opt => parseInt(opt.value));
@@ -124,7 +124,7 @@
 
         const actionText = enable ? window.__batchGrant : window.__batchRevoke;
         const permNames = selectedOptions.map(opt => opt.text).join('、');
-        if (!confirm(window.__batchConfirm.replace(/\{count\}/g, selected.length).replace(/\{action\}/g, actionText).replace(/\{perms\}/g, permNames))) {
+        if (!await createConfirm(window.__batchConfirm.replace(/\{count\}/g, selected.length).replace(/\{action\}/g, actionText).replace(/\{perms\}/g, permNames))) {
             return;
         }
 
@@ -136,13 +136,13 @@
             });
             const result = await response.json();
             if (result.success) {
-                alert(window.__batchSuccess.replace(/\{success\}/g, result.successCount).replace(/\{fail\}/g, result.failCount));
+                await createAlert(window.__batchSuccess.replace(/\{success\}/g, result.successCount).replace(/\{fail\}/g, result.failCount));
                 location.reload();
             } else {
-                alert(window.__batchFailed + (result.error || ''));
+                await createAlert(window.__batchFailed + (result.error || ''));
             }
         } catch (e) {
-            alert(window.__batchFailed + e.message);
+            await createAlert(window.__batchFailed + e.message);
         }
     });
 })();

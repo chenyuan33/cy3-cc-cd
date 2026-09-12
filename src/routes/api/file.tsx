@@ -44,7 +44,7 @@ app.get('/sign/:key{.+}', async (c) => {
 		Key: c.req.param('key'),
 	}), { expiresIn: 3600 }) });
 });
-app.get('/delete/:key{.+}', async c => {
+app.post('/delete/:key{.+}', async c => {
 	const env = c.env as any, key = c.req.param('key');
 	const client = new S3Client({
 		region: env.B2_REGION,

@@ -175,7 +175,7 @@ app.post('/change-email', async c => {
 				cursor: 'pointer'
 			}} onclick={`(() => {
 				navigator.clipboard.writeText(String(${code}));
-				alert('${getText(locale, 'copiedSuccessfully')}');
+				await createAlert('${getText(locale, 'copiedSuccessfully')}');
 			})()`}>{code}</code>
 			<input type='hidden' name='email' value={reqBody.email} />
 			<button type='submit' style={{ 'font-size': 'large' }}>{getText(locale, 'verify')}</button>

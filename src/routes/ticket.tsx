@@ -13,7 +13,7 @@ import { MdEditor, MdInit, MdRender } from "../components/mdeditor";
 import { html } from "hono/html";
 import { ticketCategories, ticketStatus } from "./api/ticket";
 import { TicketStatus } from "../components/ticketStatus";
-import { PostButton, ReplyButton } from "../components/button";
+import { DeleteButton, PostButton, ReplyButton } from "../components/button";
 
 const app = new Hono<AppEnv>();
 app.get('/', async c => {
@@ -129,24 +129,23 @@ app.get('/post', c => {
 });
 app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 	const env = c.env as any, currentUser = c.get('currentUser'), ticket_id = parseInt(c.req.param('ticket_id'));
-	const { uid, assignee_uid, category, title, content, status, created_at } = await env.db.prepare('SELECT uid, assignee_uid, category, title, content, status, created_at FROM ticket WHERE id = ?').bind(c.req.param('ticket_id')).first();
+	const ticket_info = await env.db.prepare('SELECT uid, assignee_uid, category, title, content, status, created_at FROM ticket WHERE id = ?').bind(c.req.param('ticket_id')).first();
+	if (!ticket_info) {
+		return notFound(c);
+	}
+	const { uid, assignee_uid, category, title, content, status, created_at } = ticket_info;
 	const perPage = 10;
 	const currentPage = Math.max(1, parseInt(c.get('reqBody').page || '1') || 1);
 	const { total } = await env.db.prepare('SELECT COUNT(*) as total FROM ticket_reply WHERE ticket_id = ?').bind(c.req.param('ticket_id')).first();
 	const totalPage = Math.ceil(total / perPage);
 	const { results } = await env.db.prepare('SELECT id, parent_id, uid, content, set_status, set_assignee, created_at FROM ticket_reply WHERE ticket_id = ? ORDER BY created_at LIMIT ? OFFSET ?')
 		.bind(ticket_id, perPage, (currentPage - 1) * perPage).all();
-	const ticket_uid = uid;
 	return c.render(<>
 		<MdInit />
 		<Card>
 			<div style={{ position: 'absolute', right: '10px', top: '10px' }}>
 				<ReplyButton c={c} onclick='document.getElementById("replying-blockquote").style.display="block";document.getElementById("replying-description").innerHTML=document.getElementById("ticket-description").innerHTML;document.getElementById("replying-content").innerHTML=document.getElementById("ticket-content").innerHTML;document.getElementById("parent_id").value="0";' />
-				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <>
-					<button type='button' onclick={`document.getElementById('ticket-edit-${ticket_id}').dataset.vis *= -1`}>{getText(c.get('locale'), 'edit')}</button>
-					&nbsp;
-					{/* <button class='dangerousButton' onclick={`confirm('${getText(c.get('locale'), 'deleteConfirm')}') ? (fetch('/api/ticket/delete', { method: 'POST', body: 'ticket_id=${ticket_id}' }).then(() => location.href = '/ticket')) : undefined`}>{getText(c.get('locale'), 'delete')}</button> */}
-				</> : <></>}
+				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <button type='button' onclick={`document.getElementById('ticket-edit-${ticket_id}').dataset.vis *= -1`}>{getText(c.get('locale'), 'edit')}</button> : <></>}
 			</div>
 			<h1>{title}</h1>
 			<p style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }} id='ticket-description'>{renderTemplate(getText(c.get('locale'), 'ticketItemDescription'), {
@@ -177,7 +176,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <>
 					<button type='button' onclick={`document.getElementById('ticket-reply-edit-${id}').dataset.vis *= -1`}>{getText(c.get('locale'), 'edit')}</button>
 					&nbsp;
-					<button class='dangerousButton' onclick={`confirm('${getText(c.get('locale'), 'deleteConfirm')}') ? (fetch('/api/ticket/reply/delete', { method: 'POST', body: 'ticket_id=${c.req.param('ticket_id')}&reply_id=${id}' }).then(() => location.href = '/ticket/${c.req.param('ticket_id')}')) : undefined`}>{getText(c.get('locale'), 'delete')}</button>
+					<DeleteButton c={c} href='/api/ticket/reply/delete' arg={{ ticket_id: c.req.param('ticket_id'), reply_id: id }} redirect={`/ticket/${c.req.param('ticket_id')}`} />
 				</> : <></>}
 			</div>
 			<div style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }} id={`ticket-reply${id}-description`}>
@@ -243,38 +242,3 @@ app.get('/reply/:reply_id{[1-9][0-9]*}', async c => {
 	return c.redirect(`/ticket/${ticket_id}?page=${Math.floor((await env.db.prepare('SELECT COUNT(*) as total FROM ticket_reply WHERE ticket_id = ? AND id < ?').bind(ticket_id, c.req.param('reply_id')).first()).total / 10) + 1}`, 303);
 });
 export default app;
-
-/**
- * Initial Code:
- * 	await env.db.prepare(`CREATE TABLE IF NOT EXISTS ticket (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		uid INTEGER NOT NULL,
-		assignee_uid INTEGER,
-		category TEXT NOT NULL,
-		status TEXT NOT NULL DEFAULT "new",
-		title TEXT NOT NULL,
-		content TEXT NOT NULL,
-		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		FOREIGN KEY (uid) REFERENCES users(id)
-	);`).bind().run();
-	await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_ticket_created_at ON ticket(created_at DESC);').bind().run();
-	await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_ticket_uid_created_at ON ticket(uid, created_at DESC);').bind().run();
-	await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_ticket_category_created_at ON ticket(category, created_at DESC);').bind().run();
-	await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_ticket_uid_category_created_at ON ticket(uid, category, created_at DESC);').bind().run();
-	await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_ticket_status_created_at ON ticket(status, created_at DESC);').bind().run();
-	await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_ticket_status_uid_created_at ON ticket(status, uid, created_at DESC);').bind().run();
-	await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_ticket_status_category_created_at ON ticket(status, category, created_at DESC);').bind().run();
-	await env.db.prepare('CREATE INDEX IF NOT EXISTS idx_ticket_status_uid_category_created_at ON ticket(status, uid, category, created_at DESC);').bind().run();
-	await env.db.prepare(`CREATE TABLE IF NOT EXISTS ticket_reply (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		ticket_id INTEGER NOT NULL,
-		parent_id INTEGER,
-		uid INTEGER NOT NULL,
-		content TEXT,
-		set_status TEXT,
-		set_assignee NUMBER,
-		created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		FOREIGN KEY (ticket_id) REFERENCES ticket(id),
-		FOREIGN KEY (uid) REFERENCES users(id)
-	);`).bind().run();
- */

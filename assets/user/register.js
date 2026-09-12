@@ -31,15 +31,16 @@ const checks = {
 				break;
 		}
 	});
-}, checkpassword = () => {
-	if (document.getElementById('password').value === document.getElementById('confirmPassword').value) {
-		return true;
-	}
-	alert(passwordNotMatchText);
-	return false;
 };
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', checkname);
 } else {
 	checkname();
 }
+const registerForm = document.getElementById('registerForm');
+registerForm.addEventListener('submit', async evt => {
+	if (document.getElementById('password').value !== document.getElementById('confirmPassword').value) {
+		evt.preventDefault();
+		await createAlert(passwordNotMatchText);
+	}
+})

@@ -11,7 +11,7 @@ import { Pages } from "../components/pages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../settings";
 import { MdEditor, MdInit, MdRender } from "../components/mdeditor";
 import { html } from "hono/html";
-import { PostButton, ReplyButton } from "../components/button";
+import { DeleteButton, PostButton, ReplyButton } from "../components/button";
 import { discussionCategories } from "./api/discussion";
 
 const app = new Hono<AppEnv>();
@@ -92,7 +92,11 @@ app.get('/post', c => {
 });
 app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 	const env = c.env as any, currentUser = c.get('currentUser'), discussion_id = parseInt(c.req.param('discussion_id'));
-	const { uid, category, title, content, created_at } = await env.db.prepare('SELECT uid, category, title, content, created_at FROM discussion WHERE id = ?').bind(c.req.param('discussion_id')).first();
+	const discussion_info = await env.db.prepare('SELECT uid, category, title, content, created_at FROM discussion WHERE id = ?').bind(c.req.param('discussion_id')).first();
+	if (!discussion_info) {
+		return notFound(c);
+	}
+	const { uid, category, title, content, created_at } = discussion_info;
 	const perPage = 10;
 	const currentPage = Math.max(1, parseInt(c.get('reqBody').page || '1') || 1);
 	const { total } = await env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ?').bind(c.req.param('discussion_id')).first();
@@ -107,7 +111,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <>
 					<button type='button' onclick={`document.getElementById('discussion-edit-${discussion_id}').dataset.vis *= -1`}>{getText(c.get('locale'), 'edit')}</button>
 					&nbsp;
-					<button class='dangerousButton' onclick={`confirm('${getText(c.get('locale'), 'deleteConfirm')}') ? (fetch('/api/discussion/delete', { method: 'POST', body: 'discussion_id=${discussion_id}' }).then(() => location.href = '/discussion')) : undefined`}>{getText(c.get('locale'), 'delete')}</button>
+					<DeleteButton c={c} href='/api/discussion/delete' arg={{ discussion_id }} redirect='/discussion' />
 				</> : <></>}
 			</div>
 			<h1>{title}</h1>
@@ -141,7 +145,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <>
 					<button type='button' onclick={`document.getElementById('discussion-reply-edit-${id}').dataset.vis *= -1`}>{getText(c.get('locale'), 'edit')}</button>
 					&nbsp;
-					<button class='dangerousButton' onclick={`confirm('${getText(c.get('locale'), 'deleteConfirm')}') ? (fetch('/api/discussion/reply/delete', { method: 'POST', body: 'discussion_id=${c.req.param('discussion_id')}&reply_id=${id}' }).then(() => location.href = '/discussion/${c.req.param('discussion_id')}')) : undefined`}>{getText(c.get('locale'), 'delete')}</button>
+					<DeleteButton c={c} href='/api/discussion/reply/delete' arg={{ discussion_id: c.req.param('discussion_id'), reply_id: id }} redirect='' />
 				</> : <></>}
 			</div>
 			<p style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }} id={`discussion-reply${id}-description`}>{renderTemplate(getText(c.get('locale'), 'discussionReplyItemDescription'), {
