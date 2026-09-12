@@ -131,7 +131,7 @@ app.get('/', async c => {
                 })}
             </div>
 
-            <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', maxWidth: 'calc(100% - 300px)' }}>
                 {validUser ? (
                     <>
                         <div style={{ borderBottom: 'solid 1px lightgray', display: 'flex', justifyContent: 'center', padding: '8px 0', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)' }}>
