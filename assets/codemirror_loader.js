@@ -33,7 +33,7 @@ const loadCodeMirror = (id, height, mode, onchange, extraKeys, readOnly) => {
 		timer = setTimeout(onchange, 250);
 	});
 
-	editor.setSize(null, height);
+	editor.setSize('100%', height);
 	onchange();
 
 	window['CodeMirrorEditor_' + id] = editor;

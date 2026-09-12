@@ -2,15 +2,26 @@
 	display: flex;
 	border: solid 3px;
 	border-radius: 5px;
+	width: 100%;
+	max-width: 100%;
+	overflow: hidden;
 }
 
 .mdeditor-input-cell, .mdeditor-output {
 	flex: 1;
 	width: 50%;
+	min-width: 0;
+}
+
+.mdeditor-input-cell .CodeMirror {
+	max-width: 100%;
+	overflow: hidden;
 }
 
 .mdeditor-output {
 	overflow: auto;
+	overflow-wrap: anywhere;
+	word-break: break-word;
 	padding: 0 5px;
 }
 

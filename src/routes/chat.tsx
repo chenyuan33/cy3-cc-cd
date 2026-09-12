@@ -76,6 +76,7 @@ app.get('/', async c => {
 
     return c.render(<Card style={{ position: 'fixed', top: '50px', bottom: '10px', left: '70px', right: '10px' }}>
         <MdInit />
+        <link rel='stylesheet' type='text/css' href='/chat.css' />
         <h1>{getText(locale, 'chat')}</h1>
         <div style={{ border: 'solid', 'border-radius': '10px', display: 'flex', position: 'absolute', top: '100px', bottom: '10px', left: '10px', right: '10px' }}>
             <div style={{ padding: '10px', 'border-right': 'solid 1px lightgray', position: 'relative', overflow: 'auto', width: '280px', flexShrink: 0 }}>
@@ -130,7 +131,7 @@ app.get('/', async c => {
                 })}
             </div>
 
-            <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ flex: 1, position: 'relative', display: 'flex', flexDirection: 'column', maxWidth: 'calc(100% - 300px)' }}>
                 {validUser ? (
                     <>
                         <div style={{ borderBottom: 'solid 1px lightgray', display: 'flex', justifyContent: 'center', padding: '8px 0', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)' }}>

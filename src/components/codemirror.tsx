@@ -20,7 +20,7 @@ export const CodeMirrorEditor: FC<{
 	extraKeys?: string,
 	style?: CSSProperties,
 	readOnly?: boolean
-}> = ({ id, className, name, required = false, initialCode = '', height, mode, onchange = '() => {}', extraKeys = '{}', style, readOnly = false }) => <div style={style}>
+}> = ({ id, className, name, required = false, initialCode = '', height, mode, onchange = '() => {}', extraKeys = '{}', style, readOnly = false }) => <div style={{ overflow: 'hidden', ...style }}>
 	<textarea id={id} class={className} name={name} required={required}>{initialCode}</textarea>
 	<script dangerouslySetInnerHTML={{ __html: `loadCodeMirror('${id}', '${height}', '${mode}', ${onchange}, ${extraKeys}, ${readOnly});` }} />
 </div>;
