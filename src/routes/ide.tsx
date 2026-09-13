@@ -3,6 +3,7 @@ import { type AppEnv } from "../types";
 import { loginRequired } from "./errorPages";
 import { Card } from "../components/card";
 import { CodeMirrorEditor, CodeMirrorInit, CodeMirrorLangInit } from "../components/codemirror";
+import { MonacoInit } from "../components/monaco";
 import { getText, translations } from "../translations";
 import { memoryLimitDefault, memoryLimitMax, timeLimitDefault, timeLimitMax } from "../settings";
 
@@ -17,6 +18,7 @@ app.get('/', c => {
 		<CodeMirrorLangInit lang='clike' />
 		<CodeMirrorLangInit lang='python' />
 		<CodeMirrorLangInit lang='javascript' />
+		<MonacoInit />
 		<script dangerouslySetInnerHTML={{ __html: Object.entries(translations[locale] || translations.en || {}).filter(([key]) => key.startsWith('judgeResult_')).map(([key, value]) => `var ${key} = '${value}';`).join('') }} />
 		<script src='/ide.js' />
 		<h1>{getText(locale, 'ide')}</h1>
@@ -25,7 +27,12 @@ app.get('/', c => {
 			<span><label for='time'>{getText(locale, 'timeLimit')}&nbsp;</label><input id='timeLimit' type='number' min='0' max={timeLimitMax} value={timeLimitDefault}></input></span>
 			<span><label for='memory'>{getText(locale, 'memoryLimit')}&nbsp;</label><input id='memoryLimit' type='number' min='0' max={memoryLimitMax} value={memoryLimitDefault}></input></span>
 		</div>
-		<CodeMirrorEditor id='code' height='400px' mode='text/plain' />
+		<div id='editorContainer' style={{ position: 'relative' }}>
+			<div id='codemirrorEditor'>
+				<CodeMirrorEditor id='code' height='400px' mode='text/plain' />
+			</div>
+			<div id='monacoEditor' style={{ display: 'none', height: '400px', width: '100%', overflow: 'hidden' }}></div>
+		</div>
 		<div style={{ display: 'flex' }}>
 			<div style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
 				<div style={{ flex: 1, position: 'relative', minWidth: 0 }}>
