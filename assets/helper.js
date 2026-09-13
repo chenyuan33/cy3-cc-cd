@@ -42,64 +42,12 @@ const createDialog = (content, buttons) => {
 }
 const createAlert = content => createDialog(content, [{ text: translations.ok }]);
 const createConfirm = content => createDialog(content, [{ text: translations.cancel, callback: () => false }, { text: translations.ok, callback: () => true }]);
-const CodeMirrorEditors = [], switchLight = () => {
-	switch (localStorage.lightMode) {
-		case 'dark':
-			localStorage.lightMode = 'system';
-			break;
-		case 'system':
-			localStorage.lightMode = 'light';
-			break;
-		case 'light':
-			localStorage.lightMode = 'dark';
-			break;
-		default:
-			localStorage.lightMode = 'system';
-			break;
-	}
-	loadLight();
-}, loadLight = () => {
-	switch (localStorage.lightMode) {
-		case 'system':
-			document.documentElement.style.colorScheme = 'light dark';
-			document.getElementById('lightSwitchIcon').classList = 'fa-solid fa-circle-half-stroke';
-			break;
-		case 'light':
-			document.documentElement.style.colorScheme = 'light';
-			document.getElementById('lightSwitchIcon').classList = 'fa-solid fa-sun';
-			break;
-		case 'dark':
-			document.documentElement.style.colorScheme = 'dark';
-			document.getElementById('lightSwitchIcon').classList = 'fa-solid fa-moon';
-			break;
-		default:
-			localStorage.lightMode = 'system';
-			document.documentElement.style.colorScheme = 'light dark';
-			document.getElementById('lightSwitchIcon').classList = 'fa-solid fa-circle-half-stroke';
-			break;
-	}
-	const probe = document.createElement('div');
-	probe.style.position = 'absolute';
-	probe.style.visibility = 'hidden';
-	probe.style.pointerEvents = 'none';
-	probe.style.width = '0';
-	probe.style.height = '0';
-	probe.style.backgroundColor = 'light-dark(black, white)';
-	document.body.appendChild(probe);
-	const bgColor = getComputedStyle(probe).backgroundColor;
-	document.body.removeChild(probe);
-	const CodeMirrorTheme = ['rgb(0, 0, 0)'].includes(bgColor) ? 'duotone-light' : 'duotone-dark';
-	CodeMirrorEditors.forEach(editor => editor.setOption('theme', CodeMirrorTheme));
-}, setPage = page => {
+const CodeMirrorEditors = [];
+const setPage = page => {
 	const url = new URL(location.href);
 	url.searchParams.set('page', page);
 	location.href = url.toString();
 };
-if (document.readyState === 'loading') {
-	document.addEventListener('DOMContentLoaded', loadLight);
-} else {
-	loadLight();
-}
 const url = new URL('/ws', location.href);
 url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
 const ws = new WebSocket(url.toString());
