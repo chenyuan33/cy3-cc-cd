@@ -211,11 +211,21 @@ const run = () => {
 
 document.addEventListener('DOMContentLoaded', async () => {
 	const langSelector = document.getElementById('lang');
-	langSelector.innerHTML = (await (await fetch('/api/support-langs')).json()).languages.map(({ value, label }) => `<option value=${value}>${label}</option>`).join('');
-
 	const pref = getEditorPref();
+
+	const langPromise = fetch('/api/support-langs').then(r => r.json());
+
 	if (pref === 'monaco') {
-		await switchToMonaco(langSelector.value);
+		switchToMonaco('plaintext');
+	}
+
+	const langData = await langPromise;
+	langSelector.innerHTML = langData.languages.map(({ value, label }) => `<option value=${value}>${label}</option>`).join('');
+
+	if (pref === 'monaco') {
+		if (monacoEditor) {
+			setEditorLanguage(langSelector.value);
+		}
 	} else {
 		CodeMirrorEditor_code.setOption('mode', CodeMirrorModeMap[langSelector.value]);
 	}
