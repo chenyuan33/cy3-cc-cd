@@ -24,6 +24,22 @@ body::before {
 	background-size: var(--bg-fit);
 	background-position: center;
 	background-repeat: no-repeat;
+	z-index: -2;
+	pointer-events: none;
+}
+
+/* Readability Overlay */
+body::after {
+	content: '';
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: light-dark(
+		rgba(245, 245, 245, var(--overlay-opacity, 0.75)),
+		rgba(24, 24, 24, var(--overlay-opacity, 0.75))
+	);
 	z-index: -1;
 	pointer-events: none;
 }

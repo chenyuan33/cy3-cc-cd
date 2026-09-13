@@ -277,6 +277,7 @@ export default {
 	themeFitRepeat: '平铺（Repeat）',
 	themeFitCenter: '居中（Center）',
 	themeBackgroundImageUrl: '图片 URL',
+	themeOverlayOpacity: '笼罩透明度',
 	themeCarousel: '轮播',
 	themeCarouselRandom: '随机',
 	themeAddImageUrl: '输入图片 URL',

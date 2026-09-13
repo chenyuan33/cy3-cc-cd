@@ -6,7 +6,8 @@ const ThemeManager = (() => {
 			type: 'color',
 			color: '#f5f5f5',
 			imageUrl: '',
-			fit: 'cover'
+			fit: 'cover',
+			overlayOpacity: 75
 		},
 		carousel: {
 			enabled: false,
@@ -94,6 +95,8 @@ const ThemeManager = (() => {
 			root.style.setProperty('--bg-color', bg.color);
 		}
 		root.style.setProperty('--bg-fit', bg.fit);
+		const opacity = (bg.overlayOpacity ?? 75) / 100;
+		root.style.setProperty('--overlay-opacity', opacity);
 	};
 
 	const applyFrostedGlass = () => {

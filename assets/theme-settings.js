@@ -83,6 +83,13 @@ const ThemeSettings = (() => {
 							</div>
 						</div>
 						<div class="theme-settings-row">
+							<span class="theme-settings-label">${t('themeOverlayOpacity')}</span>
+							<div class="theme-settings-control">
+								<input type="range" id="themeOverlayOpacity" min="0" max="100" value="${bg.overlayOpacity ?? 75}">
+								<span id="themeOverlayValue">${bg.overlayOpacity ?? 75}%</span>
+							</div>
+						</div>
+						<div class="theme-settings-row">
 							<span class="theme-settings-label">${t('themeCarousel')}</span>
 							<label class="theme-settings-toggle">
 								<input type="checkbox" id="themeCarouselEnabled" ${carousel.enabled ? 'checked' : ''}>
@@ -180,6 +187,12 @@ const ThemeSettings = (() => {
 
 		$('themeBgImageUrl').addEventListener('change', e => {
 			ThemeManager.setConfig('background.imageUrl', e.target.value);
+		});
+
+		$('themeOverlayOpacity').addEventListener('input', e => {
+			const value = parseInt(e.target.value);
+			$('themeOverlayValue').textContent = value + '%';
+			ThemeManager.setConfig('background.overlayOpacity', value);
 		});
 
 		$('themeCarouselEnabled').addEventListener('change', e => {

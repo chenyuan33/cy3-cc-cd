@@ -277,6 +277,7 @@ export default {
 	themeFitRepeat: 'Repeat',
 	themeFitCenter: 'Center',
 	themeBackgroundImageUrl: 'Image URL',
+	themeOverlayOpacity: 'Overlay Opacity',
 	themeCarousel: 'Carousel',
 	themeCarouselRandom: 'Random',
 	themeAddImageUrl: 'Enter image URL',
