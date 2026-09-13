@@ -111,9 +111,12 @@ app.use(jsxRenderer(async ({ children, title }) => {
 			<meta name='viewport' content='width=device-width, initial-scale=1.0' />
 			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
 			<link rel='stylesheet' type='text/css' href='/style.css' />
+			<link rel='stylesheet' type='text/css' href='/theme.css' />
 			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
 			<script dangerouslySetInnerHTML={{ __html: `const translations=${JSON.stringify(translations[locale])};` }}></script>
 			<script src='/helper.js'></script>
+			<script src='/theme.js'></script>
+			<script src='/theme-settings.js'></script>
 			<title>{title} - cy3's site</title>
 		</head>
 		<body>
@@ -281,8 +284,8 @@ app.use(jsxRenderer(async ({ children, title }) => {
 					<i class='fa-solid fa-cloud-upload'></i>
 					<span class='sidebarTitle'>{getText(locale, 'fileUpload')}</span>
 				</a></p> : <></>}
-				<p><a href='javascript:void(0)' onclick='switchLight()'>
-					<i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
+				<p><a href='javascript:void(0)' onclick='ThemeSettings.open()'>
+					<i class='fa-solid fa-palette' id='lightSwitchIcon'></i>
 					<span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
 				</a></p>
 			</nav>

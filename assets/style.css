@@ -15,7 +15,7 @@ body {
     position: absolute;
     left: 70px;
     right: 0;
-    background-color: light-dark(#f5f5f5, #181818);
+    background-color: var(--bg-color, light-dark(#f5f5f5, #181818));
 }
 
 a {
@@ -41,8 +41,8 @@ nav {
     width: 40px;
     color: light-dark(#333333, #e0e0e0);
     background-color: light-dark(#ffffff26, #14141e99);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(var(--nav-blur, 20px)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--nav-blur, 20px)) saturate(180%);
     border-right: 1px solid light-dark(#ffffff60, #ffffff14);
     box-shadow: 0 8px 32px light-dark(#00000019, #00000066);
     transition: width 0.3s ease;
@@ -79,8 +79,8 @@ textarea {
     margin: 10px 0;
     border-radius: 10px;
     background-color: light-dark(#ffffff26, #14141e99);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(var(--card-blur, 20px)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--card-blur, 20px)) saturate(180%);
     border-right: 1px solid light-dark(#ffffff60, #ffffff14);
     box-shadow: 0 8px 32px light-dark(#00000019, #00000066);
 }
@@ -268,8 +268,8 @@ input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [t
 header {
     color: light-dark(#333333, #e0e0e0);
     background-color: light-dark(#ffffff26, #14141e99);
-    backdrop-filter: blur(20px) saturate(180%);
-    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    backdrop-filter: blur(var(--header-blur, 20px)) saturate(180%);
+    -webkit-backdrop-filter: blur(var(--header-blur, 20px)) saturate(180%);
     border-bottom: 1px solid light-dark(#ffffff60, #ffffff14);
     /* 使用底部边框，与侧边栏右边框对应 */
     box-shadow: 0 8px 32px light-dark(#00000019, #00000066);
