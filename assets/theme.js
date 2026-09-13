@@ -4,10 +4,10 @@ const ThemeManager = (() => {
 		lightMode: 'system',
 		background: {
 			type: 'color',
-			color: '#f5f5f5',
+			color: 'auto',
 			imageUrl: '',
 			fit: 'cover',
-			overlayOpacity: 75
+			overlayOpacity: 0
 		},
 		carousel: {
 			enabled: false,
@@ -19,7 +19,7 @@ const ThemeManager = (() => {
 			enabled: false,
 			blurRadius: 10
 		},
-		editor: 'codemirror'
+		editor: 'monaco'
 	};
 
 	let config = {};
@@ -83,19 +83,35 @@ const ThemeManager = (() => {
 		}
 	};
 
+	const resolveImageUrl = (url) => {
+		if (!url) return url;
+		const now = new Date();
+		const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+		return url
+			.replace(/\{y\}/g, now.getFullYear())
+			.replace(/\{m\}/g, String(now.getMonth() + 1).padStart(2, '0'))
+			.replace(/\{d\}/g, String(now.getDate()).padStart(2, '0'))
+			.replace(/\{w\}/g, weekdays[now.getDay()]);
+	};
+
 	const applyBackground = () => {
 		const root = document.documentElement;
 		const bg = config.background;
 
 		if (bg.type === 'image' && bg.imageUrl) {
-			root.style.setProperty('--bg-image', `url("${bg.imageUrl}")`);
+			const resolvedUrl = resolveImageUrl(bg.imageUrl);
+			root.style.setProperty('--bg-image', `url("${resolvedUrl}")`);
 			root.style.setProperty('--bg-color', 'transparent');
 		} else {
 			root.style.setProperty('--bg-image', 'none');
-			root.style.setProperty('--bg-color', bg.color);
+			if (bg.color === 'auto' || !bg.color) {
+				root.style.setProperty('--bg-color', 'light-dark(#e3e3e3, #121212)');
+			} else {
+				root.style.setProperty('--bg-color', bg.color);
+			}
 		}
 		root.style.setProperty('--bg-fit', bg.fit);
-		const opacity = (bg.overlayOpacity ?? 75) / 100;
+		const opacity = (bg.overlayOpacity ?? 0) / 100;
 		root.style.setProperty('--overlay-opacity', opacity);
 	};
 

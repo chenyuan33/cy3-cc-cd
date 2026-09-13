@@ -1,6 +1,6 @@
 /* Theme System - CSS Custom Properties */
 :root {
-	--bg-color: #f5f5f5;
+	--bg-color: light-dark(#e3e3e3, #121212);
 	--bg-image: none;
 	--bg-fit: cover;
 	--bg-blur: 0px;
@@ -28,7 +28,7 @@ body::before {
 	pointer-events: none;
 }
 
-/* Readability Overlay */
+/* Readability Overlay Base */
 body::after {
 	content: '';
 	position: fixed;

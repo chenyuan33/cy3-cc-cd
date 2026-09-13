@@ -277,6 +277,7 @@ export default {
 	themeFitRepeat: '平铺（Repeat）',
 	themeFitCenter: '居中（Center）',
 	themeBackgroundImageUrl: '图片 URL',
+	themeImageUrlHint: '支持占位符：{y}=年 {m}=月 {d}=日 {w}=星期',
 	themeOverlayOpacity: '笼罩透明度',
 	themeCarousel: '轮播',
 	themeCarouselRandom: '随机',
@@ -286,5 +287,6 @@ export default {
 	themeFrostedGlassEnable: '启用',
 	themeBlurRadius: '模糊半径',
 	themeEditor: '编辑器',
-	themeEditorType: '编辑器类型'
+	themeEditorType: '编辑器类型',
+	themeRestoreDefaults: '恢复默认设置'
 } as Record<string, string>;

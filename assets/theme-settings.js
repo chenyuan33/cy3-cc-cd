@@ -60,7 +60,7 @@ const ThemeSettings = (() => {
 						<div class="theme-settings-row">
 							<span class="theme-settings-label">${t('themeBackgroundColor')}</span>
 							<div class="theme-settings-control">
-								<input type="color" id="themeBgColor" value="${bg.color}">
+								<input type="color" id="themeBgColor" value="${bg.color === 'auto' ? '#e3e3e3' : bg.color}">
 							</div>
 						</div>
 					</div>
@@ -82,11 +82,12 @@ const ThemeSettings = (() => {
 								<input type="text" id="themeBgImageUrl" value="${bg.imageUrl}" placeholder="https://...">
 							</div>
 						</div>
+						<div style="font-size:12px;color:gray;margin:-8px 0 8px 0">${t('themeImageUrlHint')}</div>
 						<div class="theme-settings-row">
 							<span class="theme-settings-label">${t('themeOverlayOpacity')}</span>
 							<div class="theme-settings-control">
-								<input type="range" id="themeOverlayOpacity" min="0" max="100" value="${bg.overlayOpacity ?? 75}">
-								<span id="themeOverlayValue">${bg.overlayOpacity ?? 75}%</span>
+								<input type="range" id="themeOverlayOpacity" min="0" max="100" value="${bg.overlayOpacity ?? 0}">
+								<span id="themeOverlayValue">${bg.overlayOpacity ?? 0}%</span>
 							</div>
 						</div>
 						<div class="theme-settings-row">
@@ -150,6 +151,12 @@ const ThemeSettings = (() => {
 							</select>
 						</div>
 					</div>
+				</div>
+
+				<div class="theme-settings-section" style="border-top:1px solid light-dark(#e0e0e0,#333);padding-top:12px;margin-top:8px">
+					<button id="themeRestoreDefaults" style="width:100%;padding:8px;border:1px solid light-dark(#ccc,#555);border-radius:4px;background:light-dark(#fff26,#14141e99);color:light-dark(#333,#e0e0e0);cursor:pointer;font-size:13px">
+						${t('themeRestoreDefaults')}
+					</button>
 				</div>
 			</div>
 		`;
@@ -219,6 +226,11 @@ const ThemeSettings = (() => {
 
 		$('themeEditorType').addEventListener('change', e => {
 			ThemeManager.setConfig('editor', e.target.value);
+		});
+
+		$('themeRestoreDefaults').addEventListener('click', () => {
+			localStorage.removeItem('theme');
+			renderDialog();
 		});
 	};
 

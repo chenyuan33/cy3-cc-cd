@@ -277,6 +277,7 @@ export default {
 	themeFitRepeat: 'Repeat',
 	themeFitCenter: 'Center',
 	themeBackgroundImageUrl: 'Image URL',
+	themeImageUrlHint: 'Supports placeholders: {y}=year {m}=month {d}=day {w}=weekday',
 	themeOverlayOpacity: 'Overlay Opacity',
 	themeCarousel: 'Carousel',
 	themeCarouselRandom: 'Random',
@@ -286,5 +287,6 @@ export default {
 	themeFrostedGlassEnable: 'Enable',
 	themeBlurRadius: 'Blur Radius',
 	themeEditor: 'Editor',
-	themeEditorType: 'Editor Type'
+	themeEditorType: 'Editor Type',
+	themeRestoreDefaults: 'Restore Default Settings'
 } as Record<string, string>;
