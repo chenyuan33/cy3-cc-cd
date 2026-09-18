@@ -3,7 +3,7 @@ import { jwtVerify } from 'jose';
 import { jsxRenderer, useRequestContext } from 'hono/jsx-renderer';
 import type { FC, PropsWithChildren } from 'hono/jsx';
 import { raw } from 'hono/html';
-import { translations, getText } from './translations';
+import { translations, getText, normalizeLocale } from './translations';
 import type { AppEnv } from './types';
 import { permissionAdmin, permissionVisit } from './settings';
 import { User, userQuery } from './components/user';
@@ -59,24 +59,21 @@ app.use(async (c, next) => {
 	c.set('currentUserEmail', email ?? null);
 	const url = new URL(c.req.url);
 	const supportedLocales: string[] = Object.keys(translations);
-	const queryLocale = url.searchParams.get('lang')?.toLowerCase();
-	if (queryLocale && supportedLocales.includes(queryLocale)) {
+	const queryLocale = normalizeLocale(url.searchParams.get('lang'));
+	if (queryLocale) {
 		c.set('locale', queryLocale);
 	} else {
-		const cookieLocale = cookies.locale?.toLowerCase();
-		if (cookieLocale && supportedLocales.includes(cookieLocale)) {
+		const cookieLocale = normalizeLocale(cookies.locale);
+		if (cookieLocale) {
 			c.set('locale', cookieLocale);
 		} else {
 			const acceptLanguage = c.req.header('accept-language') ?? '';
 			const preferred = acceptLanguage
 				.split(',')
-				.map(value => (value.split(';')[0] ?? value).trim().toLowerCase())
-				.find(value => supportedLocales.includes(value) || supportedLocales.includes(value.split('-')[0] ?? value));
-			const normalized = preferred?.split('-')[0];
-			if (preferred && supportedLocales.includes(preferred)) {
+				.map(value => normalizeLocale((value.split(';')[0] ?? value).trim()))
+				.find((value): value is string => Boolean(value));
+			if (preferred) {
 				c.set('locale', preferred);
-			} else if (normalized && supportedLocales.includes(normalized)) {
-				c.set('locale', normalized);
 			} else {
 				c.set('locale', 'en');
 			}
@@ -142,6 +139,17 @@ app.use(jsxRenderer(async ({ children, title }) => {
 
 				{/* 右侧用户相关元素 */}
 				<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
+					<select value={locale} aria-label={getText(locale, 'language')} onchange={`fetch('/api/user/set-locale', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'locale=' + encodeURIComponent(this.value) }).then(() => location.reload())`} style={{
+						padding: '6px 10px',
+						'border-radius': '6px',
+						'background-color': 'var(--panel)',
+						color: 'var(--text)',
+						border: '1px solid var(--border)',
+						cursor: 'pointer'
+					}}>
+						<option value='en'>English</option>
+						<option value='zh'>中文</option>
+					</select>
 					{currentUser ? (
 						<>
 							{/* 管理面板（仅管理员可见，只显示图标，位于铃铛左边） */}

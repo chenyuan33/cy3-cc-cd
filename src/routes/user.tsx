@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { type AppEnv, type ContextType } from "../types";
-import { getText } from "../translations";
+import { getText, translations } from "../translations";
 import { html, raw } from "hono/html";
 import { errorHTML, loginRequired, notFound } from "./errorPages";
 import { Card } from "../components/card";
@@ -109,6 +109,7 @@ app.get('/settings', async c => {
                     <Form action='/api/user/general-settings' method='post' inputs={[
                         { id: 'nameColorLight', name: 'nameColorLight', label: getText(locale, 'userSettingsChangeNameColorLight'), main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_light }, required: true },
                         { id: 'nameColorDark', name: 'nameColorDark', label: getText(locale, 'userSettingsChangeNameColorDark'), main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_dark }, required: true },
+                        { id: 'locale', name: 'locale', label: getText(locale, 'language'), main: { type: 'select', options: Object.keys(translations).map(value => ({ value, label: value.toUpperCase(), selected: locale === value })) } },
 						...((currentUser.permission & permissionAdmin) ? [
 							{ id: 'tag', name: 'tag', label: getText(locale, 'tag'), main: ({ type: 'input', inputType: 'text', value: currentUser.tag || '' } as { type: 'input', inputType: 'text', value: string }) }
 						] : [])

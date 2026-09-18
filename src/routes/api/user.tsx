@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv, ContextType } from "../../types";
 import { accessDenied, errorHTML, loginRequired, notFound } from "../errorPages";
-import { getText } from "../../translations";
+import { getText, normalizeLocale, translations } from "../../translations";
 import { SignJWT } from "jose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
@@ -81,11 +81,27 @@ app.get('/logout', c => {
 	c.header('Set-Cookie', 'session=; HttpOnly; Secure; SameSite=strict; Path=/; Max-Age=0');
 	return c.redirect('/');
 });
+app.post('/set-locale', c => {
+	const reqBody = c.get('reqBody');
+	const locale = normalizeLocale(typeof reqBody.locale === 'string' ? reqBody.locale : '');
+	if (!locale || !Object.hasOwn(translations, locale)) {
+		return notFound(c);
+	}
+	c.header('Set-Cookie', `locale=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`);
+	c.set('locale', locale);
+	return c.redirect('/user/settings');
+});
 app.post('/general-settings', async c => {
-	const currentUser = c.get('currentUser'), { nameColorLight, nameColorDark, tag } = c.get('reqBody'), env = c.env as any;
+	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), env = c.env as any;
 	if (!currentUser) {
 		return loginRequired(c);
 	}
+	const locale = normalizeLocale(typeof reqBody.locale === 'string' ? reqBody.locale : '');
+	if (locale && Object.hasOwn(translations, locale)) {
+		c.header('Set-Cookie', `locale=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`);
+		c.set('locale', locale);
+	}
+	const { nameColorLight, nameColorDark, tag } = reqBody;
 	console.log(nameColorLight, nameColorDark);
 	if (!nameColorLight || !nameColorDark || !/^#[0-9a-f]{6}$/.test(nameColorLight) || !/^#[0-9a-f]{6}$/.test(nameColorDark)) {
 		return notFound(c);
