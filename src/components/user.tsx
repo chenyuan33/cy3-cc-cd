@@ -6,7 +6,7 @@ import { permissionAdmin, permissionVisit } from "../settings";
 
 export const userQuery = async (uid: number, c: ContextType): Promise<userInfo | null> =>
 	await (c.env as any).db
-		.prepare('SELECT id, name, created_at, permission, username_violation, name_color_light, name_color_dark, tag FROM users WHERE id = ?')
+		.prepare('SELECT id, name, created_at, permission, username_violation, name_color_light, name_color_dark, tag, avatar_path, profile_image_path FROM users WHERE id = ?')
 		.bind(uid)
 		.first();
 
@@ -37,12 +37,13 @@ export const User: FC<{ user: userInfo | number | null; c: ContextType; linkable
 		return resolvedUser ? <User user={resolvedUser} c={c} linkable={linkable} /> : <span>{getText(locale, 'userUnknown')}</span>;
 	}
 	const tag = user.tag || (user.permission & permissionAdmin ? getText(locale, 'userTagAdmin') : null);
+	const avatarPath = user.avatar_path ? `/file/${user.avatar_path}` : (env.ENABLE_AVATAR === '1' ? `/file/user/${user.id}/avatar.png` : null);
 	const content = <span style={user.permission & permissionVisit ? {} : {
 		'text-decoration-line': 'line-through',
 		opacity: '60%',
 		'text-decoration-color': 'red'
 	}}>
-		{env.ENABLE_AVATAR === '1' ? <img src={`/file/user/${user.id}/avatar.png`} style={{ display: 'inline-block', height: '1.3em', width: '1.3em', borderRadius: '100%' }} onerror={`this.outerHTML='<div style="display:inline-flex;color:white;background-color:light-dark(#${user.name_color_light},#${user.name_color_dark});height:1.3em;width:1.3em;justify-content:center;border-radius:100%"><span style="font-size:80%">${user.name[0]}</span></div>'`} /> : <></>}
+		{avatarPath ? <img src={avatarPath} style={{ display: 'inline-block', height: '1.3em', width: '1.3em', borderRadius: '100%' }} onerror={`this.outerHTML='<div style="display:inline-flex;color:white;background-color:light-dark(#${user.name_color_light},#${user.name_color_dark});height:1.3em;width:1.3em;justify-content:center;border-radius:100%"><span style="font-size:80%">${user.name[0]}</span></div>'`} /> : <></>}
 		&nbsp;
 		{user.permission & permissionVisit ? <></> : <i class='fa-solid fa-ban' style={{ color: 'red' }}></i>}
 		{user.permission & permissionAdmin ? <i class='fa-solid fa-shield' style={{ color: 'gold' }}></i> : <></>}

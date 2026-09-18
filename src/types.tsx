@@ -7,7 +7,9 @@ export type userInfo = {
 	name_color_light: string,
 	name_color_dark: string,
 	permission: number,
-	tag: string | null
+	tag: string | null,
+	avatar_path: string | null,
+	profile_image_path: string | null
 };
 export type AppEnv = {
 	Variables: {

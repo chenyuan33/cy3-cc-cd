@@ -95,7 +95,21 @@ app.get('/:path{.*}', async c => {
 				{(currentPageContent.Contents || []).map(({ Key, Size }) => Key ? <tr>
 					<td><a href={'/file/' + Key}>{Key.substring(path.length)}</a></td>
 					<td>{Size}</td>
-					<td><DeleteLink c={c} href={'/api/file/delete/' + Key} arg={{}} redirect='' /></td>
+					<td>
+						{currentUser ? <>
+							<form method='post' action='/api/file/select-user-image' style={{ display: 'inline' }}>
+								<input type='hidden' name='kind' value='avatar' />
+								<input type='hidden' name='path' value={Key} />
+								<button type='submit'>Set as icon</button>
+							</form>
+							<form method='post' action='/api/file/select-user-image' style={{ display: 'inline' }}>
+								<input type='hidden' name='kind' value='profile' />
+								<input type='hidden' name='path' value={Key} />
+								<button type='submit'>Set as profile</button>
+							</form>
+						</> : <></>}
+						<DeleteLink c={c} href={'/api/file/delete/' + Key} arg={{}} redirect='' />
+					</td>
 				</tr> : <></>)}
 			</tbody>
 		</table> : <p>{getText(locale, 'fileFolderEmpty')}</p>}

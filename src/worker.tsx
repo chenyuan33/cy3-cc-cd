@@ -24,7 +24,40 @@ import judgementRoutes from './routes/judgement';
 import fileRoutes from './routes/file';
 import ideRoutes from './routes/ide';
 const app = new Hono<AppEnv>();
+const ensureDatabaseSchema = async (c: any) => {
+	const env = c.env as any;
+	const tableInfo = await env.db.prepare('PRAGMA table_info(users)').all();
+	const columns = new Set((tableInfo.results || []).map((row: any) => row.name));
+	if (!columns.has('avatar_path')) {
+		await env.db.prepare('ALTER TABLE users ADD COLUMN avatar_path TEXT').run();
+	}
+	if (!columns.has('profile_image_path')) {
+		await env.db.prepare('ALTER TABLE users ADD COLUMN profile_image_path TEXT').run();
+	}
+	const relations = await env.db.prepare('SELECT name FROM sqlite_master WHERE type = ? AND name = ?').bind('table', 'user_relations').first();
+	if (!relations) {
+		await env.db.prepare(`CREATE TABLE user_relations (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			uid INTEGER NOT NULL,
+			target_uid INTEGER NOT NULL,
+			type TEXT NOT NULL CHECK(type IN ('subscribe', 'friend')),
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+			UNIQUE(uid, target_uid, type),
+			FOREIGN KEY(uid) REFERENCES users(id),
+			FOREIGN KEY(target_uid) REFERENCES users(id)
+		)`).run();
+	}
+	const attempts = await env.db.prepare('SELECT name FROM sqlite_master WHERE type = ? AND name = ?').bind('table', 'registration_attempts').first();
+	if (!attempts) {
+		await env.db.prepare(`CREATE TABLE registration_attempts (
+			id INTEGER PRIMARY KEY AUTOINCREMENT,
+			ip TEXT NOT NULL,
+			created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+		)`).run();
+	}
+};
 app.use(async (c, next) => {
+	await ensureDatabaseSchema(c);
 	const clonedReq = c.req.raw.clone();
 	if (c.req.method === 'POST' || c.req.method === 'PUT') {
 		const contentType = c.req.header('Content-Type')?.split(';')[0];

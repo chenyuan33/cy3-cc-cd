@@ -12,6 +12,13 @@ import { createSubmitHandler } from "../../components/form";
 import { permissionAdmin } from "../../settings";
 
 const app = new Hono<AppEnv>();
+const getClientIp = (c: ContextType) => {
+	const forwarded = c.req.header('x-forwarded-for');
+	if (forwarded) {
+		return forwarded.split(',')[0]?.trim() || 'unknown';
+	}
+	return c.req.header('cf-connecting-ip') || c.req.header('x-real-ip') || 'unknown';
+};
 const validateUsername = (name: string, locale: string) => {
 	if (!name.trim()) {
 		return getText(locale, 'usernameRequired');
@@ -37,9 +44,14 @@ const login = async (uid: number, c: ContextType) => {
 	return c.redirect('/');
 };
 app.post('/register', async c => {
-	const locale = c.get('locale'), reqBody = c.get('reqBody');
+	const locale = c.get('locale'), reqBody = c.get('reqBody'), env = c.env as any;
 	if (c.get('currentUser')) {
 		return errorHTML(c, getText(locale, 'alreadyLoggedIn'));
+	}
+	const ip = getClientIp(c);
+	const { recentCount } = await env.db.prepare('SELECT COUNT(*) AS recentCount FROM registration_attempts WHERE ip = ? AND created_at >= datetime("now", "-3 hours")').bind(ip).first();
+	if (recentCount >= 1) {
+		return errorHTML(c, 'Too many accounts created from this IP. Please wait 3 hours before creating another account.');
 	}
 	if (!Object.hasOwn(reqBody, 'name') || typeof reqBody.name !== 'string') {
 		return errorHTML(c, getText(locale, 'usernameRequired'));
@@ -51,10 +63,12 @@ app.post('/register', async c => {
 	if (usernameError) {
 		return errorHTML(c, usernameError);
 	}
-	if (await (c.env as any).db.prepare('SELECT name FROM users WHERE name = ?').bind(reqBody.name.trim()).first()) {
+	if (await env.db.prepare('SELECT name FROM users WHERE name = ?').bind(reqBody.name.trim()).first()) {
 		return errorHTML(c, getText(locale, 'registerUsernameExists'));
 	}
-	return await login((await (c.env as any).db.prepare('INSERT INTO users (name, password) VALUES (?, ?)').bind(reqBody.name.trim(), await bcrypt.hash(reqBody.password, 12)).run()).meta.last_row_id, c);
+	const userId = (await env.db.prepare('INSERT INTO users (name, password) VALUES (?, ?)').bind(reqBody.name.trim(), await bcrypt.hash(reqBody.password, 12)).run()).meta.last_row_id;
+	await env.db.prepare('INSERT INTO registration_attempts (ip) VALUES (?)').bind(ip).run();
+	return await login(userId, c);
 });
 app.post('/login', async c => {
 	const locale = c.get('locale'), reqBody = c.get('reqBody');
@@ -90,6 +104,24 @@ app.post('/set-locale', c => {
 	c.header('Set-Cookie', `locale=${encodeURIComponent(locale)}; Path=/; Max-Age=31536000; SameSite=Lax`);
 	c.set('locale', locale);
 	return c.redirect('/user/settings');
+});
+app.post('/relationship', async c => {
+	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), env = c.env as any;
+	if (!currentUser) {
+		return loginRequired(c);
+	}
+	const targetUid = parseInt(String(reqBody.uid || ''));
+	const type = String(reqBody.type || 'subscribe');
+	const action = String(reqBody.action || 'set');
+	if (!targetUid || targetUid === currentUser.id || !['subscribe', 'friend'].includes(type)) {
+		return notFound(c);
+	}
+	if (action === 'remove') {
+		await env.db.prepare('DELETE FROM user_relations WHERE uid = ? AND target_uid = ? AND type = ?').bind(currentUser.id, targetUid, type).run();
+	} else {
+		await env.db.prepare('INSERT OR REPLACE INTO user_relations (uid, target_uid, type, created_at) VALUES (?, ?, ?, CURRENT_TIMESTAMP)').bind(currentUser.id, targetUid, type).run();
+	}
+	return c.redirect(`/user/${targetUid}`);
 });
 app.post('/general-settings', async c => {
 	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), env = c.env as any;

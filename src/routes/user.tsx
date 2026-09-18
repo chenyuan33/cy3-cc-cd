@@ -304,22 +304,48 @@ app.get('/notification', async c => {
     </>, { title: getText(locale, 'userNotification') });
 });
 app.get('/:uid{[1-9][0-9]*}', async c => {
-    const currentUser = c.get('currentUser'), user = await userQuery(parseInt(c.req.param('uid')), c), locale = c.get('locale');
+    const currentUser = c.get('currentUser'), user = await userQuery(parseInt(c.req.param('uid')), c), locale = c.get('locale'), env = c.env as any;
     if (user === null) {
         return notFound(c);
     }
     const displayName = getDisplayUsername(user, locale);
+    const profileImage = user.profile_image_path ? `/file/${user.profile_image_path}` : null;
+    const { subscribeCount = 0 } = await env.db.prepare('SELECT COUNT(*) AS subscribeCount FROM user_relations WHERE target_uid = ? AND type = ?').bind(user.id, 'subscribe').first();
+    const { friendCount = 0 } = await env.db.prepare('SELECT COUNT(*) AS friendCount FROM user_relations WHERE target_uid = ? AND type = ?').bind(user.id, 'friend').first();
+    const isSubscribed = currentUser ? !!(await env.db.prepare('SELECT 1 FROM user_relations WHERE uid = ? AND target_uid = ? AND type = ?').bind(currentUser.id, user.id, 'subscribe').first()) : false;
+    const isFriend = currentUser ? !!(await env.db.prepare('SELECT 1 FROM user_relations WHERE uid = ? AND target_uid = ? AND type = ?').bind(currentUser.id, user.id, 'friend').first()) : false;
     return c.render(
         <>
             <Card style={{ position: 'relative' }}>
+                {profileImage ? <img src={profileImage} alt={displayName} style={{ width: '100%', maxHeight: '220px', objectFit: 'cover', borderRadius: '8px', display: 'block', marginBottom: '12px' }} /> : <></>}
                 <h1><User user={user} c={c} /></h1>
                 <table>
                     <tbody>
                         <tr><th>{getText(locale, 'uid')}</th><td>{user.id}</td></tr>
                         <tr><th>{getText(locale, 'registeredAt')}</th><td>{user.created_at}</td></tr>
                         <tr><th>{getText(locale, 'feeds')}</th><td><a href={`/user/${user.id}/feed`}>{getText(locale, 'feeds')}</a></td></tr>
+                        <tr><th>Subscriptions</th><td>{subscribeCount}</td></tr>
+                        <tr><th>Friends</th><td>{friendCount}</td></tr>
                     </tbody>
                 </table>
+                {currentUser && currentUser.id !== user.id ? <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
+                    <form method='post' action='/api/user/relationship'>
+                        <input type='hidden' name='uid' value={String(user.id)} />
+                        <input type='hidden' name='type' value='subscribe' />
+                        <input type='hidden' name='action' value={isSubscribed ? 'remove' : 'set'} />
+                        <button type='submit'>{isSubscribed ? 'Unsubscribe' : 'Subscribe'}</button>
+                    </form>
+                    <form method='post' action='/api/user/relationship'>
+                        <input type='hidden' name='uid' value={String(user.id)} />
+                        <input type='hidden' name='type' value='friend' />
+                        <input type='hidden' name='action' value={isFriend ? 'remove' : 'set'} />
+                        <button type='submit'>{isFriend ? 'Remove friend' : 'Add friend'}</button>
+                    </form>
+                </div> : <></>}
+                {currentUser && currentUser.id === user.id ? <div style={{ marginTop: '12px', display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                    <a href={`/file/user/${user.id}/`}><button type='button'>Choose profile picture from uploads</button></a>
+                    <a href={`/file/user/${user.id}/`}><button type='button'>Choose icon from uploads</button></a>
+                </div> : <></>}
             </Card>
             {currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <><Card style={{ marginTop: '10px' }}>
                 <Form action='/admin/user/name-violation' method='post' inputs={[
