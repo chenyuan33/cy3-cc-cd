@@ -152,6 +152,7 @@ export default {
     ticketStatus_resolved: 'Resolved',
     ticketStatus_closed: 'Closed',
     ticketPost: 'Post ticket',
+	ticketPostSimilar: 'Before creating a ticket, you may want to take a look at the following tickets that may be similar:',
     ticketCategory: 'Ticket category',
     ticketCategoryName_suggestion: 'Suggestion',
     ticketCategoryName_bugReport: 'Bug report',

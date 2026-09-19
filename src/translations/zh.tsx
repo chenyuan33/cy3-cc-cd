@@ -152,6 +152,7 @@ export default {
     ticketStatus_resolved: '已完成',
     ticketStatus_closed: '已关闭',
     ticketPost: '发布工单',
+	ticketPostSimilar: '创建工单之前不妨先看看以下可能相似的工单：',
     ticketCategory: '工单类型',
     ticketCategoryName_suggestion: '建议',
     ticketCategoryName_bugReport: 'Bug 反馈',

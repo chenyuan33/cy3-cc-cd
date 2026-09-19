@@ -107,6 +107,7 @@ app.get('/post', c => {
 	}
 	return c.render(<Card>
 		<MdInit />
+		<script src='/ticket/post.js' />
 		<h1>{getText(c.get('locale'), 'ticketPost')}</h1>
 		<Form action='/api/ticket/post' method='post' inputs={[
 			{
@@ -122,7 +123,8 @@ app.get('/post', c => {
 					}))
 				}
 			},
-			{ id: 'title', name: 'title', label: getText(c.get('locale'), 'ticketTitle'), main: { type: 'input', inputType: 'text' }, required: true },
+			{ id: 'title', name: 'title', label: getText(c.get('locale'), 'ticketTitle'), main: { type: 'input', inputType: 'text', oninput: 'refreshSimilarTicket()' }, required: true },
+			{ main: { type: 'html', html: <div id='similar'></div> } },
 			{ id: 'content', name: 'content', label: getText(c.get('locale'), 'ticketContent'), main: { type: 'mdeditor' }, required: true }
 		]} submit={{ content: getText(c.get('locale'), 'post') }} />
 	</Card>, { title: getText(c.get('locale'), 'ticketPost') });

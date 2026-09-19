@@ -7,6 +7,13 @@ import { processAt } from "../../at";
 export const ticketStatus = ['new', 'inProgress', 'pending', 'infoNeeded', 'resolved', 'closed'];
 export const ticketCategories = ['suggestion', 'bugReport', 'userReport', 'checkinAdd', 'other'];
 const app = new Hono<AppEnv>();
+app.get('/similar', async c => {
+	const locale = c.get('locale'), { title } = c.get('reqBody'), env = c.env as any;
+    if (!title) {
+        return errorHTML(c, getText(locale, 'titleRequired'));
+    }
+	return c.json((await env.db.prepare('SELECT rowid, title FROM ticket_fts WHERE ticket_fts MATCH ? LIMIT 10').bind(title).all()).results);
+});
 app.post('/post', async c => {
     const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { category, title, content } = c.get('reqBody');
     if (!currentUser) {

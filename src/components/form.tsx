@@ -19,6 +19,7 @@ export const Form: FC<{ id?: string, action: string, method: 'get' | 'post', enc
 		optionGroups?: { group: string, options: { value: string, label: string, selected?: boolean, disabled?: boolean }[] }[],
 		options?: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[]
 	}
+	| { type: 'html', html: JSX.Element }
 }[], submit: { content: string, disabled?: boolean } | JSX.Element, locale?: string, style?: CSSProperties | string | undefined }> = ({ id, action, method, enctype, onsubmit, inputs, submit, locale, style }) => <form id={id} action={action} method={method} enctype={enctype} onsubmit={createSubmitHandler(onsubmit)} style={style}>
 	{inputs.map(({ id, name, label, main, required = false }) => 
 		main.type === 'input' ? main.inputType === 'checkbox' ? <div>
@@ -33,6 +34,7 @@ export const Form: FC<{ id?: string, action: string, method: 'get' | 'post', enc
 			{label && <label for={'mdeditor-input-' + id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
 			<MdEditor id={id} name={name} required={required} style={{ position: 'relative', left: label ? '100px': 0, width: label ? 'calc(100% - 100px)' : '100%' }} height={main.mdeditorHeight || '300px'} locale={locale} />
 		</div>
+		: main.type === 'html' ? <div>{main.html}</div>
 		: <div style={{ height: '50px' }}>
 			{label && <label for={id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
 			<select id={id} name={name} required={required} style={{ position: 'absolute', right: '10px' }}>
