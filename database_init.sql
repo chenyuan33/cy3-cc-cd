@@ -71,7 +71,8 @@ CREATE TABLE IF NOT EXISTS ticket (
 CREATE VIRTUAL TABLE IF NOT EXISTS ticket_fts USING fts5 (
 	title,
 	content='ticket',
-	content_rowid='id'
+	content_rowid='id',
+	tokenize='trigram'
 );
 CREATE TRIGGER IF NOT EXISTS ticket_fts_insert AFTER INSERT ON ticket BEGIN
     INSERT INTO ticket_fts (rowid, title) VALUES (new.id, new.title);
