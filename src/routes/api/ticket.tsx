@@ -12,7 +12,7 @@ app.get('/similar', async c => {
     if (!title) {
         return errorHTML(c, getText(locale, 'titleRequired'));
     }
-	return c.json((await env.db.prepare('SELECT rowid, title FROM ticket_fts WHERE ticket_fts MATCH ? LIMIT 10').bind(title).all()).results);
+	return c.json((await env.db.prepare('SELECT rowid, title FROM ticket_fts WHERE ticket_fts MATCH ? LIMIT 10').bind(Array.from((new Intl.Segmenter(locale, { granularity: 'word' })).segment(title)).map(({ segment }) => segment).join(' ')).all()).results);
 });
 app.post('/post', async c => {
     const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { category, title, content } = c.get('reqBody');
