@@ -4,15 +4,20 @@ import { accessDenied, emailVerifyRequired, errorHTML, loginRequired, muted, not
 import { getText } from "../../translations";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../../settings";
 import { processAt } from "../../at";
+import segmenter from "../../segmenter";
+import { TicketStatus } from "../../components/ticketStatus";
 export const ticketStatus = ['new', 'inProgress', 'pending', 'infoNeeded', 'resolved', 'closed'];
 export const ticketCategories = ['suggestion', 'bugReport', 'userReport', 'checkinAdd', 'other'];
 const app = new Hono<AppEnv>();
 app.get('/similar', async c => {
-	const locale = c.get('locale'), { title } = c.get('reqBody'), env = c.env as any;
+	const locale = c.get('locale'), { title, category } = c.get('reqBody'), env = c.env as any;
     if (!title) {
         return errorHTML(c, getText(locale, 'titleRequired'));
     }
-	return c.json((await env.db.prepare('SELECT rowid, title FROM ticket_fts WHERE ticket_fts MATCH ? LIMIT 10').bind(Array.from((new Intl.Segmenter(locale, { granularity: 'word' })).segment(title)).map(({ segment }) => segment).join(' ')).all()).results);
+    if (!category) {
+        return errorHTML(c, getText(locale, 'categoryRequired'));
+    }
+	return c.json((await env.db.prepare('SELECT rowid, status, title FROM ticket_fts WHERE category = ? AND ticket_fts MATCH ? LIMIT 10').bind(category, `segmented_title:"${segmenter(locale, title).replaceAll('"', '""')}"`).all()).results.map(({ rowid, status, title }: { rowid: number, status: string, title: string }) => ({ id: rowid, status: (<TicketStatus c={c} status={status} />).toString(), title })));
 });
 app.post('/post', async c => {
     const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { category, title, content } = c.get('reqBody');
@@ -40,6 +45,7 @@ app.post('/post', async c => {
     }
     const { id } = await env.db.prepare('INSERT INTO ticket (uid, category, title, content) VALUES (?, ?, ?, ?) RETURNING id')
         .bind(currentUser.id, category, title, content).first();
+	await env.db.prepare('INSERT INTO ticket_fts (rowid, category, status, title, segmented_title) VALUES (?, ?, "new", ?, ?)').bind(id, category, title, segmenter(locale, title)).run();
     await processAt(c, content, '/ticket/' + id);
     return c.redirect('/ticket/' + id, 303);
 });
@@ -78,7 +84,8 @@ app.post('/edit', async c => {
     if (currentUser.id !== 1 && currentUser.id !== ticket.uid) {
         return accessDenied(c);
     }
-    await env.db.prepare('UPDATE ticket SET title = ?, content = ? WHERE id = ?').bind(title, content, ticket_id).run();
+	await env.db.prepare('UPDATE ticket SET title = ?, content = ? WHERE id = ?').bind(title, content, ticket_id).run();
+	await env.db.prepare('UPDATE ticket_fts SET title = ?, segmented_title = ? WHERE rowid = ?').bind(title, segmenter(locale, title), ticket_id).run();
     return c.redirect('/ticket/' + ticket_id, 303);
 });
 app.post('/reply', async c => {
@@ -116,6 +123,7 @@ app.post('/reply', async c => {
     }
     if (set_status) {
         await env.db.prepare('UPDATE ticket SET status = ? WHERE id = ?').bind(set_status, ticket_id).run();
+		await env.db.prepare('UPDATE ticket_fts SET status = ? WHERE rowid = ?').bind(set_status, ticket_id).run();
         await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "ticket-status-changed", ?)').bind(ticket.uid, JSON.stringify({ ticket_id, status: set_status })).run();
     }
     if (set_assignee) {

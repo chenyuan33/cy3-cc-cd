@@ -120,7 +120,8 @@ app.get('/post', c => {
 						value: categoryName,
 						label: getText(c.get('locale'), 'ticketCategoryName_' + categoryName),
 						selected: category === categoryName
-					}))
+					})),
+					onchange: 'refreshSimilarTicket()'
 				}
 			},
 			{ id: 'title', name: 'title', label: getText(c.get('locale'), 'ticketTitle'), main: { type: 'input', inputType: 'text', oninput: 'refreshSimilarTicket()' }, required: true },

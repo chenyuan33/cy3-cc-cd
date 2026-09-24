@@ -17,7 +17,8 @@ export const Form: FC<{ id?: string, action: string, method: 'get' | 'post', enc
 	| {
 		type: 'select',
 		optionGroups?: { group: string, options: { value: string, label: string, selected?: boolean, disabled?: boolean }[] }[],
-		options?: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[]
+		options?: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[],
+		onchange?: string
 	}
 	| { type: 'html', html: JSX.Element }
 }[], submit: { content: string, disabled?: boolean } | JSX.Element, locale?: string, style?: CSSProperties | string | undefined }> = ({ id, action, method, enctype, onsubmit, inputs, submit, locale, style }) => <form id={id} action={action} method={method} enctype={enctype} onsubmit={createSubmitHandler(onsubmit)} style={style}>
@@ -37,7 +38,7 @@ export const Form: FC<{ id?: string, action: string, method: 'get' | 'post', enc
 		: main.type === 'html' ? <div>{main.html}</div>
 		: <div style={{ height: '50px' }}>
 			{label && <label for={id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
-			<select id={id} name={name} required={required} style={{ position: 'absolute', right: '10px' }}>
+			<select id={id} name={name} required={required} style={{ position: 'absolute', right: '10px' }} onchange={main.onchange}>
 				{(main.options || []).map(({ value, label, selected, disabled }) => <option value={value} selected={selected && !disabled} disabled={disabled}>{label}</option>)}
 				{(main.optionGroups || []).map(({ group, options }) => <optgroup label={group}>{options.map(({ value, label, selected, disabled }) => <option value={value} selected={selected && !disabled} disabled={disabled}>{label}</option>)}</optgroup>)}
 			</select>

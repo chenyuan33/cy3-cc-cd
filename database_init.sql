@@ -69,20 +69,11 @@ CREATE TABLE IF NOT EXISTS ticket (
     FOREIGN KEY (uid) REFERENCES users(id)
 );
 CREATE VIRTUAL TABLE IF NOT EXISTS ticket_fts USING fts5 (
+	category,
+	status,
 	title,
-	content='ticket',
-	content_rowid='id'
+	segmented_title
 );
-CREATE TRIGGER IF NOT EXISTS ticket_fts_insert AFTER INSERT ON ticket BEGIN
-    INSERT INTO ticket_fts (rowid, title) VALUES (new.id, new.title);
-END;
-CREATE TRIGGER IF NOT EXISTS ticket_fts_delete AFTER DELETE ON ticket BEGIN
-	INSERT INTO ticket_fts (ticket_fts, rowid, title) VALUES ('delete', old.id, old.title);
-END;
-CREATE TRIGGER IF NOT EXISTS ticket_fts_insert AFTER INSERT ON ticket BEGIN
-	INSERT INTO ticket_fts (ticket_fts, rowid, title) VALUES ('delete', old.id, old.title);
-    INSERT INTO ticket_fts (rowid, title) VALUES (new.id, new.title);
-END;
 CREATE TABLE IF NOT EXISTS ticket_reply (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     ticket_id INTEGER NOT NULL,

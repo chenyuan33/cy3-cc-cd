@@ -5,6 +5,7 @@ import { accessDenied, notFound } from "./errorPages";
 import { Card } from "../components/card";
 import judgementRoutes from './admin/judgement';
 import { getText } from "../translations";
+import segmenter from "../segmenter";
 
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
@@ -60,6 +61,10 @@ app.get('/', c => c.render(<>
 
 app.get('/init', async c => {
     const env: any = c.env;
+	await env.db.prepare('DELETE FROM ticket_fts');
+	for (const { id, category, status, title } of (await env.db.prepare('SELECT id, category, status, title FROM ticket').bind().all()).results) {
+		await env.db.prepare('INSERT INTO ticket_fts (rowid, category, status, title, segmented_title) VALUES (?, ?, ?, ?, ?)').bind(id, category, status, title, segmenter(c.get('locale'), title)).run();
+	}
     return c.render(<Card><p>Init Successfully.</p></Card>, { title: 'Init - Admin' });
 });
 
