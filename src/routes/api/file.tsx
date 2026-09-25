@@ -2,10 +2,11 @@ import { Hono } from "hono";
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { AppEnv } from "../../types";
+import { accessDenied, notFound } from "../errorPages";
 
 const app = new Hono<AppEnv>();
 app.post('/upload', async c => {
-	const env = c.env as any;
+	const env = c.env as any, currentUser = c.get('currentUser');
 	const client = new S3Client({
 		region: env.B2_REGION,
 		endpoint: env.B2_ENDPOINT,
@@ -17,6 +18,12 @@ app.post('/upload', async c => {
 	});
 	const body = await c.req.parseBody();
 	const path = body.path || '', file = body.file as File;
+	if (typeof path !== 'string') {
+		return notFound(c);
+	}
+	if (!currentUser || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id)) {
+		return accessDenied(c);
+	}
 	if (!file) {
 		return c.json({ error: 'No file uploaded' }, 400);
 	}

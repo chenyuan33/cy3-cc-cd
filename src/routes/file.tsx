@@ -14,7 +14,7 @@ import { DeleteLink } from "../components/button";
 const app = new Hono<AppEnv>();
 app.get('/:path{.*}', async c => {
 	const currentUser = c.get('currentUser'), path = decodeURIComponent(c.req.param('path')), locale = c.get('locale'), env = c.env as any, currentPage = parseInt(c.get('reqBody').page || '1') || 1;
-	if (!currentUser || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id)) {
+	if (!currentUser || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
 		return accessDenied(c);
 	}
 	const client = new S3Client({
