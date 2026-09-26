@@ -80,7 +80,6 @@ app.get('/post', c => {
 				label: translations.category,
 				main: {
 					type: 'select',
-					optionGroups: [],
 					options: (Object.entries(discussionCategories) as [discussionCategoriesType, (user: userInfo) => boolean][]).map(([key, check]) => ({ value: key, label: translations.discussion.categoryName[key], selected: category === key, disabled: !check(currentUser) }))
 				}
 			},

@@ -1,6 +1,7 @@
 import type { CSSProperties, FC } from "hono/jsx";
 import { MdEditor } from "./mdeditor";
 import type { JSX } from "hono/jsx/jsx-runtime";
+import { Select } from "./select";
 
 export const createSubmitHandler = (onsubmit?: string) => `var _form = this; var _button = _form.querySelector('button[type="submit"]'); if (_button && _button.dataset.submitting === 'true') return false; if (_button) { _button.dataset.submitting = 'true'; _button.disabled = true; } var _result = true; try { _result = (function(){ ${onsubmit || ''} })(); } catch (_error) { if (_button) { _button.dataset.submitting = 'false'; _button.disabled = false; } throw _error; } if (_result === false && _button) { _button.dataset.submitting = 'false'; _button.disabled = false; } return _result;`;
 export const Form: FC<{ id?: string, action: string, method: 'get' | 'post', enctype?: 'application/x-www-form-urlencoded' | 'multipart/form-data' | 'text/plain', onsubmit?: string, inputs: { id?: string, name?: string, label?: string, required?: boolean, main:
@@ -16,8 +17,7 @@ export const Form: FC<{ id?: string, action: string, method: 'get' | 'post', enc
 	| { type: 'mdeditor', mdeditorHeight?: string }
 	| {
 		type: 'select',
-		optionGroups?: { group: string, options: { value: string, label: string, selected?: boolean, disabled?: boolean }[] }[],
-		options?: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[],
+		options: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[],
 		onchange?: string
 	}
 	| { type: 'html', html: JSX.Element }
@@ -38,10 +38,7 @@ export const Form: FC<{ id?: string, action: string, method: 'get' | 'post', enc
 		: main.type === 'html' ? <div>{main.html}</div>
 		: <div style={{ height: '50px' }}>
 			{label && <label for={id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
-			<select id={id} name={name} required={required} style={{ position: 'absolute', right: '10px' }} onchange={main.onchange}>
-				{(main.options || []).map(({ value, label, selected, disabled }) => <option value={value} selected={selected && !disabled} disabled={disabled}>{label}</option>)}
-				{(main.optionGroups || []).map(({ group, options }) => <optgroup label={group}>{options.map(({ value, label, selected, disabled }) => <option value={value} selected={selected && !disabled} disabled={disabled}>{label}</option>)}</optgroup>)}
-			</select>
+			<Select id={id} name={name} style={{ position: 'absolute', right: '10px' }} onchange={main.onchange} options={main.options} />
 		</div>
 	)}
 	{'content' in submit ? <button type='submit' disabled={submit.disabled}>{submit.content}</button> : submit}

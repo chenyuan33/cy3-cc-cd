@@ -48,7 +48,6 @@ app.get('/', async c => {
 					label: translations.category,
 					main: {
 						type: 'select',
-						optionGroups: [],
 						options: [
 							{ value: '', label: translations.allCategories, selected: !category },
 							...ticketCategories.map(categoryName => ({
@@ -65,9 +64,8 @@ app.get('/', async c => {
 					label: translations.status,
 					main: {
 						type: 'select',
-						optionGroups: [],
 						options: [
-							{ value: '', label: translations.allStatuses, selected: !category },
+							{ value: '', label: translations.allStatuses, selected: !status },
 							...ticketStatus.map(statusName => ({
 								value: statusName,
 								label: <TicketStatus c={c} status={statusName} />,

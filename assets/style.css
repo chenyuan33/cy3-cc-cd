@@ -223,6 +223,8 @@ button:disabled:hover {
 
 button,
 select,
+.selector-main,
+.selector-option,
 input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]) {
     padding: 12px 16px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
@@ -230,7 +232,12 @@ input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [t
     color: light-dark(#333333, #e0e0e0);
     background-color: light-dark(#ffffff, #2c2c2c);
     border: 1px solid light-dark(#e0e0e0, #444444);
+}
 
+button,
+select,
+.selector-main,
+input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]) {
     border-radius: 8px;
     outline: none;
     box-sizing: border-box;
@@ -243,12 +250,14 @@ input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [t
 
 button:hover,
 select:hover,
+.selector-main:hover,
 input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]):hover {
     border-color: light-dark(#c0c0c0, #555555);
 }
 
 button:focus,
 select:focus,
+.selector-main:focus,
 input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]):focus {
     border-color: #4a90e2;
     box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
@@ -262,6 +271,26 @@ input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [t
     background-color: light-dark(#f5f5f5, #222222);
     border-color: light-dark(#dddddd, #333333);
     cursor: not-allowed;
+}
+
+/* Selector */
+
+.selector-main {
+	cursor: pointer;
+}
+
+.selector-options-div {
+	display: none;
+	cursor: pointer;
+	position: absolute;
+	margin-top: 12px;
+	margin-right: 0;
+	margin-bottom: -12px;
+	margin-left: -16px;
+}
+
+.selector-option {
+	padding: 10px;
 }
 
 /* Top Header (顶部导航栏) */
