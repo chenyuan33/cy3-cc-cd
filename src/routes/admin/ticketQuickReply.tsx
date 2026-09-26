@@ -38,7 +38,7 @@ app.get('/', async c => {
 		</details>
 	</Card>, { title: translations.admin.ticketQuickReply.name });
 });
-app.post('/new', c => {
+app.post('/new', async c => {
 	const { title, content } = c.get('reqBody'), env = c.env as any;
 	if (!title) {
 		return titleRequired(c);
@@ -46,7 +46,7 @@ app.post('/new', c => {
 	if (!content) {
 		return contentRequired(c);
 	}
-	env.db.prepare('INSERT INTO ticket_quick_reply (title, content, creator) VALUES (?, ?, ?)').bind(title, content, c.get('currentUser')!.id).run();
+	await env.db.prepare('INSERT INTO ticket_quick_reply (title, content, creator) VALUES (?, ?, ?)').bind(title, content, c.get('currentUser')!.id).run();
 	return c.redirect('/admin/ticket-quick-reply');
 });
 export default app;
