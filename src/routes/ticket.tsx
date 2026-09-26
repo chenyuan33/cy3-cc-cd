@@ -220,6 +220,14 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				<p style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }} id='replying-description'></p>
 				<div id='replying-content'></div>
 			</blockquote>
+			{currentUser && ((currentUser.permission & permissionAdmin) || assignee_uid && assignee_uid === currentUser.id) ? <div style={{ marginBottom: '10px' }}>
+				<strong>{translations.admin.ticketQuickReply.name}</strong>
+				&nbsp;
+				<span style={{ display: 'inline-flex', gap: '10px' }}>
+					{(await env.db.prepare('SELECT title, content FROM ticket_quick_reply').all()).results
+					.map(({ title, content }: { title: string, content: string }) => <button onclick={`window['CodeMirrorEditor_mdeditor-input-content'].replaceSelection(${JSON.stringify(content)})`}>{title}</button>)}
+				</span>
+			</div> : <></>}
 			<Form action='/api/ticket/reply' method='post' inputs={[
 				{ id: 'ticket_id', name: 'ticket_id', main: { type: 'input', inputType: 'hidden', value: c.req.param('ticket_id') } },
 				{ id: 'parent_id', name: 'parent_id', main: { type: 'input', inputType: 'hidden', value: '' } },

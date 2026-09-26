@@ -4,6 +4,7 @@ import { permissionAdmin, permissionCount } from "../settings";
 import { accessDenied, notFound } from "./errorPages";
 import { Card } from "../components/card";
 import judgementRoutes from './admin/judgement';
+import ticketQuickReplyRoutes from './admin/ticketQuickReply';
 
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
@@ -14,6 +15,7 @@ app.use('/*', async (c, next) => {
 });
 
 app.route('/judgement', judgementRoutes);
+app.route('/ticket-quick-reply', ticketQuickReplyRoutes);
 
 app.get('/', c => c.render(<>
     <Card>
@@ -22,6 +24,7 @@ app.get('/', c => c.render(<>
             <a href='/admin/domain/cy3.cc.cd/renew'>Domain cy3.cc.cd Renew</a>
         </p> : <></>}
         <p><a href='/admin/judgement'>{c.get('translations').admin.judgement.adminJudgementTitle}</a></p>
+		<p><a href='/admin/ticket-quick-reply'>{c.get('translations').admin.ticketQuickReply.name}</a></p>
     </Card>
     <Card>
         <h2>Add a check-in type</h2>

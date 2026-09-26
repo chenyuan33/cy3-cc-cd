@@ -227,6 +227,10 @@ export default {
 			batchSelectUsersHint: '勾选表格中的用户，然后选择权限进行批量操作',
 			batchAction: '操作类型',
 			batchSelectPerms: '请选择至少一个权限'
+		},
+		ticketQuickReply: {
+			name: '工单快捷回复',
+			new: '新建'
 		}
 	},
 	error: {
@@ -253,8 +257,10 @@ export default {
 		emailUsed: '此邮箱已被使用。',
 		verifyFailed: '验证失败',
 	},
+	id: '编号',
     title: '标题',
     content: '内容',
+	creator: '创建者',
 	category: '板块',
     categories: '板块',
     status: '状态',

@@ -110,6 +110,12 @@ CREATE TABLE IF NOT EXISTS judgement (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     batch_id TEXT
 );
+CREATE TABLE IF NOT EXISTS ticket_quick_reply (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	title TEXT NOT NULL,
+	content TEXT NOT NULL,
+	creator INTEGER NOT NULL
+);
 CREATE INDEX IF NOT EXISTS idx_ticket_created_at ON ticket(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ticket_uid_created_at ON ticket(uid, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ticket_category_created_at ON ticket(category, created_at DESC);

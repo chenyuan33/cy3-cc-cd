@@ -227,6 +227,10 @@ export default {
 			batchSelectUsersHint: 'Check users in the table, then select permissions for batch operation',
 			batchAction: 'Action type',
 			batchSelectPerms: 'Select at least one permission'
+		},
+		ticketQuickReply: {
+			name: 'Quick Replies for Tickets',
+			new: 'New'
 		}
 	},
 	error: {
@@ -253,8 +257,10 @@ export default {
 		emailUsed: 'This email has been used.',
 		verifyFailed: 'Verification failed'
 	},
+	id: 'ID',
     title: 'Title',
     content: 'Content',
+	creator: 'Creator',
 	category: 'Category',
     categories: 'Categories',
     status: 'Status',
