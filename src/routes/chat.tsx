@@ -1,14 +1,21 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { Card } from "../components/card";
-import { loginRequired } from "./errorPages";
+import { accessDenied, loginRequired } from "./errorPages";
 import { User } from "../components/user";
 import { MdInit, MdRender } from "../components/mdeditor";
 import { Time } from "../components/time";
 import { Form } from "../components/form";
+import { permissionChat } from "../settings";
 
 const app = new Hono<AppEnv>();
 
+app.use('/*', async (c, next) => {
+	if (!c.get('currentUser') || !(c.get('currentUser')!.permission & permissionChat)) {
+		return accessDenied(c);
+	}
+	await next();
+});
 app.get('/', async c => {
     const currentUser = c.get('currentUser');
     if (!currentUser) {

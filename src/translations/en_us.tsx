@@ -299,7 +299,9 @@ export default {
 		revoke: 'Revoke',
 		1: 'Visit the site',
 		2: 'Speak freely',
-		4: 'Access admin panel'
+		4: 'Access admin panel',
+		8: 'Use Private Messages',
+		16: 'Use File Upload Feature'
 	},
 	usernameViolation: {
 		set: 'Set as Violating Username',

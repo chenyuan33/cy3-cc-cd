@@ -9,8 +9,15 @@ import { User } from "../components/user";
 import type { JSX } from "hono/jsx/jsx-runtime";
 import { renderTemplate } from "../components/renderTemplate";
 import { DeleteLink } from "../components/button";
+import { permissionFile } from "../settings";
 
 const app = new Hono<AppEnv>();
+app.use('/*', async (c, next) => {
+	if (!c.get('currentUser') || !(c.get('currentUser')!.permission & permissionFile)) {
+		return accessDenied(c);
+	}
+	await next();
+});
 app.get('/:path{.*}', async c => {
 	const currentUser = c.get('currentUser'), path = decodeURIComponent(c.req.param('path')), translations = c.get('translations'), env = c.env as any, currentPage = parseInt(c.get('reqBody').page || '1') || 1;
 	if (!currentUser || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
