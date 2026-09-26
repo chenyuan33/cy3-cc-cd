@@ -9,6 +9,7 @@ import { raw } from "hono/html";
 import { getDisplayUsername, User } from "../../components/user";
 import { createSubmitHandler } from "../../components/form";
 import { permissionAdmin } from "../../settings";
+import { rateLimit } from "@elithrar/workers-hono-rate-limit";
 
 const app = new Hono<AppEnv>();
 const validateUsername = (name: string, c: ContextType) => {
@@ -29,6 +30,7 @@ const login = async (uid: number, c: ContextType) => {
 	}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`);
 	return c.redirect('/');
 };
+app.use('/*', (c, next) => rateLimit((c.env as any).rateLimiter, c => c.req.header('cf-connecting-ip') ?? '')(c, next));
 app.post('/register', async c => {
 	const reqBody = c.get('reqBody');
 	if (c.get('currentUser')) {

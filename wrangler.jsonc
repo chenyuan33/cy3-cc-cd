@@ -27,6 +27,16 @@
 			"database_id": "4f4f7505-ad2f-4a85-ae23-00a5012e2b6f"
 		}
 	],
+	"ratelimits": [
+		{
+			"name": "rateLimiter",
+			"namespace_id": "1",
+			"simple": {
+				"limit": 5,
+				"period": 60
+			}
+		}
+	],
 	"vars": {
 		"DNSHE_API_KEY": "cfsd_e3e7df615a4499ecbe44170636766b42",
 		"DNSHE_SUBDOMAIN_ID": "1544844327"
