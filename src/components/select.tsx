@@ -1,3 +1,4 @@
+import { raw } from "hono/html";
 import type { CSSProperties, FC } from "hono/jsx";
 import type { JSX } from "hono/jsx/jsx-runtime";
 
@@ -32,5 +33,12 @@ export const Select: FC<{
 				</div>) }
 			</div>
 		</span>
+		{raw(`<script>
+			document.addEventListener('click', function(event) {
+				if (!document.getElementById('${'selector-main-' + id}').contains(event.target)) {
+					document.getElementById('${'selector-options-div-' + id}').style.display = 'none';
+				}
+			});
+		</script>`)}
 	</>
 };

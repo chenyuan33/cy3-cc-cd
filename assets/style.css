@@ -287,6 +287,9 @@ input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [t
 	margin-right: 0;
 	margin-bottom: -12px;
 	margin-left: -16px;
+	z-index: 1;
+	width: max-content;
+	right: 0;
 }
 
 .selector-option {
