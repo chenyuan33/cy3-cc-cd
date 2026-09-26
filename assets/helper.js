@@ -107,7 +107,7 @@ let recentNotificationsAfter = new Date().toISOString().replace('T', ' ').replac
 ws.addEventListener('open', () => {
 	interval = setInterval(() => ws.send(JSON.stringify({ recentNotificationsAfter })), 20000);
 	document.getElementById('serverConnectStatus').style.color = 'green';
-	document.getElementById('serverConnectStatus').title = translations.serverConnectStatusConnected;
+	document.getElementById('serverConnectStatus').title = translations.serverConnectStatus.connected;
 });
 ws.addEventListener('message', evt => {
 	const recent = JSON.parse(evt.data);
@@ -116,10 +116,10 @@ ws.addEventListener('message', evt => {
 	}
 	if ('Notification' in window) {
 		if (Notification.permission === 'granted') {
-			recent.forEach(({ type }) => new Notification(translations['notificationTitle_' + type], {
+			recent.forEach(({ type }) => new Notification(translations.browserNotification.title[type], {
 				badge: '/favicon.ico',
 				icon: '/favicon.ico',
-				body: translations['notificationBody_' + type]
+				body: translations.browserNotification.body[type]
 			}).onclick = () => window.open({
 				notification: '/user/notification',
 				privateMessage: '/private-message'
@@ -130,7 +130,7 @@ ws.addEventListener('message', evt => {
 const wsCloseOrErrorCallback = () => {
 	clearInterval(interval);
 	document.getElementById('serverConnectStatus').style.color = 'red';
-	document.getElementById('serverConnectStatus').title = translations.serverConnectStatusFailed;
+	document.getElementById('serverConnectStatus').title = translations.serverConnectStatus.failed;
 };
 ws.addEventListener('close', wsCloseOrErrorCallback);
 ws.addEventListener('error', wsCloseOrErrorCallback);

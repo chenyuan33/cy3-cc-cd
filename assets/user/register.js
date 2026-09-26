@@ -41,6 +41,6 @@ const registerForm = document.getElementById('registerForm');
 registerForm.addEventListener('submit', async evt => {
 	if (document.getElementById('password').value !== document.getElementById('confirmPassword').value) {
 		evt.preventDefault();
-		await createAlert(passwordNotMatchText);
+		await createAlert(translations.user.confirmPassword);
 	}
 })

@@ -4,30 +4,20 @@ import { raw } from 'hono/html';
 import type { AppEnv } from '../../types';
 import { Card } from '../../components/card';
 import { accessDenied } from '../errorPages';
-import { permissionAdmin, permissionCount } from '../../settings';
+import { permissionAdmin, permissionCount, type allPermissions } from '../../settings';
 import { User } from '../../components/user';
-import { getText } from "../../translations";
 import { Pages } from '../../components/pages';
 
 const app = new Hono<AppEnv>();
-
-function getPermissionBits(): number[] {
-    return Array.from({ length: permissionCount }, (_, i) => 1 << i);
-}
-
 app.get('/', async (c) => {
-    const currentUser = c.get('currentUser');
+    const currentUser = c.get('currentUser'), translations = c.get('translations');
     if (!currentUser || !(currentUser.permission & permissionAdmin)) {
         return accessDenied(c);
     }
-
-    const locale = c.get('locale');
     const env = c.env as any;
-    const permissionBits = getPermissionBits();
-
-    const permLabels = permissionBits.map(bit => ({
+    const permLabels = (Array.from({ length: permissionCount }, (_, i) => 1 << i) as allPermissions[]).map(bit => ({
         bit,
-        label: getText(locale, 'permission' + bit)
+        label: translations.permission[bit]
     }));
 
     const perPage = 20;
@@ -41,64 +31,38 @@ app.get('/', async (c) => {
         .bind(perPage, offset)
         .all();
 
-    const t = {
-        promptReason: JSON.stringify(getText(locale, 'promptReason')),
-        confirmGrant: JSON.stringify(getText(locale, 'confirmGrant')),
-        confirmRevoke: JSON.stringify(getText(locale, 'confirmRevoke')),
-        operationSuccess: JSON.stringify(getText(locale, 'operationSuccess')),
-        operationFailed: JSON.stringify(getText(locale, 'operationFailed')),
-        grant: JSON.stringify(getText(locale, 'grant')),
-        revoke: JSON.stringify(getText(locale, 'revoke')),
-        currentUserId: currentUser.id,
-        onlySuperAdmin: JSON.stringify(getText(locale, 'onlySuperAdmin')),
-        cannotModify: JSON.stringify(getText(locale, 'cannotModify')),
-        permissionAdminValue: permissionAdmin,
-        batchSelectUsers: JSON.stringify(getText(locale, 'batchSelectUsers')),
-        batchSelectUsersHint: JSON.stringify(getText(locale, 'batchSelectUsersHint')),
-        batchSelectPerms: JSON.stringify(getText(locale, 'batchSelectPerms')),
-        batchAction: JSON.stringify(getText(locale, 'batchAction')),
-        batchGrant: JSON.stringify(getText(locale, 'batchGrant')),
-        batchRevoke: JSON.stringify(getText(locale, 'batchRevoke')),
-        batchConfirm: JSON.stringify(getText(locale, 'batchConfirm')),
-        batchSuccess: JSON.stringify(getText(locale, 'batchSuccess')),
-        batchFailed: JSON.stringify(getText(locale, 'batchFailed')),
-        batchCommentPlaceholder: JSON.stringify(getText(locale, 'batchCommentPlaceholder')),
-        batchExecute: JSON.stringify(getText(locale, 'batchExecute')),
-        batchOperation: JSON.stringify(getText(locale, 'batchOperation')),
-    };
-
     return c.render(
         <Card style={{ padding: '20px' }}>
-            <h1>{getText(locale, 'adminJudgementTitle')}</h1>
-            <p>{raw(getText(locale, 'adminJudgementDescription'))}</p>
+            <h1>{translations.admin.judgement.adminJudgementTitle}</h1>
+            <p>{raw(translations.admin.judgement.adminJudgementDescription)}</p>
 
             <div style={{ display: 'flex', gap: '10px', marginBottom: '20px', flexWrap: 'wrap' }}>
                 <input
                     id="searchInput"
                     type="text"
-                    placeholder={getText(locale, 'searchPlaceholder')}
+                    placeholder={translations.searchUsernameOrUid}
                     style={{ padding: '8px', width: '300px', border: '1px solid #ccc', borderRadius: '4px' }}
                 />
                 <button id="batchToggleBtn" style={{ padding: '8px 16px', background: 'light-dark(#e0e0e0, #444)', border: '1px solid #aaa', borderRadius: '4px', cursor: 'pointer' }}>
-                    {getText(locale, 'batchOperation')}
+                    {translations.admin.judgement.batchOperation}
                 </button>
             </div>
 
             <div id="batchPanel" style={{ display: 'none', marginBottom: '20px', border: '1px solid #ccc', borderRadius: '8px', background: 'light-dark(#ffffff, #2a2a2a)', boxShadow: '0 4px 16px rgba(0,0,0,0.15)' }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '12px 16px', borderBottom: '1px solid #eee', background: 'light-dark(#f5f5f5, #3a3a3a)', borderRadius: '8px 8px 0 0' }}>
-                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{getText(locale, 'batchOperation')}</span>
+                    <span style={{ fontWeight: 'bold', fontSize: '16px' }}>{translations.admin.judgement.batchOperation}</span>
                     <button id="batchCloseBtn" style={{ background: 'none', border: 'none', fontSize: '18px', cursor: 'pointer', color: 'light-dark(#666, #aaa)' }}>
                         <i class="fa-solid fa-times"></i>
                     </button>
                 </div>
                 <div style={{ padding: '16px' }}>
                     <div style={{ marginBottom: '12px' }}>
-                        <label style={{ fontWeight: '500', display: 'block', marginBottom: '4px' }}>{getText(locale, 'batchSelectUsers')}</label>
-                        <span style={{ fontSize: '14px', color: '#888' }}>{getText(locale, 'batchSelectUsersHint')}</span>
+                        <label style={{ fontWeight: '500', display: 'block', marginBottom: '4px' }}>{translations.admin.judgement.batchSelectUsers}</label>
+                        <span style={{ fontSize: '14px', color: '#888' }}>{translations.admin.judgement.batchSelectUsersHint}</span>
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', alignItems: 'flex-end' }}>
                         <div style={{ flex: '2', minWidth: '150px' }}>
-                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{getText(locale, 'batchSelectPerms')}</label>
+                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{translations.admin.judgement.batchSelectPerms}</label>
                             <select id="batchPermissionSelect" multiple style={{ width: '100%', minHeight: '80px', padding: '4px', border: '1px solid #ccc', borderRadius: '4px', background: 'light-dark(#fff, #333)' }}>
                                 {permLabels.map(p => (
                                     <option key={p.bit} value={p.bit}>{p.label}</option>
@@ -106,20 +70,20 @@ app.get('/', async (c) => {
                             </select>
                         </div>
                         <div style={{ flex: '0 0 auto' }}>
-                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{getText(locale, 'batchAction')}</label>
+                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{translations.admin.judgement.batchAction}</label>
                             <select id="batchActionSelect" style={{ padding: '6px 12px', border: '1px solid #ccc', borderRadius: '4px', background: 'light-dark(#fff, #333)' }}>
-                                <option value="grant">{getText(locale, 'grant')}</option>
-                                <option value="revoke">{getText(locale, 'revoke')}</option>
+                                <option value="grant">{translations.permission.grant}</option>
+                                <option value="revoke">{translations.permission.revoke}</option>
                             </select>
                         </div>
                         <div style={{ flex: '1', minWidth: '150px' }}>
-                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{getText(locale, 'reason')}</label>
-                            <input id="batchComment" type="text" placeholder={getText(locale, 'batchCommentPlaceholder')} style={{ width: '100%', padding: '6px 10px', border: '1px solid #ccc', borderRadius: '4px', background: 'light-dark(#fff, #333)' }} />
+                            <label style={{ display: 'block', fontSize: '13px', marginBottom: '2px' }}>{translations.reason}</label>
+                            <input id="batchComment" type="text" placeholder={translations.admin.judgement.batchCommentPlaceholder} style={{ width: '100%', padding: '6px 10px', border: '1px solid #ccc', borderRadius: '4px', background: 'light-dark(#fff, #333)' }} />
                         </div>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', marginTop: '16px' }}>
-                        <button id="batchExecuteBtn" style={{ padding: '8px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{getText(locale, 'batchExecute')}</button>
-                        <button id="batchCancelBtn" style={{ padding: '8px 20px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{getText(locale, 'cancel')}</button>
+                        <button id="batchExecuteBtn" style={{ padding: '8px 20px', background: '#4CAF50', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{translations.admin.judgement.batchExecute}</button>
+                        <button id="batchCancelBtn" style={{ padding: '8px 20px', background: '#f44336', color: 'white', border: 'none', borderRadius: '4px', cursor: 'pointer' }}>{translations.cancel}</button>
                     </div>
                 </div>
             </div>
@@ -128,8 +92,8 @@ app.get('/', async (c) => {
                 <thead>
                     <tr>
                         <th style={{ padding: '8px' }}><input type="checkbox" id="selectAll" style={{ display: 'none' }} /></th>
-                        <th style={{ padding: '8px' }}>ID</th>
-                        <th style={{ padding: '8px' }}>{getText(locale, 'username')}</th>
+                        <th style={{ padding: '8px' }}>{translations.userInfo.uid}</th>
+                        <th style={{ padding: '8px' }}>{translations.userInfo.username}</th>
                         {permLabels.map(p => <th key={p.bit} style={{ padding: '8px' }}>{p.label}</th>)}
                     </tr>
                 </thead>
@@ -181,54 +145,32 @@ app.get('/', async (c) => {
 
             <script dangerouslySetInnerHTML={{
                 __html: `
-          window.__promptReason = ${t.promptReason};
-          window.__confirmGrant = ${t.confirmGrant};
-          window.__confirmRevoke = ${t.confirmRevoke};
-          window.__operationSuccess = ${t.operationSuccess};
-          window.__operationFailed = ${t.operationFailed};
-          window.__grant = ${t.grant};
-          window.__revoke = ${t.revoke};
-          window.__currentUserId = ${t.currentUserId};
-          window.__onlySuperAdmin = ${t.onlySuperAdmin};
-          window.__cannotModify = ${t.cannotModify};
-          window.__permissionAdmin = ${t.permissionAdminValue};
-          window.__batchSelectUsers = ${t.batchSelectUsers};
-          window.__batchSelectUsersHint = ${t.batchSelectUsersHint};
-          window.__batchSelectPerms = ${t.batchSelectPerms};
-          window.__batchAction = ${t.batchAction};
-          window.__batchGrant = ${t.batchGrant};
-          window.__batchRevoke = ${t.batchRevoke};
-          window.__batchConfirm = ${t.batchConfirm};
-          window.__batchSuccess = ${t.batchSuccess};
-          window.__batchFailed = ${t.batchFailed};
-          window.__batchCommentPlaceholder = ${t.batchCommentPlaceholder};
-          window.__batchExecute = ${t.batchExecute};
-          window.__batchOperation = ${t.batchOperation};
-        `
+					window.__currentUserId = ${currentUser.id};
+					window.__permissionAdmin = ${permissionAdmin};
+				`
             }} />
             <script src="/js/admin-judgement.js"></script>
         </Card>,
-        { title: getText(locale, 'adminJudgementTitle') }
+        { title: translations.admin.judgement.adminJudgementTitle }
     );
 });
 
 // 单个权限切换
 app.post('/toggle', async (c) => {
-    const currentUser = c.get('currentUser');
-    const locale = c.get('locale');
+    const currentUser = c.get('currentUser'), translations = c.get('translations');
     if (!currentUser || !(currentUser.permission & permissionAdmin)) {
-        return c.json({ success: false, error: getText(locale, 'apiPermissionDenied') }, 403);
+        return c.json({ success: false, error: translations.error.accessDenied }, 403);
     }
     const { userId, bit, enable, comment } = await c.req.json();
     if (!userId || bit === undefined) {
-        return c.json({ success: false, error: getText(locale, 'apiMissingParams') }, 400);
+        return c.json({ success: false, error: translations.error.missingParams }, 400);
     }
     const targetId = parseInt(userId);
     if (targetId === currentUser.id) {
-        return c.json({ success: false, error: getText(locale, 'apiCannotModifySelf') }, 403);
+        return c.json({ success: false, error: translations.admin.judgement.cannotModifySelf }, 403);
     }
     if (bit === permissionAdmin && currentUser.id !== 1) {
-        return c.json({ success: false, error: getText(locale, 'apiCannotModifyAdmin') }, 403);
+        return c.json({ success: false, error: translations.admin.judgement.cannotModifyAdmin }, 403);
     }
     const env = c.env as any;
     const { permission } = await env.db
@@ -248,7 +190,7 @@ app.post('/toggle', async (c) => {
             .run();
 
         const payload = JSON.stringify({
-            comment: comment || getText(locale, 'noReason'),
+            comment: comment || translations.noReason,
             oldPermission: permission,
             newPermission: newPermission
         });
@@ -269,14 +211,13 @@ app.post('/toggle', async (c) => {
 
 // 批量权限切换
 app.post('/batch-toggle', async (c) => {
-    const currentUser = c.get('currentUser');
-    const locale = c.get('locale');
+    const currentUser = c.get('currentUser'), translations = c.get('translations');
     if (!currentUser || !(currentUser.permission & permissionAdmin)) {
-        return c.json({ success: false, error: getText(locale, 'apiPermissionDenied') }, 403);
+        return c.json({ success: false, error: translations.error.accessDenied }, 403);
     }
     const { userIds, bits, enable, comment } = await c.req.json();
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0 || !bits || !Array.isArray(bits) || bits.length === 0) {
-        return c.json({ success: false, error: getText(locale, 'apiMissingParams') }, 400);
+        return c.json({ success: false, error: translations.error.missingParams }, 400);
     }
     const env = c.env as any;
     let successCount = 0;
@@ -287,12 +228,12 @@ app.post('/batch-toggle', async (c) => {
     for (const id of userIds) {
         const targetId = parseInt(id);
         if (targetId === currentUser.id) {
-            results.push({ userId: targetId, success: false, error: getText(locale, 'apiCannotModifySelf') });
+            results.push({ userId: targetId, success: false, error: translations.admin.judgement.cannotModifySelf });
             failCount++;
             continue;
         }
         if (bits.includes(permissionAdmin) && currentUser.id !== 1) {
-            results.push({ userId: targetId, success: false, error: getText(locale, 'apiCannotModifyAdmin') });
+            results.push({ userId: targetId, success: false, error: translations.admin.judgement.cannotModifyAdmin });
             failCount++;
             continue;
         }
@@ -317,7 +258,7 @@ app.post('/batch-toggle', async (c) => {
                 .run();
 
             const payload = JSON.stringify({
-                comment: comment || getText(locale, 'noReason'),
+                comment: comment || translations.noReason,
                 oldPermission: permission,
                 newPermission: newPermission
             });

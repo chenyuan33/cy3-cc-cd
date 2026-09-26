@@ -1,23 +1,30 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../../types";
-import { accessDenied, emailVerifyRequired, errorHTML, loginRequired, muted, notFound } from "../errorPages";
-import { getText } from "../../translations";
+import { accessDenied, categoryNotFound, categoryRequired, contentRequired, emailVerifyRequired, errorHTML, loginRequired, muted, notFound, titleRequired } from "../errorPages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../../settings";
 import { processAt } from "../../at";
-import segmenter from "../../segmenter";
+import { segmenter } from "../../translations";
 import { TicketStatus } from "../../components/ticketStatus";
-export const ticketStatus = ['new', 'inProgress', 'pending', 'infoNeeded', 'resolved', 'closed'];
-export const ticketCategories = ['suggestion', 'bugReport', 'userReport', 'checkinAdd', 'other'];
+export const ticketStatus = ['new', 'inProgress', 'pending', 'infoNeeded', 'resolved', 'closed'] as const;
+export type ticketStatusType = (typeof ticketStatus)[number];
+export const inTicketStatus = (status: string): status is ticketStatusType => {
+	return (ticketStatus as readonly string[]).includes(status);
+};
+export const ticketCategories = ['suggestion', 'bugReport', 'userReport', 'checkinAdd', 'other'] as const;
+export type ticketCategoryType = (typeof ticketCategories)[number];
+export const inTicketCategory = (category: string): category is ticketCategoryType => {
+	return (ticketCategories as readonly string[]).includes(category);
+};
 const app = new Hono<AppEnv>();
 app.get('/similar', async c => {
 	const locale = c.get('locale'), { title, category } = c.get('reqBody'), env = c.env as any;
     if (!title) {
-        return errorHTML(c, getText(locale, 'titleRequired'));
+        return titleRequired(c);
     }
     if (!category) {
-        return errorHTML(c, getText(locale, 'categoryRequired'));
+        return categoryRequired(c);
     }
-	return c.json((await env.db.prepare('SELECT rowid, status, title FROM ticket_fts WHERE category = ? AND ticket_fts MATCH ? LIMIT 10').bind(category, `segmented_title:"${segmenter(locale, title).replaceAll('"', '""')}"`).all()).results.map(({ rowid, status, title }: { rowid: number, status: string, title: string }) => ({ id: rowid, status: (<TicketStatus c={c} status={status} />).toString(), title })));
+	return c.json((await env.db.prepare('SELECT rowid, status, title FROM ticket_fts WHERE category = ? AND ticket_fts MATCH ? LIMIT 10').bind(category, `segmented_title:"${segmenter(locale, title).replaceAll('"', '""')}"`).all()).results.map(({ rowid, status, title }: { rowid: number, status: ticketStatusType, title: string }) => ({ id: rowid, status: (<TicketStatus c={c} status={status} />).toString(), title })));
 });
 app.post('/post', async c => {
     const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { category, title, content } = c.get('reqBody');
@@ -31,17 +38,17 @@ app.post('/post', async c => {
         return muted(c);
     }
     if (!category) {
-        return errorHTML(c, getText(locale, 'categoryRequired'));
+        return categoryRequired(c);
     }
     if (!title) {
-        return errorHTML(c, getText(locale, 'titleRequired'));
+        return titleRequired(c);
     }
     if (!content) {
-        return errorHTML(c, getText(locale, 'contentRequired'));
+        return contentRequired(c);
     }
     console.log(category, ticketCategories);
-    if (!ticketCategories.includes(category)) {
-        return notFound(c);
+    if (!(ticketCategories as readonly string[]).includes(category)) {
+        return categoryNotFound(c);
     }
     const { id } = await env.db.prepare('INSERT INTO ticket (uid, category, title, content) VALUES (?, ?, ?, ?) RETURNING id')
         .bind(currentUser.id, category, title, content).first();
@@ -75,7 +82,7 @@ app.post('/edit', async c => {
         return loginRequired(c);
     }
     if (!ticket_id || !title || !content) {
-        return errorHTML(c, getText(locale, 'contentRequired'));
+        return contentRequired(c);
     }
     const ticket = await env.db.prepare('SELECT uid FROM ticket WHERE id = ?').bind(ticket_id).first();
     if (!ticket) {
@@ -99,11 +106,11 @@ app.post('/reply', async c => {
     if (!(currentUser.permission & permissionSpeak)) {
         return muted(c);
     }
-    if (!ticket_id || set_status && !ticketStatus.includes(set_status)) {
+    if (!ticket_id || set_status && !(ticketStatus as readonly string[]).includes(set_status)) {
         return notFound(c);
     }
     if (!content && !set_status && !set_assignee) {
-        return errorHTML(c, getText(c.get('locale'), 'contentRequired'));
+        return contentRequired(c);
     }
     const ticket = await env.db.prepare('SELECT id, uid FROM ticket WHERE id = ?').bind(ticket_id).first();
     if (!ticket) {
@@ -140,12 +147,12 @@ app.post('/reply', async c => {
     return c.redirect('/ticket/' + ticket_id, 303);
 });
 app.post('/reply/edit', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { ticket_id, reply_id, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), env = c.env as any, { ticket_id, reply_id, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!ticket_id || !reply_id || !content) {
-        return errorHTML(c, getText(locale, 'contentRequired'));
+        return contentRequired(c);
     }
     const reply = await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ? AND ticket_id = ?').bind(reply_id, ticket_id).first();
     if (!reply) {

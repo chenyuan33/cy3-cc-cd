@@ -21,26 +21,25 @@
                 const bit = parseInt(this.dataset.bit);
                 const isAdminBit = (bit === window.__permissionAdmin);
                 if (isAdminBit && window.__currentUserId !== 1) {
-                    await createAlert(window.__onlySuperAdmin);
+                    await createAlert(translations.admin.judgement.onlySuperAdmin);
                 } else {
-                    await createAlert(window.__cannotModify);
+                    await createAlert(translations.admin.judgement.cannotModify);
                 }
                 return;
             }
             const userId = this.dataset.userid;
             const bit = parseInt(this.dataset.bit);
             const currentHas = this.dataset.enabled === 'true';
-            const action = currentHas ? window.__revoke : window.__grant;
             const ths = document.querySelectorAll('thead th');
             const idx = Array.from(this.parentElement.parentElement.children).indexOf(this.parentElement);
             const permName = ths[idx]?.textContent || '';
 
-            const reason = prompt(window.__promptReason);
+            const reason = prompt(translations.admin.judgement.promptReason);
             if (reason === null) return;
 
             const confirmMsg = currentHas
-                ? window.__confirmRevoke.replace(/\{userId\}/g, userId).replace(/\{permName\}/g, permName)
-                : window.__confirmGrant.replace(/\{userId\}/g, userId).replace(/\{permName\}/g, permName);
+                ? translations.admin.judgement.confirmRevoke.replace(/\{userId\}/g, userId).replace(/\{permName\}/g, permName)
+                : translations.admin.judgement.confirmGrant.replace(/\{userId\}/g, userId).replace(/\{permName\}/g, permName);
             if (!await createConfirm(confirmMsg)) return;
 
             try {
@@ -51,13 +50,13 @@
                 });
                 const result = await response.json();
                 if (result.success) {
-                    await createAlert(window.__operationSuccess);
+                    await createAlert(translations.admin.judgement.operationSuccess);
                     location.reload();
                 } else {
-                    await createAlert(window.__operationFailed + (result.error || ''));
+                    await createAlert(translations.admin.judgement.operationFailed + (result.error || ''));
                 }
             } catch (e) {
-                await createAlert(window.__operationFailed + e.message);
+                await createAlert(translations.admin.judgement.operationFailed + e.message);
             }
         });
     });
@@ -108,13 +107,13 @@
     document.getElementById('batchExecuteBtn').addEventListener('click', async function () {
         const selected = document.querySelectorAll('.user-checkbox:checked');
         if (selected.length === 0) {
-            await createAlert(window.__batchSelectUsers);
+            await createAlert(translations.admin.judgement.batchSelectUsers);
             return;
         }
         const userIds = Array.from(selected).map(cb => cb.dataset.userid);
         const selectedOptions = Array.from(permSelect.selectedOptions);
         if (selectedOptions.length === 0) {
-            await createAlert(window.__batchSelectPerms);
+            await createAlert(translations.admin.judgement.batchSelectPerms);
             return;
         }
         const bits = selectedOptions.map(opt => parseInt(opt.value));
@@ -122,9 +121,9 @@
         const enable = action === 'grant';
         const comment = document.getElementById('batchComment').value.trim();
 
-        const actionText = enable ? window.__batchGrant : window.__batchRevoke;
+        const actionText = enable ? translations.admin.judgement.batchGrant : translations.admin.judgement.batchRevoke;
         const permNames = selectedOptions.map(opt => opt.text).join('、');
-        if (!await createConfirm(window.__batchConfirm.replace(/\{count\}/g, selected.length).replace(/\{action\}/g, actionText).replace(/\{perms\}/g, permNames))) {
+        if (!await createConfirm(translations.admin.judgement.batchConfirm.replace(/\{count\}/g, selected.length).replace(/\{action\}/g, actionText).replace(/\{perms\}/g, permNames))) {
             return;
         }
 
@@ -136,13 +135,13 @@
             });
             const result = await response.json();
             if (result.success) {
-                await createAlert(window.__batchSuccess.replace(/\{success\}/g, result.successCount).replace(/\{fail\}/g, result.failCount));
+                await createAlert(translations.admin.judgement.batchSuccess.replace(/\{success\}/g, result.successCount).replace(/\{fail\}/g, result.failCount));
                 location.reload();
             } else {
-                await createAlert(window.__batchFailed + (result.error || ''));
+                await createAlert(translations.admin.judgement.batchFailed + (result.error || ''));
             }
         } catch (e) {
-            await createAlert(window.__batchFailed + e.message);
+            await createAlert(translations.admin.judgement.batchFailed + e.message);
         }
     });
 })();

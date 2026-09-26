@@ -1,5 +1,5 @@
 import type { JSX } from 'hono/jsx/jsx-runtime';
-export const renderTemplate = (template: string, parts: Record<string, string | JSX.Element>) => {
+export const renderTemplate = (template: string, parts: Record<string, string | JSX.Element | JSX.Element[]>) => {
 	const keys = Object.keys(parts);
 	if (!keys.length) {
 		return <>{template}</>;

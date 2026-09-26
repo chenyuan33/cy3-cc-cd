@@ -1,6 +1,5 @@
 import { Hono } from "hono";
-import type { AppEnv, userInfo } from "../types";
-import { getText } from "../translations";
+import type { AppEnv } from "../types";
 import { Card } from "../components/card";
 import { loginRequired } from "./errorPages";
 import { User } from "../components/user";
@@ -16,7 +15,7 @@ app.get('/', async c => {
         return loginRequired(c);
     }
     const env = c.env as any;
-    const locale = c.get('locale');
+    const translations = c.get('translations');
     const { user: rawUser } = c.get('reqBody');
 
     let validUser: string | null = null;
@@ -33,7 +32,7 @@ app.get('/', async c => {
             if (userRecord) {
                 return c.redirect('/chat?user=' + userRecord.id);
             } else {
-                searchError = getText(locale, 'userNotFound').replace('{username}', rawUser);
+                searchError = translations.userNotFound.replace('{username}', rawUser);
             }
         }
     }
@@ -77,19 +76,19 @@ app.get('/', async c => {
     return c.render(<Card style={{ position: 'fixed', top: '50px', bottom: '10px', left: '70px', right: '10px' }}>
         <MdInit />
         <link rel='stylesheet' type='text/css' href='/chat.css' />
-        <h1>{getText(locale, 'chat')}</h1>
+        <h1>{translations.chat.name}</h1>
         <div style={{ border: 'solid', 'border-radius': '10px', display: 'flex', position: 'absolute', top: '100px', bottom: '10px', left: '10px', right: '10px' }}>
             <div style={{ padding: '10px', 'border-right': 'solid 1px lightgray', position: 'relative', overflow: 'auto', width: '280px', flexShrink: 0 }}>
-                <h2>{getText(locale, 'chatRecent')}</h2>
+                <h2>{translations.chat.recent}</h2>
                 <Form action='' method='get' inputs={[{
                     id: 'findUser',
                     name: 'user',
                     main: {
                         type: 'input',
                         inputType: 'text',
-                        placeHolder: getText(locale, 'searchUsernameOrUid')
+                        placeHolder: translations.searchUsernameOrUid
                     }
-                }]} submit={{ content: getText(locale, 'go') }} />
+                }]} submit={{ content: translations.go }} />
                 {recent.map(({
                     sender,
                     receiver,
@@ -183,7 +182,7 @@ app.get('/', async c => {
                                                     gap: '4px'
                                                 }}>
                                                     <Time c={c} time={created_at} />
-                                                    {read ? <span>{getText(locale, 'read')}</span> : <span>{getText(locale, 'unread')}</span>}
+                                                    <span>{read ? translations.readStatus.read : translations.readStatus.unread}</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -194,7 +193,7 @@ app.get('/', async c => {
                         <Form action='/api/chat/send' method='post' inputs={[
                             { id: 'receiver', name: 'uid', main: { type: 'input', inputType: 'hidden', value: validUser } },
                             { id: 'content', name: 'content', main: { type: 'mdeditor', mdeditorHeight: '80px' }, required: true }
-                        ]} submit={{ content: getText(locale, 'send') }} style={{ padding: '8px 16px', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)', borderTop: '1px solid light-dark(#e0e0e0, #444)' }} />
+                        ]} submit={{ content: translations.send }} style={{ padding: '8px 16px', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)', borderTop: '1px solid light-dark(#e0e0e0, #444)' }} />
                     </>
                 ) : (
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#999', padding: '20px' }}>
@@ -206,7 +205,7 @@ app.get('/', async c => {
                         ) : (
                             <>
                                 <i class="fa-solid fa-comment-dots" style={{ fontSize: '40px', marginBottom: '16px' }}></i>
-                                <p style={{ fontSize: '18px' }}>{getText(locale, 'selectConversation')}</p>
+                                <p style={{ fontSize: '18px' }}>{translations.selectConversation}</p>
                             </>
                         )}
                     </div>
@@ -228,6 +227,6 @@ app.get('/', async c => {
                 }}
             />
         )}
-    </Card>, { title: getText(locale, 'chat') });
+    </Card>, { title: translations.chat.name });
 });
 export default app;

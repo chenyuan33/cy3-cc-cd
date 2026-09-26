@@ -27,12 +27,12 @@ const CodeMirrorModeMap = {
 			stdin: document.getElementById('stdin').value,
 			expectedOutput: document.getElementById('expectedOutput').value
 		}));
-		document.getElementById('result').innerHTML = judgeResult_Judging;
+		document.getElementById('result').innerHTML = translations.onlineJudge.judgeResult.Judging;
 	});
 	judger.addEventListener('message', ({ data: dataString }) => {
 		const data = JSON.parse(dataString);
 		document.getElementById('result').innerHTML = `
-			${window['judgeResult_' + data.status.replaceAll(' ', '_')] ?? data.status}
+			${translations.onlineJudge.judgeResult[data.status.replaceAll(' ', '_')] ?? data.status}
 			${data.time_ms ? '<br />' + data.time_ms + 'ms' : ''}
 		`;
 		CodeMirrorEditor_actualOutput.setValue(data.stdout ?? '');

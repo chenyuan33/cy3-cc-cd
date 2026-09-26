@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import type { AppEnv, userInfo } from "../../types";
-import { accessDenied, emailVerifyRequired, errorHTML, loginRequired, muted, notFound } from "../errorPages";
-import { getText } from "../../translations";
+import { accessDenied, categoryNotFound, categoryRequired, contentRequired, emailVerifyRequired, errorHTML, loginRequired, muted, notFound, titleRequired } from "../errorPages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../../settings";
 import { processAt } from "../../at";
 
@@ -9,10 +8,14 @@ export const discussionCategories = {
     announcement: (user: userInfo) => user.permission & permissionAdmin,
     general: () => true,
     academic: () => true
-};
+} as const;
+export type discussionCategoriesType = keyof typeof discussionCategories;
+export const inDiscussionCategory = (category: string): category is discussionCategoriesType => {
+	return category in discussionCategories;
+}
 const app = new Hono<AppEnv>();
 app.post('/post', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { category, title, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), env = c.env as any, { category, title, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
@@ -23,16 +26,16 @@ app.post('/post', async c => {
         return muted(c);
     }
     if (!category) {
-        return errorHTML(c, getText(locale, 'categoryRequired'));
+        return categoryRequired(c);
     }
     if (!title) {
-        return errorHTML(c, getText(locale, 'titleRequired'));
+        return titleRequired(c);
     }
     if (!content) {
-        return errorHTML(c, getText(locale, 'contentRequired'));
+        return contentRequired(c);
     }
     if (!(category in discussionCategories)) {
-        return notFound(c);
+        return categoryNotFound(c);
     }
     if (!discussionCategories[category as keyof typeof discussionCategories](currentUser)) {
         return accessDenied(c);
@@ -62,12 +65,12 @@ app.post('/delete', async c => {
     return c.redirect('/discussion', 303);
 });
 app.post('/edit', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { discussion_id, title, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), env = c.env as any, { discussion_id, title, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!discussion_id || !title || !content) {
-        return errorHTML(c, getText(locale, 'contentRequired'));
+        return contentRequired(c);
     }
     const discussion = await env.db.prepare('SELECT uid FROM discussion WHERE id = ?').bind(discussion_id).first();
     if (!discussion) {
@@ -80,7 +83,7 @@ app.post('/edit', async c => {
     return c.redirect('/discussion/' + discussion_id, 303);
 });
 app.post('/reply', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { discussion_id, parent_id: parent_id_got, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), env = c.env as any, { discussion_id, parent_id: parent_id_got, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
@@ -94,7 +97,7 @@ app.post('/reply', async c => {
         return notFound(c);
     }
     if (!content) {
-        return errorHTML(c, getText(locale, 'contentRequired'));
+        return contentRequired(c);
     }
     const discussion = await env.db.prepare('SELECT id, uid FROM discussion WHERE id = ?').bind(discussion_id).first();
     if (!discussion) {
@@ -115,12 +118,12 @@ app.post('/reply', async c => {
     return c.redirect('/discussion/' + discussion_id, 303);
 });
 app.post('/reply/edit', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('locale'), { discussion_id, reply_id, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), env = c.env as any, { discussion_id, reply_id, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!discussion_id || !reply_id || !content) {
-        return errorHTML(c, getText(locale, 'contentRequired'));
+        return contentRequired(c);
     }
     const reply = await env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ? AND discussion_id = ?').bind(reply_id, discussion_id).first();
     if (!reply) {

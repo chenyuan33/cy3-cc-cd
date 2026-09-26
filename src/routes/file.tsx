@@ -5,7 +5,6 @@ import { type AppEnv } from "../types";
 import { Form } from "../components/form";
 import { Card } from "../components/card";
 import { accessDenied, notFound } from "./errorPages";
-import { getText } from "../translations";
 import { User } from "../components/user";
 import type { JSX } from "hono/jsx/jsx-runtime";
 import { renderTemplate } from "../components/renderTemplate";
@@ -13,7 +12,7 @@ import { DeleteLink } from "../components/button";
 
 const app = new Hono<AppEnv>();
 app.get('/:path{.*}', async c => {
-	const currentUser = c.get('currentUser'), path = decodeURIComponent(c.req.param('path')), locale = c.get('locale'), env = c.env as any, currentPage = parseInt(c.get('reqBody').page || '1') || 1;
+	const currentUser = c.get('currentUser'), path = decodeURIComponent(c.req.param('path')), translations = c.get('translations'), env = c.env as any, currentPage = parseInt(c.get('reqBody').page || '1') || 1;
 	if (!currentUser || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
 		return accessDenied(c);
 	}
@@ -59,11 +58,11 @@ app.get('/:path{.*}', async c => {
 	for (const dir of path.replace(/\/+$/, '').split('/')) {
 		currentDir += dir + '/';
 		if (currentDir !== '/file/user/') {
-			pathLinks.push(<a href={currentDir}>{currentDir.match(/^\/file\/user\/\d+\/$/) ? await renderTemplate(getText(locale, 'userSpace'), {__USER__: <User c={c} user={parseInt(currentDir.slice(11, -1))} linkable={false} />}) : dir}</a>);
+			pathLinks.push(<a href={currentDir}>{currentDir.match(/^\/file\/user\/\d+\/$/) ? await renderTemplate(translations.userSpace, {__USER__: <User c={c} user={parseInt(currentDir.slice(11, -1))} linkable={false} />}) : dir}</a>);
 		}
 	}
 	return c.render(<Card>
-		<h1>{getText(locale, 'fileUpload')}</h1>
+		<h1>{translations.file.name}</h1>
 		{pathLinks.reduce((arr, cur) => {
 			if (Array.isArray(arr)) {
 				arr.push(<i class='fa-solid fa-angle-right'></i>);
@@ -75,18 +74,18 @@ app.get('/:path{.*}', async c => {
 		<Form action='/api/file/upload' method='post' enctype='multipart/form-data' inputs={[
 			{ id: 'file', name: 'file', required: true, main: { type: 'input', inputType: 'file' } },
 			{ name: 'path', main: { type: 'input', inputType: 'hidden', value: path } }
-		]} submit={{ content: getText(locale, 'upload') }} style={{ display: 'flex', gap: '5px' }} />
+		]} submit={{ content: translations.upload }} style={{ display: 'flex', gap: '5px' }} />
 		<br />
-		<label for='goToFolder'>{getText(locale, 'fileGoToFolder')}</label>
+		<label for='goToFolder'>{translations.file.goToFolder}</label>
 		&nbsp;
 		<input id='goToFolder' type='text' />
 		&nbsp;
-		<button onclick={'location.href = document.getElementById("goToFolder").value + "/"'}>{getText(locale, 'go')}</button>
+		<button onclick={'location.href = document.getElementById("goToFolder").value + "/"'}>{translations.go}</button>
 		{(currentPageContent.CommonPrefixes || []).length || (currentPageContent.Contents || []).length ? <table style={{ width: '100%' }}>
 			<thead><tr>
-				<th style={{ textAlign: 'left', width: '100%' }}>{getText(locale, 'fileName')}</th>
-				<th style={{ whiteSpace: 'nowrap' }}>{getText(locale, 'fileSize')}</th>
-				<th style={{ whiteSpace: 'nowrap' }}>{getText(locale, 'fileOperations')}</th>
+				<th style={{ textAlign: 'left', width: '100%' }}>{translations.file.name}</th>
+				<th style={{ whiteSpace: 'nowrap' }}>{translations.file.size}</th>
+				<th style={{ whiteSpace: 'nowrap' }}>{translations.file.operations}</th>
 			</tr></thead>
 			<tbody>
 				{(currentPageContent.CommonPrefixes || []).map(({ Prefix }) => Prefix ? <tr>
@@ -98,7 +97,7 @@ app.get('/:path{.*}', async c => {
 					<td><DeleteLink c={c} href={'/api/file/delete/' + Key} arg={{}} redirect='' /></td>
 				</tr> : <></>)}
 			</tbody>
-		</table> : <p>{getText(locale, 'fileFolderEmpty')}</p>}
-	</Card>, { title: getText(locale, 'fileUpload') });
+		</table> : <p>{translations.file.folderEmpty}</p>}
+	</Card>, { title: translations.file.name });
 });
 export default app;

@@ -1,7 +1,6 @@
 import { Hono } from "hono";
 import type { AppEnv, ContextType } from "../../types";
-import { accessDenied, errorHTML, loginRequired, notFound } from "../errorPages";
-import { getText } from "../../translations";
+import { accessDenied, alreadyLoggedIn, emailRequired, emailUsed, errorHTML, invalidEmail, invalidPassword, loginRequired, noSuchUsername, notFound, passwordRequired, registerUsernameExists, registerUsernameLength, usernameRequired, verifyFailed } from "../errorPages";
 import { SignJWT } from "jose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
@@ -12,19 +11,13 @@ import { createSubmitHandler } from "../../components/form";
 import { permissionAdmin } from "../../settings";
 
 const app = new Hono<AppEnv>();
-const validateUsername = (name: string, locale: string) => {
+const validateUsername = (name: string, c: ContextType) => {
 	if (!name.trim()) {
-		return getText(locale, 'usernameRequired');
+		return usernameRequired(c);
 	}
 	if (name.trim().length < 3 || name.trim().length > 30) {
-		return getText(locale, 'registerUsernameLength');
+		return registerUsernameLength(c);
 	}
-	// if (!/^[A-Za-z0-9._-]*$/.test(name.trim())) {
-	// 	return getText(locale, 'registerUsernameFormat');
-	// }
-	// if (/^[0-9]/.test(name.trim())) {
-	// 	return getText(locale, 'registerUsernameStartWithNumber');
-	// }
 	return null;
 };
 const login = async (uid: number, c: ContextType) => {
@@ -37,44 +30,44 @@ const login = async (uid: number, c: ContextType) => {
 	return c.redirect('/');
 };
 app.post('/register', async c => {
-	const locale = c.get('locale'), reqBody = c.get('reqBody');
+	const reqBody = c.get('reqBody');
 	if (c.get('currentUser')) {
-		return errorHTML(c, getText(locale, 'alreadyLoggedIn'));
+		return alreadyLoggedIn(c);
 	}
 	if (!Object.hasOwn(reqBody, 'name') || typeof reqBody.name !== 'string') {
-		return errorHTML(c, getText(locale, 'usernameRequired'));
+		return usernameRequired(c);
 	}
 	if (!Object.hasOwn(reqBody, 'password') || typeof reqBody.password !== 'string' || !reqBody.password.trim()) {
-		return errorHTML(c, getText(locale, 'passwordRequired'));
+		return passwordRequired(c);
 	}
-	const usernameError = validateUsername(reqBody.name, locale);
+	const usernameError = validateUsername(reqBody.name, c);
 	if (usernameError) {
-		return errorHTML(c, usernameError);
+		return usernameError;
 	}
 	if (await (c.env as any).db.prepare('SELECT name FROM users WHERE name = ?').bind(reqBody.name.trim()).first()) {
-		return errorHTML(c, getText(locale, 'registerUsernameExists'));
+		return registerUsernameExists(c);
 	}
 	return await login((await (c.env as any).db.prepare('INSERT INTO users (name, password) VALUES (?, ?)').bind(reqBody.name.trim(), await bcrypt.hash(reqBody.password, 12)).run()).meta.last_row_id, c);
 });
 app.post('/login', async c => {
-	const locale = c.get('locale'), reqBody = c.get('reqBody');
+	const reqBody = c.get('reqBody');
 	if (c.get('currentUser')) {
-		return errorHTML(c, getText(locale, 'alreadyLoggedIn'));
+		return alreadyLoggedIn(c);
 	}
 	if (!Object.hasOwn(reqBody, 'name') || typeof reqBody.name !== 'string' || !reqBody.name.trim()) {
-		return errorHTML(c, getText(locale, 'usernameRequired'));
+		return usernameRequired(c);
 	}
 	if (!Object.hasOwn(reqBody, 'password') || typeof reqBody.password !== 'string' || !reqBody.password.trim()) {
-		return errorHTML(c, getText(locale, 'passwordRequired'));
+		return passwordRequired(c);
 	}
 	const user = await (c.env as any).db.prepare('SELECT id, password FROM users WHERE name = ?').bind(reqBody.name).first();
 	if (!user) {
-		return errorHTML(c, getText(locale, 'noSuchUsername'));
+		return noSuchUsername(c);
 	}
 	if (await bcrypt.compare(reqBody.password, user.password)) {
 		return login(user.id, c);
 	} else {
-		return errorHTML(c, getText(locale, 'invalidPassword'));
+		return invalidPassword(c);
 	}
 });
 app.get('/logout', c => {
@@ -100,64 +93,64 @@ app.post('/general-settings', async c => {
 	return c.redirect('/user/settings');
 });
 app.post('/change-username', async c => {
-	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), locale = c.get('locale'), env = c.env as any;
+	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), translations = c.get('translations'), env = c.env as any;
 	if (!currentUser) {
 		return loginRequired(c);
 	}
 	if (!Object.hasOwn(reqBody, 'password') || typeof reqBody.password !== 'string' || !reqBody.password.trim()) {
-		return errorHTML(c, getText(locale, 'passwordRequired'));
+		return passwordRequired(c);
 	}
 	if (!Object.hasOwn(reqBody, 'name') || typeof reqBody.name !== 'string') {
-		return errorHTML(c, getText(locale, 'usernameRequired'));
+		return usernameRequired(c);
 	}
-	const usernameError = validateUsername(reqBody.name, locale);
+	const usernameError = validateUsername(reqBody.name, c);
 	if (usernameError) {
-		return errorHTML(c, usernameError);
+		return usernameError;
 	}
 	if (!await bcrypt.compare(reqBody.password, (await env.db.prepare('SELECT password FROM users WHERE id = ?').bind(currentUser.id).first()).password)) {
-		return errorHTML(c, getText(locale, 'invalidPassword'), 401);
+		return invalidPassword(c);
 	}
 	const trimmedName = reqBody.name.trim();
 	const existingUser = await env.db.prepare('SELECT id FROM users WHERE name = ?').bind(trimmedName).first();
 	if (existingUser && existingUser.id !== currentUser.id) {
-		return errorHTML(c, getText(locale, 'registerUsernameExists'));
+		return registerUsernameExists(c);
 	}
 	await env.db.prepare('UPDATE users SET name = ? WHERE id = ?').bind(trimmedName, currentUser.id).run();
-	return c.render(<h1>{getText(locale, 'userSettingsChangeUsernameChangedSuccessfully')}</h1>, { title: getText(locale, 'userSettingsChangeUsername') });
+	return c.render(<h1>{translations.user.settings.changeUsername.changedSuccessfully}</h1>, { title: translations.user.settings.changeUsername.name });
 });
 app.post('/change-password', async c => {
-	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), locale = c.get('locale'), env = c.env as any;
+	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), translations = c.get('translations'), env = c.env as any;
 	if (!currentUser) {
 		return loginRequired(c);
 	}
 	if (!Object.hasOwn(reqBody, 'old') || !Object.hasOwn(reqBody, 'new') || typeof reqBody.old !== 'string' || typeof reqBody.new !== 'string' || !reqBody.old.trim() || !reqBody.new.trim()) {
-		return errorHTML(c, getText(locale, 'passwordRequired'));
+		return passwordRequired(c);
 	}
 	if (!await bcrypt.compare(reqBody.old, (await env.db.prepare('SELECT password FROM users WHERE id = ?').bind(currentUser.id).first()).password)) {
-		return errorHTML(c, getText(locale, 'invalidPassword'), 401);
+		return invalidPassword(c);
 	}
 	await env.db.prepare('UPDATE users SET password = ? WHERE id = ?').bind(await bcrypt.hash(reqBody.new, 12), currentUser.id).run();
-	return c.render(<h1>{getText(locale, 'passwordChangedSuccessfully')}</h1>, { title: getText(locale, 'passwordChangedSuccessfully') });
+	return c.render(<h1>{translations.user.settings.changePassword.changedSuccessfully}</h1>, { title: translations.user.settings.changePassword.name });
 });
 app.post('/change-email', async c => {
-	const reqBody = c.get('reqBody'), locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any;
+	const reqBody = c.get('reqBody'), translations = c.get('translations'), currentUser = c.get('currentUser'), env = c.env as any;
 	if (!currentUser) {
 		return loginRequired(c);
 	}
 	if (!Object.hasOwn(reqBody, 'password') || typeof reqBody.password !== 'string' || !reqBody.password.trim()) {
-		return errorHTML(c, getText(locale, 'passwordRequired'));
+		return passwordRequired(c);
 	}
 	if (!Object.hasOwn(reqBody, 'email') || typeof reqBody.email !== 'string' || !reqBody.email.trim()) {
-		return errorHTML(c, getText(locale, 'emailRequired'));
+		return emailRequired(c);
 	}
 	if (!validator.isEmail(reqBody.email)) {
-		return errorHTML(c, getText(locale, 'invalidEmail'));
+		return invalidEmail(c);
 	}
 	if (!await bcrypt.compare(reqBody.password, (await env.db.prepare('SELECT password FROM users WHERE id = ?').bind(currentUser.id).first()).password)) {
-		return errorHTML(c, getText(locale, 'invalidPassword'), 401);
+		return invalidPassword(c);
 	}
 	if (await env.db.prepare('SELECT id FROM users WHERE email = ?').bind(reqBody.email.toLowerCase()).first()) {
-		return errorHTML(c, getText(locale, 'emailUsed'));
+		return emailUsed(c);
 	}
 	const code = crypto.getRandomValues(new Uint32Array(1))[0]! % Math.pow(2, 31);
 	await env.db.prepare('UPDATE users SET email_verify_code = ?, email_verify_time = CURRENT_TIMESTAMP WHERE id = ?').bind(code, currentUser.id).run();
@@ -168,30 +161,30 @@ app.post('/change-email', async c => {
 			'align-items': 'center',
 			gap: '10px'
 		}}>
-			<h1>{getText(locale, 'userSettingsChangeEmail')}</h1>
-			<p>{raw(getText(locale, 'userSettingsChangeEmailVerify').replace('__EMAIL__', reqBody.email))}</p>
+			<h1>{translations.user.settings.changeEmail.name}</h1>
+			<p>{raw(translations.user.settings.changeEmail.verify.replace('__EMAIL__', reqBody.email))}</p>
 			<code style={{
 				'font-size': 'xxx-large',
 				cursor: 'pointer'
 			}} onclick={`(() => {
 				navigator.clipboard.writeText(String(${code}));
-				await createAlert('${getText(locale, 'copiedSuccessfully')}');
+				createAlert('${translations.copiedSuccessfully}');
 			})()`}>{code}</code>
 			<input type='hidden' name='email' value={reqBody.email} />
-			<button type='submit' style={{ 'font-size': 'large' }}>{getText(locale, 'verify')}</button>
+			<button type='submit' style={{ 'font-size': 'large' }}>{translations.verify}</button>
 		</Card>
-	</form>, { title: getText(locale, 'userSettingsChangeEmail') });
+	</form>, { title: translations.user.settings.changeEmail.name });
 });
 app.post('/change-email/verify', async c => {
-	const currentUser = c.get('currentUser'), env = c.env as any, reqBody = c.get('reqBody'), locale = c.get('locale');
+	const currentUser = c.get('currentUser'), env = c.env as any, reqBody = c.get('reqBody'), translations = c.get('translations');
 	if (!currentUser) {
 		return loginRequired(c);
 	}
 	if (!Object.hasOwn(reqBody, 'email') || typeof reqBody.email !== 'string' || !reqBody.email.trim()) {
-		return errorHTML(c, getText(locale, 'emailRequired'));
+		return emailRequired(c);
 	}
 	if (!validator.isEmail(reqBody.email)) {
-		return errorHTML(c, getText(locale, 'invalidEmail'));
+		return invalidEmail(c);
 	}
 	const { email_verify_code: code, email_verify_time: time } = await env.db.prepare('SELECT email_verify_code, email_verify_time FROM users WHERE id = ?').bind(currentUser.id).first();
 	if (!time || new Date().getTime() - new Date(time + 'Z').getTime() > 10 * 60 * 1000) {
@@ -200,9 +193,9 @@ app.post('/change-email/verify', async c => {
 	const { status } = await (await fetch(`https://api.verify.mail.cqiming.com/verify?sender=${encodeURIComponent(reqBody.email)}&code=${code}&token=${env.EMAIL_VERIFY_TOKEN}&tokenuser=${env.EMAIL_VERIFY_TOKEN_USER}`)).json() as { status: string };
 	if (status === 'PASS') {
 		await env.db.prepare('UPDATE users SET email = ? WHERE id = ?').bind(reqBody.email, currentUser.id).run();
-		return c.render(<Card><h1>{getText(locale, 'userSettingsChangeEmailVerifySuccessfully')}</h1></Card>, { title: getText(locale, 'userSettingsChangeEmailVerifySuccessfully') });
+		return c.render(<Card><h1>{translations.user.settings.changeEmail.verifySuccessfully}</h1></Card>, { title: translations.user.settings.changeEmail.name });
 	} else {
-		return errorHTML(c, getText(locale, 'verifyFailed'));
+		return verifyFailed(c);
 	}
 });
 app.post('/notification/read-status', async c => {
@@ -234,13 +227,13 @@ app.post('/notification/read-all', async c => {
 	return c.redirect('/user/notification', 303);
 });
 app.get('/search', async c => {
-	const locale = c.get('locale'), { user } = c.get('reqBody');
+	const { user } = c.get('reqBody');
 	if (!user) {
 		return notFound(c);
 	}
 	const result = await (c.env as any).db.prepare('SELECT id, name, created_at, username_violation FROM users WHERE id = ? OR name = ?').bind(user, user).first();
 	if (result) {
-		return c.json({ exists: true, user: { ...result, name: getDisplayUsername(result, locale) } });
+		return c.json({ exists: true, user: { ...result, name: getDisplayUsername(result, c) } });
 	}
 	return c.json({ exists: false });
 });

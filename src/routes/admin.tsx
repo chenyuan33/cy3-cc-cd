@@ -4,7 +4,6 @@ import { permissionAdmin, permissionCount } from "../settings";
 import { accessDenied, notFound } from "./errorPages";
 import { Card } from "../components/card";
 import judgementRoutes from './admin/judgement';
-import { getText } from "../translations";
 
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
@@ -22,7 +21,7 @@ app.get('/', c => c.render(<>
         {c.get('currentUser')?.id === 1 ? <p>
             <a href='/admin/domain/cy3.cc.cd/renew'>Domain cy3.cc.cd Renew</a>
         </p> : <></>}
-        <p><a href='/admin/judgement'>{getText(c.get('locale'), 'adminJudgementTitle')}</a></p>
+        <p><a href='/admin/judgement'>{c.get('translations').admin.judgement.adminJudgementTitle}</a></p>
     </Card>
     <Card>
         <h2>Add a check-in type</h2>
@@ -74,7 +73,7 @@ app.get('/domain/cy3.cc.cd/renew', async c => {
 });
 
 app.post('/user/name-violation', async c => {
-    const reqBody = c.get('reqBody'), env = c.env as any;
+    const reqBody = c.get('reqBody'), env = c.env as any, translations = c.get('translations');
     if (!Object.hasOwn(reqBody, 'uid')) {
         return notFound(c);
     }
@@ -90,7 +89,7 @@ app.post('/user/name-violation', async c => {
         .prepare('UPDATE users SET username_violation = ? WHERE id = ?')
         .bind(newViolation, uid).run();
 
-    const comment = reqBody.comment?.trim() || getText(c.get('locale'), 'noReason');
+    const comment = reqBody.comment?.trim() || translations.noReason;
     const payload = JSON.stringify({
         comment,
         oldViolation,
@@ -103,8 +102,8 @@ app.post('/user/name-violation', async c => {
         .bind(uid, payload).run();
 
     const typeLabel = newViolation === 1
-        ? getText(c.get('locale'), 'violationSet')
-        : getText(c.get('locale'), 'violationUnset');
+        ? translations.usernameViolation.setted
+        : translations.usernameViolation.unsetted;
     const notifPayload = JSON.stringify({
         comment,
         oldViolation,
@@ -120,7 +119,7 @@ app.post('/user/name-violation', async c => {
 });
 
 app.post('/user/permission/set', async c => {
-    const reqBody = c.get('reqBody'), env = c.env as any;
+    const reqBody = c.get('reqBody'), env = c.env as any, translations = c.get('translations');
     if (!Object.hasOwn(reqBody, 'uid')) {
         return notFound(c);
     }
@@ -141,7 +140,7 @@ app.post('/user/permission/set', async c => {
     await env.db.prepare('UPDATE users SET permission = ? WHERE id = ?').bind(newPermission, uid).run();
 
     const payload = JSON.stringify({
-        comment: reqBody.comment || getText(c.get('locale'), 'noReason'),
+        comment: reqBody.comment || translations.noReason,
         oldPermission,
         newPermission
     });

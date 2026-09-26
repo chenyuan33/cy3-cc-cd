@@ -16,7 +16,7 @@ export const Time: FC<{ c: ContextType, time?: string | number | Date, short?: b
 				break;
 		}
 		const today = new Date();
-		return <time datetime={date.toISOString()}>{new Intl.DateTimeFormat(c.get('locale'), short ? {
+		return <time datetime={date.toISOString()}>{new Intl.DateTimeFormat(c.get('shortLocale'), short ? {
 			timeZone: (c.req.raw.cf?.timezone as string) ?? 'UTC',
 			...(date.getFullYear() === today.getFullYear() ? {} : { year: 'numeric' }),
 			...(date.getFullYear() === today.getFullYear() &&

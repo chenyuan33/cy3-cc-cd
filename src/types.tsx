@@ -1,4 +1,6 @@
 import type { Context } from "hono";
+import type en_us from "./translations/en_us";
+import type { supportedLanguagesShortCodeType, supportedLanguagesType } from "./translations";
 export type userInfo = {
 	id: number,
 	name: string,
@@ -12,7 +14,9 @@ export type userInfo = {
 export type AppEnv = {
 	Variables: {
 		reqBody: Record<string, string>;
-		locale: string;
+		shortLocale: supportedLanguagesShortCodeType;
+		locale: supportedLanguagesType;
+		translations: typeof en_us;
 		currentUser: userInfo | null;
 		currentUserEmail: string | null;
 	}

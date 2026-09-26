@@ -1,8 +1,9 @@
 export const enableEmailVerify = false;
 export const permissionCount = 3;
-export const permissionVisit = 1 << 0;
-export const permissionSpeak = 1 << 1;
-export const permissionAdmin = 1 << 2;
+export const permissionVisit = 1 as const;
+export const permissionSpeak = 2 as const;
+export const permissionAdmin = 4 as const;
+export type allPermissions = typeof permissionVisit | typeof permissionSpeak | typeof permissionAdmin;
 export const timeLimitDefault = 1000;
 export const timeLimitMax = 5000;
 export const memoryLimitDefault = 512;

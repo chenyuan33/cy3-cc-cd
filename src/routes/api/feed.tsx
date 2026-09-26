@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../../types";
-import { accessDenied, emailVerifyRequired, errorHTML, loginRequired, muted, notFound } from "../errorPages";
+import { accessDenied, contentRequired, emailVerifyRequired, errorHTML, loginRequired, muted, notFound } from "../errorPages";
 import { enableEmailVerify, permissionSpeak } from "../../settings";
-import { getText } from "../../translations";
 import { processAt } from "../../at";
 
 const app = new Hono<AppEnv>();
@@ -18,7 +17,7 @@ app.post('/reply', async c => {
 		return muted(c);
 	}
 	if (!Object.hasOwn(reqBody, 'content') || typeof reqBody.content !== 'string' || !reqBody.content.trim()) {
-		return errorHTML(c, getText(locale, 'contentRequired'));
+		return contentRequired(c);
 	}
 	const parent_id = parseInt(reqBody.parent_id || '0') || 0;
 	const { id } = await env.db.prepare('INSERT INTO feed (parent_id, uid, content) VALUES (?, ?, ?) RETURNING id').bind(parent_id, currentUser.id, reqBody.content).first();
@@ -68,7 +67,7 @@ app.post('/edit', async c => {
 		return notFound(c);
 	}
 	if (typeof reqBody.content !== 'string' || !reqBody.content.trim()) {
-		return errorHTML(c, getText(locale, 'contentRequired'));
+		return contentRequired(c);
 	}
 	const res = await env.db.prepare('SELECT uid, deleted FROM feed WHERE id = ?').bind(id).first();
 	if (!res || res.deleted) {

@@ -3,7 +3,7 @@ import { jwtVerify } from 'jose';
 import { jsxRenderer, useRequestContext } from 'hono/jsx-renderer';
 import type { FC, PropsWithChildren } from 'hono/jsx';
 import { raw } from 'hono/html';
-import { translations, getText } from './translations';
+import { isLanguageSupported, translations, type supportedLanguagesShortCodeType } from './translations';
 import type { AppEnv } from './types';
 import { permissionAdmin, permissionVisit } from './settings';
 import { User, userQuery } from './components/user';
@@ -23,6 +23,7 @@ import adminRoutes from './routes/admin';
 import judgementRoutes from './routes/judgement';
 import fileRoutes from './routes/file';
 import ideRoutes from './routes/ide';
+import type { discussionCategoriesType } from './routes/api/discussion';
 const app = new Hono<AppEnv>();
 app.use(async (c, next) => {
 	const clonedReq = c.req.raw.clone();
@@ -58,30 +59,31 @@ app.use(async (c, next) => {
 	const { email } = currentUser ? await (c.env as any).db.prepare('SELECT email FROM users WHERE id = ?').bind(currentUser.id).first() : {};
 	c.set('currentUserEmail', email ?? null);
 	const url = new URL(c.req.url);
-	const supportedLocales: string[] = Object.keys(translations);
 	const queryLocale = url.searchParams.get('lang')?.toLowerCase();
-	if (queryLocale && supportedLocales.includes(queryLocale)) {
+	if (queryLocale && isLanguageSupported(queryLocale)) {
 		c.set('locale', queryLocale);
 	} else {
 		const cookieLocale = cookies.locale?.toLowerCase();
-		if (cookieLocale && supportedLocales.includes(cookieLocale)) {
+		if (cookieLocale && isLanguageSupported(cookieLocale)) {
 			c.set('locale', cookieLocale);
 		} else {
 			const acceptLanguage = c.req.header('accept-language') ?? '';
 			const preferred = acceptLanguage
 				.split(',')
 				.map(value => (value.split(';')[0] ?? value).trim().toLowerCase())
-				.find(value => supportedLocales.includes(value) || supportedLocales.includes(value.split('-')[0] ?? value));
+				.find(value => isLanguageSupported(value) || isLanguageSupported(value.split('-')[0] ?? value));
 			const normalized = preferred?.split('-')[0];
-			if (preferred && supportedLocales.includes(preferred)) {
+			if (preferred && isLanguageSupported(preferred)) {
 				c.set('locale', preferred);
-			} else if (normalized && supportedLocales.includes(normalized)) {
+			} else if (normalized && isLanguageSupported(normalized)) {
 				c.set('locale', normalized);
 			} else {
 				c.set('locale', 'en');
 			}
 		}
 	}
+	c.set('shortLocale', c.get('locale').split(/[_\-]/)[0] as supportedLanguagesShortCodeType);
+	c.set('translations', translations[c.get('locale')]);
 	console.log({
 		customLog: {
 			logType: 'Custom Log',
@@ -101,8 +103,8 @@ declare module 'hono' {
 	}
 };
 app.use(jsxRenderer(async ({ children, title }) => {
-	const c = useRequestContext();
-	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any;
+	const c = useRequestContext<AppEnv>();
+	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any, translations = c.get('translations');
 	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
 	const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0').bind(currentUser.id).first() : { privateMessageCount: 0 };
 	return <html lang={locale}>
@@ -112,12 +114,12 @@ app.use(jsxRenderer(async ({ children, title }) => {
 			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
 			<link rel='stylesheet' type='text/css' href='/style.css' />
 			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
-			<script dangerouslySetInnerHTML={{ __html: `const translations=${JSON.stringify(translations[locale])};` }}></script>
+			<script dangerouslySetInnerHTML={{ __html: `const translations=${JSON.stringify(translations)};` }}></script>
 			<script src='/helper.js'></script>
 			<title>{title} - cy3's site</title>
 		</head>
 		<body>
-			<noscript><h2>{getText(locale, 'noscript')}</h2></noscript>
+			<noscript><h3>{translations.renderer.noscript}</h3></noscript>
 
 			{/* 顶部导航栏 */}
 			<header style={{
@@ -137,7 +139,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
 					<a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
 						<img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
 					</a>
-					<i class='fa-solid fa-server' style={{ fontSize: '20px', color: 'yellow' }} title={getText(locale, 'serverConnectStatusConnecting')} id='serverConnectStatus'></i>
+					<i class='fa-solid fa-server' style={{ fontSize: '20px', color: 'yellow' }} title={translations.serverConnectStatus.connecting} id='serverConnectStatus'></i>
 				</div>
 
 				{/* 右侧用户相关元素 */}
@@ -145,7 +147,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
 					{currentUser ? (
 						<>
 							{/* 管理面板（仅管理员可见，只显示图标，位于铃铛左边） */}
-							{c.get('currentUser').permission & permissionAdmin ? (
+							{currentUser.permission & permissionAdmin ? (
 								<a
 									href='/admin'
 									style={{
@@ -157,7 +159,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
 										position: 'relative',
 										top: '-1px'
 									}}
-									title={getText(locale, 'admin')}
+									title={translations.admin.name}
 								>
 									<i class='fa-solid fa-user-shield'></i>
 								</a>
@@ -212,7 +214,7 @@ app.use(jsxRenderer(async ({ children, title }) => {
 							<a
 								href='/user/settings'
 								style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px', display: 'inline-flex', alignItems: 'center' }}
-								title={getText(locale, 'userSettings')}
+								title={translations.user.settings.name}
 							>
 								<i class='fa-solid fa-gear'></i>
 							</a>
@@ -228,10 +230,10 @@ app.use(jsxRenderer(async ({ children, title }) => {
 					) : (
 						<>
 							<a href='/user/login' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-								<i class='fa-solid fa-sign-in-alt'></i> {getText(locale, 'login')}
+								<i class='fa-solid fa-sign-in-alt'></i> {translations.user.login}
 							</a>
 							<a href='/user/register' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-								<i class='fa-solid fa-user-plus'></i> {getText(locale, 'register')}
+								<i class='fa-solid fa-user-plus'></i> {translations.user.register}
 							</a>
 						</>
 					)}
@@ -255,35 +257,35 @@ app.use(jsxRenderer(async ({ children, title }) => {
 			}}>
 				<p><a href='/'>
 					<i class='fa-solid fa-house'></i>
-					<span class='sidebarTitle'>{getText(locale, 'home')}</span>
+					<span class='sidebarTitle'>{translations.home.name}</span>
 				</a></p>
 				<p><a href='/feed'>
 					<i class='fa-solid fa-rss'></i>
-					<span class='sidebarTitle'>{getText(locale, 'feeds')}</span>
+					<span class='sidebarTitle'>{translations.feeds}</span>
 				</a></p>
 				<p><a href='/discussion'>
 					<i class='fa-solid fa-comments'></i>
-					<span class='sidebarTitle'>{getText(locale, 'discussion')}</span>
+					<span class='sidebarTitle'>{translations.discussion.name}</span>
 				</a></p>
 				<p><a href='/ticket'>
 					<i class='fa-solid fa-ticket'></i>
-					<span class='sidebarTitle'>{getText(locale, 'ticket')}</span>
+					<span class='sidebarTitle'>{translations.ticket.name}</span>
 				</a></p>
 				<p><a href='/ide'>
 					<i class='fa-solid fa-code'></i>
-					<span class='sidebarTitle'>{getText(locale, 'ide')}</span>
+					<span class='sidebarTitle'>{translations.ide}</span>
 				</a></p>
 				<p><a href='/judgement'>
-					<i class='fa-solid fa-user'></i>
-					<span class='sidebarTitle'>{getText(locale, 'judgement')}</span>
+					<i class='fa-solid fa-user-plus'></i>
+					<span class='sidebarTitle'>{translations.judgement.name}</span>
 				</a></p>
 				{currentUser ? <p><a href={`/file/user/${currentUser.id}/`}>
 					<i class='fa-solid fa-cloud-upload'></i>
-					<span class='sidebarTitle'>{getText(locale, 'fileUpload')}</span>
+					<span class='sidebarTitle'>{translations.file.name}</span>
 				</a></p> : <></>}
 				<p><a href='javascript:void(0)' onclick='switchLight()'>
 					<i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
-					<span class='sidebarTitle'>{getText(locale, 'navTheme')}</span>
+					<span class='sidebarTitle'>{translations.renderer.theme}</span>
 				</a></p>
 			</nav>
 
@@ -299,75 +301,75 @@ app.use(async (c, next) => {
 	await next();
 });
 app.get('/', async c => {
-	const locale = c.get('locale'), env = c.env as any, nextDay = new Date();
+	const locale = c.get('shortLocale'), env = c.env as any, nextDay = new Date(), translations = c.get('translations');
 	nextDay.setDate(nextDay.getDate() + 1);
 	nextDay.setHours(0, 0, 0, 0);
 	const { results: discussions } = await env.db.prepare('SELECT id, uid, category, title, created_at, pin FROM discussion ORDER BY pin DESC, created_at DESC LIMIT 10').bind().all();
 	return c.render(<>
 		<Card>
-			<h1>{getText(locale, 'home')}</h1>
+			<h1>{translations.home.name}</h1>
 		</Card>
 		<div style={{ display: 'grid', 'grid-template-columns': 'repeat(2, 1fr)', gap: '20px' }}>
 			<Card style={{ display: 'flex', 'flex-direction': 'column', 'align-items': 'center' }}>
-				<h2>{getText(locale, 'homeCheckIn')}</h2>
+				<h2>{translations.home.checkIn.name}</h2>
 				{c.get('currentUser')
 					? (async () => {
-						const { checkin_date, checkin_count, checkin_today_status, checkin_today_good1, checkin_today_good2, checkin_today_bad1, checkin_today_bad2 } = await env.db.prepare('SELECT checkin_date, checkin_count, checkin_today_status, checkin_today_good1, checkin_today_good2, checkin_today_bad1, checkin_today_bad2 FROM users WHERE id = ?').bind(c.get('currentUser')?.id).first();
+						const { checkin_date, checkin_count, checkin_today_status, checkin_today_good1, checkin_today_good2, checkin_today_bad1, checkin_today_bad2 }: { checkin_date: string, checkin_count: number, checkin_today_status: -3 | -2 | -1 | 0 | 1 | 2 | 3, checkin_today_good1: number, checkin_today_good2: number, checkin_today_bad1: number, checkin_today_bad2: number } = await env.db.prepare('SELECT checkin_date, checkin_count, checkin_today_status, checkin_today_good1, checkin_today_good2, checkin_today_bad1, checkin_today_bad2 FROM users WHERE id = ?').bind(c.get('currentUser')?.id).first();
 						const checkin_date_object = new Date(checkin_date + 'Z');
 						const today = new Date();
 						if (!checkin_date
 							|| checkin_date_object.getFullYear() !== today.getFullYear()
 							|| checkin_date_object.getMonth() !== today.getMonth()
 							|| checkin_date_object.getDate() !== today.getDate()) {
-							return <Form action='/api/check-in' method='post' inputs={[]} submit={{ content: getText(locale, 'homeCheckInButton') }} />;
+							return <Form action='/api/check-in' method='post' inputs={[]} submit={{ content: translations.home.checkIn.button }} />;
 						}
 						const Good: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'red' }}>{children}</div>;
 						const Bad: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'light-dark(black, white)' }}>{children}</div>;
 						const GoodContent: FC<{ id: number }> = async ({ id }) => {
 							const { title_en, good_en, title_zh, good_zh } = await env.db.prepare(`SELECT title_${locale}, good_${locale} FROM checkin_texts WHERE id = ?`).bind(id).first();
-							return <div style={{ padding: '10px' }}><strong>{getText(locale, 'homeCheckInGood')}{title_en ?? title_zh}</strong><br />{good_en ?? good_zh}</div>;
+							return <div style={{ padding: '10px' }}><strong>{translations.home.checkIn.good}{title_en ?? title_zh}</strong><br />{good_en ?? good_zh}</div>;
 						};
 						const BadContent: FC<{ id: number }> = async ({ id }) => {
 							const { title_en, bad_en, title_zh, bad_zh } = await env.db.prepare(`SELECT title_${locale}, bad_${locale} FROM checkin_texts WHERE id = ?`).bind(id).first();
-							return <div style={{ padding: '10px' }}><strong>{getText(locale, 'homeCheckInBad')}{title_en ?? title_zh}</strong><br />{bad_en ?? bad_zh}</div>;
+							return <div style={{ padding: '10px' }}><strong>{translations.home.checkIn.bad}{title_en ?? title_zh}</strong><br />{bad_en ?? bad_zh}</div>;
 						};
 						return <>
-							<p>{renderTemplate(getText(locale, 'homeCheckInResetTime'), { __DATE__: <Time c={c} time={nextDay} /> })}</p>
-							<p>{renderTemplate(getText(locale, 'homeCheckInCount'), { __COUNT__: checkin_count })}</p>
+							<p>{renderTemplate(translations.home.checkIn.resetTime, { __DATE__: <Time c={c} time={nextDay} /> })}</p>
+							<p>{renderTemplate(translations.home.checkIn.count, { __COUNT__: checkin_count.toString() })}</p>
 							<h2 style={{
 								color: {
 									'-3': 'light-dark(black, white)',
 									'-2': 'light-dark(black, white)',
 									'-1': 'light-dark(black, white)',
-									'0': 'green',
-									'1': 'red',
-									'2': 'red',
-									'3': 'red'
+									0: 'green',
+									1: 'red',
+									2: 'red',
+									3: 'red'
 								}[checkin_today_status as number]
-							}}>{getText(locale, 'homeCheckInStatus_' + checkin_today_status)}</h2>
-							<p style={{ 'font-size': 'smaller', color: 'gray' }}>{getText(locale, 'homeCheckInReferenceOnly')}</p>
+							}}>{translations.home.checkIn.status[checkin_today_status]}</h2>
+							<p style={{ 'font-size': 'smaller', color: 'gray' }}>{translations.home.checkIn.referenceOnly}</p>
 							<div style={{ display: 'grid', width: '100%', 'grid-template-columns': 'repeat(2, 1fr)' }}>
-								<div style={{ display: 'flex', 'align-items': 'center', 'justify-content': 'center' }}>{checkin_today_good1 && checkin_today_good2 ? <Good><GoodContent id={checkin_today_good1} /><GoodContent id={checkin_today_good2} /></Good> : <Bad><strong>{getText(locale, 'homeCheckInEverythingBad')}</strong></Bad>}</div>
-								<div style={{ display: 'flex', 'align-items': 'center', 'justify-content': 'center' }}>{checkin_today_bad1 && checkin_today_bad2 ? <Bad><BadContent id={checkin_today_bad1} /><BadContent id={checkin_today_bad2} /></Bad> : <Good><strong>{getText(locale, 'homeCheckInEverythingGood')}</strong></Good>}</div>
+								<div style={{ display: 'flex', 'align-items': 'center', 'justify-content': 'center' }}>{checkin_today_good1 && checkin_today_good2 ? <Good><GoodContent id={checkin_today_good1} /><GoodContent id={checkin_today_good2} /></Good> : <Bad><strong>{translations.home.checkIn.everythingBad}</strong></Bad>}</div>
+								<div style={{ display: 'flex', 'align-items': 'center', 'justify-content': 'center' }}>{checkin_today_bad1 && checkin_today_bad2 ? <Bad><BadContent id={checkin_today_bad1} /><BadContent id={checkin_today_bad2} /></Bad> : <Good><strong>{translations.home.checkIn.everythingGood}</strong></Good>}</div>
 							</div>
 						</>;
 					})()
-					: <p>{raw(getText(locale, 'homeCheckInAfterLogin'))}</p>}
+					: <p>{raw(translations.home.checkIn.afterLogin)}</p>}
 			</Card>
 			<Card>
-				<h2>{getText(locale, 'homeRecentDiscussions')}</h2>
-				{discussions.length ? discussions.map(({ id, uid, category, title, created_at, pin }: { id: number, uid: number, category: string, title: string, created_at: string, pin: number }) => <Card>
+				<h2>{translations.home.recentDiscussions}</h2>
+				{discussions.length ? discussions.map(({ id, uid, category, title, created_at, pin }: { id: number, uid: number, category: discussionCategoriesType, title: string, created_at: string, pin: number }) => <Card>
 					{pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'red' }}></i> : <></>}
 					<a href={'/discussion/' + id}>{title}</a><br />
-					{renderTemplate(getText(locale, 'discussionItemDescription'), {
+					{renderTemplate(translations.discussion.itemDescription, {
 						__USER__: <User c={c} user={uid} />,
-						__CATEGORY__: <a href={`/discussion?category=${category}`}>{getText(locale, 'discussionCategoryName_' + category)}</a>,
+						__CATEGORY__: <a href={`/discussion?category=${category}`}>{translations.discussion.categoryName[category]}</a>,
 						__CREATED_AT__: <Time c={c} time={created_at} />
 					})}
-				</Card>) : <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{getText(locale, 'discussionNothing')}</h2></Card>}
+				</Card>) : <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{translations.nothing}</h2></Card>}
 			</Card>
 		</div>
-	</>, { title: getText(locale, 'home') });
+	</>, { title: translations.home.name });
 });
 app.get('/private-message', (c) => {
 	const query = c.req.query();
@@ -392,10 +394,3 @@ app.onError((err, c) => {
 });
 app.notFound(c => notFound(c));
 export default app;
-/**
- * CREATE TABLE IF NOT EXISTS checkin_texts (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		title_en TEXT, good_en TEXT, bad_en TEXT,
-		title_zh TEXT, good_zh TEXT, bad_zh TEXT
-	)
- */

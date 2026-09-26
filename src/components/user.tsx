@@ -1,7 +1,6 @@
 // src/components/user.tsx
 import type { FC } from "hono/jsx";
 import type { ContextType, userInfo } from "../types";
-import { getText } from "../translations";
 import { permissionAdmin, permissionVisit } from "../settings";
 
 export const userQuery = async (uid: number, c: ContextType): Promise<userInfo | null> =>
@@ -10,33 +9,27 @@ export const userQuery = async (uid: number, c: ContextType): Promise<userInfo |
 		.bind(uid)
 		.first();
 
-export const getDisplayUsername = (user: Partial<userInfo> | null | undefined, locale: string): string => {
-	const normalizedLocale = locale?.toLowerCase() === 'zh' ? 'zh' : 'en';
-	if (!user?.id) {
-		return getText(normalizedLocale, 'userUnknown');
+export const getDisplayUsername = (user: userInfo, c: ContextType): string => {
+	const translations = c.get('translations');
+	if (!user.id) {
+		return translations.user.unknown;
 	}
 	if (user.username_violation === 1) {
-		return getText(normalizedLocale, 'usernameViolation').replace('__UID__', String(user.id));
+		return translations.user.usernameViolation.replace('__UID__', String(user.id));
 	}
 	return user.name ?? '';
 };
 
 export const User: FC<{ user: userInfo | number | null; c: ContextType; linkable?: boolean }> = async ({ user, c, linkable = true }) => {
-	const env = c.env as any, locale = c.get('locale');
-	if (user === null) {
-		return <span>{getText(locale, 'notLoggedIn')}</span>;
-	}
-	if (user === undefined) {
-		return <span>{getText(locale, 'userUnknown')}</span>;
+	const env = c.env as any, translations = c.get('translations');
+	if (!user) {
+		return <span>{translations.user.unknown}</span>;
 	}
 	if (typeof user === 'number') {
-		if (!user) {
-			return <span>{getText(locale, 'userUnknown')}</span>;
-		}
 		const resolvedUser = await userQuery(user, c);
-		return resolvedUser ? <User user={resolvedUser} c={c} linkable={linkable} /> : <span>{getText(locale, 'userUnknown')}</span>;
+		return resolvedUser ? <User user={resolvedUser} c={c} linkable={linkable} /> : <span>{translations.user.unknown}</span>;
 	}
-	const tag = user.tag || (user.permission & permissionAdmin ? getText(locale, 'userTagAdmin') : null);
+	const tag = user.tag || (user.permission & permissionAdmin ? translations.user.tagAdmin : null);
 	const content = <span style={user.permission & permissionVisit ? {} : {
 		'text-decoration-line': 'line-through',
 		opacity: '60%',
@@ -47,7 +40,7 @@ export const User: FC<{ user: userInfo | number | null; c: ContextType; linkable
 		{user.permission & permissionVisit ? <></> : <i class='fa-solid fa-ban' style={{ color: 'red' }}></i>}
 		{user.permission & permissionAdmin ? <i class='fa-solid fa-shield' style={{ color: 'gold' }}></i> : <></>}
 		<strong style={{ color: `light-dark(#${user.name_color_light}, #${user.name_color_dark})` }}>
-			{getDisplayUsername(user, locale)}
+			{getDisplayUsername(user, c)}
 		</strong>
 		{tag ? <>&nbsp;<span style={{
 			color: 'white',

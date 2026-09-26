@@ -1,1 +1,0 @@
-export default (locale: string, content: string) => Array.from((new Intl.Segmenter(locale, { granularity: 'word' })).segment(content)).map(({ segment }) => segment).join(' ');

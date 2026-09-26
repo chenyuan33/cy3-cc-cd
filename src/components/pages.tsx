@@ -1,7 +1,6 @@
 import type { FC } from "hono/jsx";
 import type { ContextType } from "../types";
 import { Card } from "./card";
-import { getText } from "../translations";
 import { createSubmitHandler } from "./form";
 
 export const Pages: FC<{ c: ContextType, currentPage: number, totalPage: number }> = ({ c, currentPage, totalPage }) => totalPage > 1
@@ -18,8 +17,8 @@ export const Pages: FC<{ c: ContextType, currentPage: number, totalPage: number 
 			'text-align': 'center',
 			'line-height': '20px'
 		}}>{value}</a>)}
-		<label for='page'>{getText(c.get('locale'), 'goToPage')}</label>
+		<label for='page'>{c.get('translations').goToPage}</label>
 		<input type='number' min='1' max={totalPage} value={currentPage} />
-		<button type='submit'>{getText(c.get('locale'), 'go')}</button>
+		<button type='submit'>{c.get('translations').go}</button>
 	</form></Card>
 	: <></>;

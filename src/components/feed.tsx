@@ -3,7 +3,6 @@ import type { ContextType } from "../types";
 import { Card } from "./card";
 import { User } from "./user";
 import { Time } from "./time";
-import { getText } from "../translations";
 import { html, raw } from "hono/html";
 import { MdEditor, MdRender } from "./mdeditor";
 import { enableEmailVerify } from "../settings";
@@ -14,7 +13,7 @@ export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, rep
 	if (pathIds.has(id) || recursionDepth <= 0 || !id) {
 		return <></>;
 	}
-	const locale = c.get('locale'), currentUser = c.get('currentUser');
+	const translations = c.get('translations'), currentUser = c.get('currentUser');
 	const nextPathIds = new Set(pathIds);
 	nextPathIds.add(id);
 	const row = await (c.env as any).db.prepare('SELECT uid, content, created_at, deleted FROM feed WHERE id = ?').bind(id).first();
@@ -28,12 +27,12 @@ export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, rep
 		<Time c={c} time={created_at} />
 		&nbsp;
 		<div style={{ position: 'absolute', top: '10px', right: '10px' }}>
-			<a href={'/feed/' + id}>{getText(locale, 'viewDetail')}</a>
+			<a href={'/feed/' + id}>{translations.viewDetail}</a>
 			&nbsp;
 			<ReplyButton c={c} onclick={`document.getElementById('feed-reply-${id}').dataset.vis *= -1`} />
 			&nbsp;
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <>
-				<button type='button' onclick={`document.getElementById('feed-edit-${id}').dataset.vis *= -1`}>{getText(locale, 'edit')}</button>
+				<button type='button' onclick={`document.getElementById('feed-edit-${id}').dataset.vis *= -1`}>{translations.edit}</button>
 				&nbsp;
 				<DeleteButton c={c} href='/api/feed/delete' arg={{ id }} redirect='' />
 			</> : <></>}
@@ -43,15 +42,15 @@ export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, rep
 			<input type='hidden' name='id' value={id} />
 			<MdEditor id={'feed-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
 			<br />
-			<button type='submit'>{getText(locale, 'save')}</button>
-			<button type='button' onclick={`document.getElementById('feed-edit-${id}').dataset.vis='-1'`}>{getText(locale, 'cancel')}</button>
+			<button type='submit'>{translations.save}</button>
+			<button type='button' onclick={`document.getElementById('feed-edit-${id}').dataset.vis='-1'`}>{translations.cancel}</button>
 			{html`<style>#feed-edit-${id}[data-vis="-1"]{visibility:hidden;position:absolute;}#feed-edit-${id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
 		</form> : <></>}
 		{currentUser ? <form id={'feed-reply-' + id} data-vis='-1' method='post' action='/api/feed/reply' onsubmit={createSubmitHandler()}>
 			<input type='hidden' name='parent_id' value={id} />
 			<MdEditor id={'feed-reply-' + id} name='content' height='100px' locale={c.get('locale')} />
 			<br />
-			<button type='submit' disabled={!currentUser || enableEmailVerify && !c.get('currentUserEmail')}>{getText(locale, 'reply')}</button>
+			<button type='submit' disabled={!currentUser || enableEmailVerify && !c.get('currentUserEmail')}>{translations.reply}</button>
 			{html`<style>#feed-reply-${id}[data-vis="-1"]{visibility:hidden;position:absolute;}#feed-reply-${id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
 		</form> : <></>}
 		{recursionDepth ? <FeedReplies c={c} id={id} recursionDepth={recursionDepth - 1} repliesCount={repliesCount} pathIds={nextPathIds} /> : <></>}
