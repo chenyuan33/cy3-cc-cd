@@ -118,7 +118,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 				__CATEGORY__: <a href={`/discussion?category=${category}`}>{translations.discussion.categoryName[category]}</a>,
 				__CREATED_AT__: <Time c={c} time={created_at} />
 			})}</p>
-			<div id='discussion-content'><MdRender markdown={content} /></div>
+			<div id='discussion-content'><MdRender markdown={content} c={c} /></div>
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'discussion-edit-' + discussion_id} data-vis='-1' method='post' action='/api/discussion/edit' onsubmit={createSubmitHandler()}>
 				<input type='hidden' name='discussion_id' value={discussion_id} />
 				<label for={'discussion-title-' + discussion_id}><strong>{translations.title}</strong></label>
@@ -157,9 +157,9 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 					__USER__: <User c={c} user={uid} />,
 					__CREATED_AT__: <Time c={c} time={created_at} />
 				})}</p>
-				<div><MdRender markdown={content} /></div>
+				<div><MdRender markdown={content} c={c} /></div>
 			</blockquote>)(x) : <blockquote>[{translations.deleted}]</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, created_at FROM discussion_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM discussion WHERE id = ?').bind(parent_id || discussion_id).first()) : <></>}
-			<div id={`discussion-reply${id}-content`}><MdRender markdown={content} /></div>
+			<div id={`discussion-reply${id}-content`}><MdRender markdown={content} c={c} /></div>
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'discussion-reply-edit-' + id} data-vis='-1' method='post' action='/api/discussion/reply/edit' onsubmit={createSubmitHandler()}>
 				<input type='hidden' name='discussion_id' value={c.req.param('discussion_id')} />
 				<input type='hidden' name='reply_id' value={id} />

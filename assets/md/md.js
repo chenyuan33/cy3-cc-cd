@@ -6,17 +6,9 @@ const mdeditorOutputRefresh = id => () => {
 		refresher();
 	}
 };
-const inlineMdToHtml = async (md, options) => {
-    options ??= {};
-    options.safe ??= true;
-    options.allowHtml ??= true;
+const inlineMdToHtml = async (md) => {
     const codes = [], maths = [], signs = [], users = new Set(), usersObject = {};
-
     let html = md
-        .replaceAll(/(?<!`)(`+)(.*?)\1(?!`)/g, (_, __, code) => {
-            codes.push(code.replaceAll(/&/g, '&amp;').replaceAll(/</g, '&lt;').replaceAll(/>/g, '&gt;').replaceAll(/"/g, '&quot;'));
-            return `\x00CODE_${codes.length - 1}\x00`;
-        })
         .replaceAll(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
             maths.push({ math, displayMode: true });
             return `\x00MATH_${maths.length - 1}\x00`;
@@ -24,6 +16,14 @@ const inlineMdToHtml = async (md, options) => {
         .replaceAll(/\$(.*?)\$/g, (_, math) => {
             maths.push({ math, displayMode: false });
             return `\x00MATH_${maths.length - 1}\x00`;
+        })
+		.replaceAll(/&/g, '&amp;')
+		.replaceAll(/</g, '&lt;')
+		.replaceAll(/>/g, '&gt;')
+		.replaceAll(/"/g, '&quot;')
+        .replaceAll(/(?<!`)(`+)(.*?)\1(?!`)/g, (_, __, code) => {
+            codes.push(code.replaceAll(/&/g, '&amp;').replaceAll(/</g, '&lt;').replaceAll(/>/g, '&gt;').replaceAll(/"/g, '&quot;'));
+            return `\x00CODE_${codes.length - 1}\x00`;
         })
         .replaceAll(/\\(.)/g, (_, sign) => {
             signs.push(sign);
@@ -46,13 +46,8 @@ const inlineMdToHtml = async (md, options) => {
             return `<img src="${url}" alt="${alt}" />`;
         })
         .replaceAll(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
-
     for (let uid of users) {
         usersObject[uid] = await (await fetch('/api/user/uidToHtml?id=' + uid)).text();
-    }
-
-    if (!options.allowHtml) {
-        html = html.replaceAll(/&/g, '&amp;').replaceAll(/</g, '&lt;').replaceAll(/>/g, '&gt;').replaceAll(/"/g, '&quot;');
     }
     html = html
         .replaceAll(/\x00CODE_(\d+)\x00/g, (_, idx) => `<code>${codes[parseInt(idx)]}</code>`)
@@ -62,9 +57,6 @@ const inlineMdToHtml = async (md, options) => {
         })
         .replaceAll(/\x00SIGN_(\d+)\x00/g, (_, idx) => signs[idx])
         .replaceAll(/\x00USER_(\d+)\x00/g, (_, uid) => usersObject[uid]);
-    if (options.safe) {
-        html = DOMPurify.sanitize(html);
-    }
     return html;
 };
 
@@ -76,9 +68,9 @@ function parseMarkdownTable(lines) {
     const alignRow = lines[1].trim().split('|').map(s => s.trim()).filter(s => s);
     if (alignRow.length !== header.length) return null;
     const aligns = alignRow.map(cell => {
-        if (/^:---:$/.test(cell)) return 'center';
-        if (/^:---$/.test(cell)) return 'left';
-        if (/^---:$/.test(cell)) return 'right';
+        if (/^:-+:$/.test(cell)) return 'center';
+        if (/^:-+$/.test(cell)) return 'left';
+        if (/^-+:$/.test(cell)) return 'right';
         return 'left';
     });
     const rows = [];
@@ -116,9 +108,7 @@ function renderTable(table) {
 }
 // ========================================
 
-const mdToHtml = async (md, options) => {
-    options ??= {};
-    options.safe ??= true;
+const mdToHtml = async (md) => {
     let html = '';
     const lines = md.split('\n');
 
@@ -136,9 +126,9 @@ const mdToHtml = async (md, options) => {
                 this._started = started;
                 if (!started) {
                     if (contentOutline || this.name === 'li' && /^(\n|#{1,6} |>|\+ |- |\* |\d+\. |\+{3,}|-{3,}|_{3,})/.test(this.content)) {
-                        html += await mdToHtml(this.content, options);
+                        html += await mdToHtml(this.content);
                     } else {
-                        html += await inlineMdToHtml(this.content, options);
+                        html += await inlineMdToHtml(this.content);
                     }
                 }
                 this.content = '';
@@ -148,7 +138,7 @@ const mdToHtml = async (md, options) => {
                 html += `<${started ? '' : '/'}${htmlTagName} ${started ? Object.entries(attr).map(([key, val]) => `${key}=${val.replaceAll('"', '&quot;')}`).join(' ') : ''}>`;
             }
         },
-        async restart(started) {
+        async restart() {
             await this.start(false);
             await this.start(true);
         }
@@ -230,7 +220,7 @@ const mdToHtml = async (md, options) => {
         for (let headingLevel = 6; headingLevel > 0; headingLevel--) {
             if (trimed.startsWith('#'.repeat(headingLevel) + ' ')) {
                 await endMarker();
-                html += `<h${headingLevel}>${await inlineMdToHtml(trimed.substring(headingLevel + 1), options)}</h${headingLevel}>`;
+                html += `<h${headingLevel}>${await inlineMdToHtml(trimed.substring(headingLevel + 1))}</h${headingLevel}>`;
                 gened = true;
                 break;
             }
@@ -301,16 +291,5 @@ const mdToHtml = async (md, options) => {
     }
 
     await endMarker();
-
-    if (options.safe) {
-        html = DOMPurify.sanitize(html);
-    }
     return html;
 };
-
-const mdRender = () => Array.from(document.querySelectorAll('[data-markdown]')).forEach(async e => e.innerHTML = await mdToHtml(e.dataset.markdown));
-if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', mdRender);
-} else {
-    mdRender();
-}

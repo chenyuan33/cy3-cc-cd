@@ -130,7 +130,7 @@ app.get('/', async c => {
 								textOverflow: 'ellipsis',
 								marginTop: '2px'
 							}}>
-								<MdRender markdown={content} />
+								<MdRender markdown={content} c={c} />
 							</div>
 						</div>
                     );
@@ -178,7 +178,7 @@ app.get('/', async c => {
                                                 boxShadow: '0 1px 2px rgba(0,0,0,0.08)',
                                                 border: isSelf ? 'none' : '1px solid light-dark(#e0e0e0, #444)',
                                             }}>
-                                                <MdRender markdown={content} />
+                                                <MdRender markdown={content} c={c} />
                                                 <div style={{
                                                     fontSize: '10px',
                                                     color: isSelf ? '#555' : '#999',

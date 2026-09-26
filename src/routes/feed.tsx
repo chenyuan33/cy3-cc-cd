@@ -46,7 +46,7 @@ app.get('/:feed_id{[1-9][0-9]*}?', async c => {
 					&nbsp;
 					<DeleteButton c={c} href='/api/feed/delete' arg={{ id: feed_id }} redirect='/feed' />
 				</> : <></>}
-				<div><MdRender markdown={content} /></div>
+				<div><MdRender markdown={content} c={c} /></div>
 				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'feed-edit-' + feed_id} data-vis='-1' method='post' action='/api/feed/edit' onsubmit={createSubmitHandler()}>
 					<input type='hidden' name='id' value={feed_id} />
 					<MdEditor id={'feed-edit-editor-' + feed_id} name='content' required height='100px' locale={locale} initialCode={content} />

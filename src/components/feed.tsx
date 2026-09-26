@@ -37,7 +37,7 @@ export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, rep
 				<DeleteButton c={c} href='/api/feed/delete' arg={{ id }} redirect='' />
 			</> : <></>}
 		</div>
-		<div><MdRender markdown={content} /></div>
+		<div><MdRender markdown={content} c={c} /></div>
 		{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'feed-edit-' + id} data-vis='-1' method='post' action='/api/feed/edit' onsubmit={createSubmitHandler()}>
 			<input type='hidden' name='id' value={id} />
 			<MdEditor id={'feed-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />

@@ -155,7 +155,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				__CREATED_AT__: <Time c={c} time={created_at} />,
 				__STATUS__: <TicketStatus c={c} status={status} />
 			})}</p>
-			<div id='ticket-content'><MdRender markdown={content} /></div>
+			<div id='ticket-content'><MdRender markdown={content} c={c} /></div>
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'ticket-edit-' + ticket_id} data-vis='-1' method='post' action='/api/ticket/edit' onsubmit={createSubmitHandler()}>
 				<input type='hidden' name='ticket_id' value={ticket_id} />
 				<label for={'ticket-title-' + ticket_id}><strong>{translations.title}</strong></label>
@@ -198,9 +198,9 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 					{set_status ? <p>{renderTemplate(translations.ticket.setStatusTo, { __STATUS__: <TicketStatus c={c} status={set_status} /> })}</p> : <></>}
 					{set_assignee ? <p>{renderTemplate(translations.ticket.setAssigneeTo, { __ASSIGNEE__: <User c={c} user={set_assignee} /> })}</p> : <></>}
 				</div>
-				<div><MdRender markdown={content} /></div>
+				<div><MdRender markdown={content} c={c} /></div>
 			</blockquote>)(x) : <blockquote>[{translations.deleted}]</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, set_status, set_assignee, created_at FROM ticket_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM ticket WHERE id = ?').bind(parent_id || ticket_id).first()) : <></>}
-			<div id={`ticket-reply${id}-content`}><MdRender markdown={content} /></div>
+			<div id={`ticket-reply${id}-content`}><MdRender markdown={content} c={c} /></div>
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'ticket-reply-edit-' + id} data-vis='-1' method='post' action='/api/ticket/reply/edit' onsubmit={createSubmitHandler()}>
 				<input type='hidden' name='ticket_id' value={c.req.param('ticket_id')} />
 				<input type='hidden' name='reply_id' value={id} />
