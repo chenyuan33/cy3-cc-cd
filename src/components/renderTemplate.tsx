@@ -1,3 +1,4 @@
+import { raw } from 'hono/html';
 import type { JSX } from 'hono/jsx/jsx-runtime';
 export const renderTemplate = (template: string, parts: Record<string, string | JSX.Element | JSX.Element[]>) => {
 	const keys = Object.keys(parts);
@@ -5,5 +6,5 @@ export const renderTemplate = (template: string, parts: Record<string, string | 
 		return <>{template}</>;
 	}
 	const pattern = new RegExp(`(${keys.map((key: string) => key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('|')})`, 'g');
-	return <>{template.split(pattern).map(token => Object.hasOwn(parts, token) ? parts[token] : token)}</>;
+	return <>{template.split(pattern).map(token => Object.hasOwn(parts, token) ? parts[token] : raw(token))}</>;
 };
