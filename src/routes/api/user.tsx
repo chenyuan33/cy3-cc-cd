@@ -30,7 +30,7 @@ const login = async (uid: number, c: ContextType) => {
 	}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`);
 	return c.redirect('/');
 };
-app.use('/*', (c, next) => rateLimit((c.env as any).rateLimiter, c => c.req.header('cf-connecting-ip') ?? '')(c, next));
+app.on('get', ['/register', '/login', '/change-username', '/change-password', '/change-email', '/change-email/verify'], (c, next) => rateLimit((c.env as any).rateLimiter, c => c.req.header('cf-connecting-ip') ?? '')(c, next));
 app.post('/register', async c => {
 	const reqBody = c.get('reqBody');
 	if (c.get('currentUser')) {
