@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { permissionAdmin, permissionCount } from "../settings";
-import { accessDenied, notFound } from "./errorPages";
+import { accessDenied, missingParams, notFound } from "./errorPages";
 import { Card } from "../components/card";
 import judgementRoutes from './admin/judgement';
 import ticketQuickReplyRoutes from './admin/ticketQuickReply';
@@ -75,10 +75,32 @@ app.get('/domain/cy3.cc.cd/renew', async c => {
     )
 });
 
+app.post('/user/warn', async c => {
+	const reqBody = c.get('reqBody'), env = c.env as any;
+	if (!Object.hasOwn(reqBody, 'uid')) {
+		return missingParams(c);
+	}
+	const uid = parseInt(reqBody.uid || '');
+	if (uid === 1 || !await env.db.prepare('SELECT id FROM users WHERE id = ?').bind(uid).first()) {
+		return notFound(c);
+	}
+	const payload = JSON.stringify({
+		comment: reqBody.comment?.trim() || null,
+		operator: c.get('currentUser')!.id
+	});
+	await env.db
+		.prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, "warn", "{}", NULL, ?, ?)')
+		.bind(uid, reqBody.comment?.trim() || null, c.get('currentUser')!.id).run();
+	await env.db
+		.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "warn", ?)')
+		.bind(uid, payload).run();
+	return c.redirect('/user/' + uid, 303);
+});
+
 app.post('/user/name-violation', async c => {
-    const reqBody = c.get('reqBody'), env = c.env as any, translations = c.get('translations');
+    const reqBody = c.get('reqBody'), env = c.env as any;
     if (!Object.hasOwn(reqBody, 'uid')) {
-        return notFound(c);
+        return missingParams(c);
     }
     const uid = parseInt(reqBody.uid || '');
     if (uid === 1 || !await env.db.prepare('SELECT id FROM users WHERE id = ?').bind(uid).first()) {
@@ -91,40 +113,24 @@ app.post('/user/name-violation', async c => {
     await env.db
         .prepare('UPDATE users SET username_violation = ? WHERE id = ?')
         .bind(newViolation, uid).run();
-
-    const comment = reqBody.comment?.trim() || translations.noReason;
-    const payload = JSON.stringify({
-        comment,
-        oldViolation,
-        newViolation,
-        operator: c.get('currentUser')!.id
-    });
-
     await env.db
-        .prepare('INSERT INTO judgement (uid, type, payload, batch_id) VALUES (?, "name-violation", ?, NULL)')
-        .bind(uid, payload).run();
-
-    const typeLabel = newViolation === 1
-        ? translations.usernameViolation.setted
-        : translations.usernameViolation.unsetted;
-    const notifPayload = JSON.stringify({
-        comment,
-        oldViolation,
-        newViolation,
-        operator: c.get('currentUser')!.id,
-        typeLabel
-    });
+        .prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, "name-violation", ?, NULL, ?, ?)')
+        .bind(uid, JSON.stringify({ oldViolation, newViolation }), reqBody.comment || '', c.get('currentUser')!.id).run();
     await env.db
         .prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "name-violation", ?)')
-        .bind(uid, notifPayload).run();
-
+        .bind(uid, JSON.stringify({
+			comment: reqBody.comment?.trim() || null,
+			oldViolation,
+			newViolation,
+			operator: c.get('currentUser')!.id
+		})).run();
     return c.redirect('/user/' + uid, 303);
 });
 
 app.post('/user/permission/set', async c => {
-    const reqBody = c.get('reqBody'), env = c.env as any, translations = c.get('translations');
+    const reqBody = c.get('reqBody'), env = c.env as any;
     if (!Object.hasOwn(reqBody, 'uid')) {
-        return notFound(c);
+        return missingParams(c);
     }
     const uid = parseInt(reqBody.uid || '');
     if (uid === 1 || !await env.db.prepare('SELECT id FROM users WHERE id = ?').bind(uid).first()) {
@@ -141,21 +147,10 @@ app.post('/user/permission/set', async c => {
         }
     }
     await env.db.prepare('UPDATE users SET permission = ? WHERE id = ?').bind(newPermission, uid).run();
-
-    const payload = JSON.stringify({
-        comment: reqBody.comment || translations.noReason,
-        oldPermission,
-        newPermission
-    });
-
-    // 插入 judgement 表（公开记录）
-    await env.db.prepare('INSERT INTO judgement (uid, type, payload, batch_id) VALUES (?, "permission-changed", ?, NULL)')
-        .bind(uid, payload).run();
-
-    // 插入 notification 表（用户通知）
+    await env.db.prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, "permission-changed", ?, NULL, ?, ?)')
+        .bind(uid, JSON.stringify({ oldPermission, newPermission }), reqBody.comment || null, c.get('currentUser')!.id ).run();
     await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)')
-        .bind(uid, payload).run();
-
+        .bind(uid, JSON.stringify({ comment: reqBody.comment || null, oldPermission, newPermission })).run();
     return c.redirect('/user/' + uid, 303);
 });
 

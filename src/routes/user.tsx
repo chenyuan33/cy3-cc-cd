@@ -214,10 +214,15 @@ export const notificationContent = (c: ContextType, type: string, payload: any) 
 						<code>{translations.permission[i as allPermissions]}</code>
 						&nbsp;
 						{translations.permission.name}
-					</li>)
+					</li>),
+				__OPERATOR__: <User c={c} user={payload.operator} />
 			},
 			'name-violation': {
 				__SET__: payload.newViolation ? translations.user.notification.nameViolationSet : translations.user.notification.nameViolationUnset,
+				__OPERATOR__: <User c={c} user={payload.operator} />,
+				__COMMENT__: payload.comment || translations.noReason
+			},
+			'warn': {
 				__OPERATOR__: <User c={c} user={payload.operator} />,
 				__COMMENT__: payload.comment || translations.noReason
 			},
@@ -291,15 +296,23 @@ app.get('/:uid{[1-9][0-9]*}', async c => {
                     </tbody>
                 </table>
             </Card>
-            {currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <><Card style={{ marginTop: '10px' }}>
-                <Form action='/admin/user/name-violation' method='post' inputs={[
-                    { id: 'username-violation-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
-                    { id: 'username-violation-comment', name: 'comment', label: translations.reason, main: { type: 'input', inputType: 'text' } }
-                ]} submit={{ content: translations.user.toggleUsernameViolation }} />
-            </Card><Card>
+            {currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <>
+				<Card>
+					<Form action='/admin/user/warn' method='post' inputs={[
+						{ name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
+						{ name: 'comment', main: { type: 'input', inputType: 'text' }, required: true }
+					]} submit={{ content: translations.warn }} />
+				</Card>
+				<Card style={{ marginTop: '10px' }}>
+					<Form action='/admin/user/name-violation' method='post' inputs={[
+						{ id: 'username-violation-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
+						{ id: 'username-violation-comment', name: 'comment', label: translations.reason, main: { type: 'input', inputType: 'text' }, required: true }
+					]} submit={{ content: translations.user.toggleUsernameViolation }} />
+				</Card>
+				<Card>
                     <Form action='/admin/user/permission/set' method='post' inputs={[
                         { id: 'user-permission-set-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
-                        { id: 'user-permission-comment', name: 'comment', label: translations.reason, main: { type: 'input', inputType: 'text' } },
+                        { id: 'user-permission-comment', name: 'comment', label: translations.reason, main: { type: 'input', inputType: 'text' }, required: true },
                         ...Array.from({ length: permissionCount }, (_, i) => i).map(x => 1 << x).filter(x => x !== permissionAdmin || currentUser.id === 1).map(permissionId => ({
                             id: 'permission-' + permissionId,
                             name: 'p' + permissionId,
@@ -307,7 +320,8 @@ app.get('/:uid{[1-9][0-9]*}', async c => {
                             main: { type: 'input', inputType: 'checkbox', checked: !!(user.permission & permissionId) }
                         } as { id: string, name: string, label: string, main: { type: 'input', inputType: 'checkbox', checked: boolean } }))
                     ]} submit={{ content: translations.save }} />
-                </Card></> : <></>}
+                </Card>
+			</> : <></>}
         </>,
         { title: translations.user.profile.name.replace('__USERNAME__', displayName) }
     );

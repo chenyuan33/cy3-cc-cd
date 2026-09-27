@@ -108,7 +108,9 @@ CREATE TABLE IF NOT EXISTS judgement (
     payload TEXT,
     read INTEGER DEFAULT 0,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    batch_id TEXT
+    batch_id TEXT,
+	comment TEXT,
+	operator INTEGER NOT NULL
 );
 CREATE TABLE IF NOT EXISTS ticket_quick_reply (
 	id INTEGER PRIMARY KEY AUTOINCREMENT,

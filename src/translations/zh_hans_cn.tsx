@@ -97,8 +97,9 @@ export default {
 				'ticket-reply-replied': '__USER__ 在__TICKET__中的__REPLY__回复了__PARENT_REPLY__。',
 				'ticket-reply-deleted-by-ticket-owner': '__USER__ 删除了你在__TICKET__中于 __REPLY_CREATED_AT__ 创建的回复：__REPLY_CONTENT__。',
 				'ticket-status-changed': '__TICKET__的状态被设为了__STATUS__。',
-				'permission-changed': '您的权限已因以下理由被变更：<blockquote>__COMMENT__</blockquote><ul>__CHANGE_LIST__</ul>',
+				'permission-changed': '您的权限已因以下理由被 __OPERATOR__ 变更：<blockquote>__COMMENT__</blockquote><ul>__CHANGE_LIST__</ul>',
 				'name-violation': '您的用户名已因以下理由被 __OPERATOR__ __SET__为违规用户名：<blockquote>__COMMENT__</blockquote>',
+				'warn': '__OPERATOR__ 已因以下理由警告了你：<blockquote>__COMMENT__</blockquote>',
 				at: '__USER__ 在 __LINK__ 提到了你。'
 			},
 			atHere: '这里',
@@ -261,6 +262,7 @@ export default {
     title: '标题',
     content: '内容',
 	creator: '创建者',
+	operator: '操作者',
 	category: '板块',
     categories: '板块',
     status: '状态',
@@ -282,6 +284,7 @@ export default {
 	save: '保存',
 	ok: '确定',
 	cancel: '取消',
+	warn: '警告',
 	readStatus: {
 		read: '已读',
 		unread: '未读',
@@ -293,6 +296,7 @@ export default {
 		name: '权限',
 		granted: '授予权限',
 		revoked: '撤销权限',
+		changed: '变更权限',
 		grantPermission: '授予权限',
 		revokePermission: '撤销权限',
 		grant: '授予',
@@ -306,8 +310,8 @@ export default {
 	usernameViolation: {
 		set: '设为违规用户名',
 		unset: '取消违规用户名',
-		setted: '已被设为违规用户名',
-		unsetted: '已取消违规用户名'
+		setted: '被设为违规用户名',
+		unsetted: '被取消违规用户名'
 	},
     goToPage: '跳转到页码',
     replies: '回复',

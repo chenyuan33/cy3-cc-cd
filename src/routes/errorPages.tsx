@@ -14,6 +14,7 @@ export const errorHTML = (c: ContextType, err: Error | string, status: StatusCod
 	);
 };
 export const notFound = (c: ContextType) => errorHTML(c, c.get('translations').error.notFound, 404);
+export const missingParams = (c: ContextType) => errorHTML(c, c.get('translations').error.missingParams);
 export const accessDenied = (c: ContextType) => errorHTML(c, c.get('translations').error.accessDenied, 403);
 export const verifyFailed = (c: ContextType) => errorHTML(c, c.get('translations').error.verifyFailed);
 export const loginRequired = (c: ContextType) => errorHTML(c, raw(c.get('translations').error.loginRequired), 401);
