@@ -44,9 +44,9 @@ export const User: FC<{ user: userInfo | number | null; c: ContextType; linkable
 		</strong>
 		{tag ? <>&nbsp;<span style={{
 			color: 'white',
-			padding: '0.3em',
+			padding: '0.4em',
 			'font-size': '60%',
-			'border-radius': '10%',
+			'border-radius': '5px',
 			'background-color': `light-dark(#${user.name_color_light}, #${user.name_color_dark})`
 		}}>{tag}</span></> : <></>}
 	</span>;
