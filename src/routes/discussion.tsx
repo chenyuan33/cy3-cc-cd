@@ -69,10 +69,9 @@ app.get('/post', c => {
 		<MdInit />
 		<h1>{translations.discussion.post}</h1>
 		<Form action='/api/discussion/post' method='post'>
-			<FormSelect id='category' name='category' label={translations.category} options={[
-				{ value: '', label: translations.allCategories, selected: !category },
-				...((Object.entries(discussionCategories) as [ discussionCategoriesType, (user: userInfo) => boolean ][]).map(([key, check]) => ({ value: key, label: translations.discussion.categoryName[key], selected: category === key, disabled: !check(currentUser) })))
-			]} />
+			<FormSelect id='category' name='category' label={translations.category} options={
+				(Object.entries(discussionCategories) as [ discussionCategoriesType, (user: userInfo) => boolean ][]).map(([key, check]) => ({ value: key, label: translations.discussion.categoryName[key], selected: category === key, disabled: !check(currentUser) }))
+			} />
 			<FormInput id='title' name='title' label={translations.title} required type='text' />
 			<FormMdEditor id='content' name='content' label={translations.content} locale={c.get('locale')} required />
 			<input type='submit' value={translations.discussion.post} />

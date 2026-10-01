@@ -46,7 +46,7 @@ export const FormMdEditor: FC<{
 	initialCode?: string
 }> = ({ id, name, label, required, height = '300px', locale, initialCode = '' }) => <div style={{ height: `calc(${height} + 10px)` }}>
 	{label && <label for={'mdeditor-input-' + id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
-	<MdEditor id={id} name={name} required={required} style={{ position: 'relative', left: label ? '200px' : 0, width: label ? 'calc(100% - 100px)' : '100%' }} height={height} locale={locale} initialCode={initialCode} />
+	<MdEditor id={id} name={name} required={required} style={{ position: 'relative', left: label ? '200px' : 0, width: label ? 'calc(100% - 200px)' : '100%' }} height={height} locale={locale} initialCode={initialCode} />
 </div>;
 export const FormSelect: FC<{
 	id?: string,
