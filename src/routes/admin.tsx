@@ -5,6 +5,7 @@ import { accessDenied, missingParams, notFound } from "./errorPages";
 import { Card } from "../components/card";
 import judgementRoutes from './admin/judgement';
 import ticketQuickReplyRoutes from './admin/ticketQuickReply';
+import { Form } from "../components/form";
 
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
@@ -28,7 +29,7 @@ app.get('/', c => c.render(<>
     </Card>
     <Card>
         <h2>Add a check-in type</h2>
-        <form action='/admin/add-a-check-in-type' method='post'>
+        <Form action='/admin/add-a-check-in-type' method='post'>
             <table>
                 <thead>
                     <tr>
@@ -54,7 +55,7 @@ app.get('/', c => c.render(<>
                 </tbody>
             </table>
             <input type='submit' />
-        </form>
+        </Form>
     </Card>
 </>, { title: 'Admin' }));
 

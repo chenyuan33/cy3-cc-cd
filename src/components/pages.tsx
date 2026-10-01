@@ -1,10 +1,10 @@
 import type { FC } from "hono/jsx";
 import type { ContextType } from "../types";
 import { Card } from "./card";
-import { createSubmitHandler } from "./form";
+import { Form } from "./form";
 
 export const Pages: FC<{ c: ContextType, currentPage: number, totalPage: number }> = ({ c, currentPage, totalPage }) => totalPage > 1
-	? <Card><form method='get' action='' style={{ display: 'flex', gap: '5px', 'align-items': 'center', 'justify-content': 'center' }} onsubmit={createSubmitHandler()}>
+	? <Card><Form method='get' action='' style={{ display: 'flex', gap: '5px', 'align-items': 'center', 'justify-content': 'center' }}>
 		{new Set([1, 2, 3, currentPage - 1, currentPage, currentPage + 1, totalPage - 2, totalPage - 1, totalPage])
 		.values().toArray().filter(v => v > 0 && v <= totalPage).sort((a, b) => a - b).map(value => <a href={`javascript:setPage(${value})`} style={{
 			'background-color': value === currentPage ? 'light-dark(blue, cyan)' : 'inherit',
@@ -19,6 +19,6 @@ export const Pages: FC<{ c: ContextType, currentPage: number, totalPage: number 
 		}}>{value}</a>)}
 		<label for='page'>{c.get('translations').goToPage}</label>
 		<input type='number' min='1' max={totalPage} value={currentPage} />
-		<button type='submit'>{c.get('translations').go}</button>
-	</form></Card>
+		<input type='submit' value={c.get('translations').go} />
+	</Form></Card>
 	: <></>;

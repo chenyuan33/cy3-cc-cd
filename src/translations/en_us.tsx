@@ -198,8 +198,49 @@ export default {
 		goToFolder: 'Create or go to a folder:',
 		fileName: 'File Name',
 		size: 'File Size / Bytes',
-		operations: 'Operations',
 		folderEmpty: 'The folder is empty now.'
+	},
+	theme: {
+		name: 'Theme',
+		list: 'Theme Store',
+		themeColor: 'Theme Color',
+		themeName: 'Theme Name',
+		numberOfUsers: 'Number of Users',
+		create: 'Create Theme',
+		edit: 'Edit Theme',
+		saveAsNew: 'Save as New Theme',
+		reset: 'Reset Theme',
+		useBgImage: 'Use Background Image',
+		bgImageRepeat: {
+			x: 'Repeat Background Image Horizontally',
+			y: 'Repeat Background Image Vertically'
+		},
+		bgImageSize: {
+			x: 'Background Image Size (Width)',
+			y: 'Background Image Size (Height)',
+			auto: 'Auto',
+			cover: 'Cover',
+			contain: 'Contain',
+			custom: 'Custom'
+		},
+		bgImageSizeCustom: {
+			x: 'Custom Background Image Size (Width)',
+			y: 'Custom Background Image Size (Height)'
+		},
+		lengthUnits: {
+			px: 'Pixels',
+			em: 'EMS',
+			rem: 'Root EMS',
+			'%': 'Percentage',
+			'vw': 'View Width',
+			'vh': 'View Height'
+		},
+		useFrostedGlass: 'Use Frosted Glass Effect',
+		lightTheme: 'Light Theme',
+		darkTheme: 'Dark Theme',
+		fgcolor: 'Foreground Color',
+		bgcolor: 'Background Color',
+		bgimage: 'Background Image'
 	},
 	admin: {
 		name: 'Admin',
@@ -326,6 +367,9 @@ export default {
     delete: 'Delete',
     deleteConfirm: 'Are you sure you want to delete? This cannot be undone!',
     createdAt: 'Created at',
+	updatedAt: 'Updated At',
+	operations: 'Operations',
+	apply: 'Apply',
     setPin: 'Set pin value',
     deleted: 'Deleted',
     selectConversation: 'Select a conversation',

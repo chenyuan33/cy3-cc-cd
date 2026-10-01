@@ -15,3 +15,11 @@ export const timeLimitDefault = 1000;
 export const timeLimitMax = 5000;
 export const memoryLimitDefault = 512;
 export const memoryLimitMax = 1024;
+export const defaultTheme = {
+	usebgimage: 0, useFrostedGlass: 1,
+	bgImageRepeatX: 0, bgImageRepeatY: 0,
+	bgImageSizeX: 'auto', bgImageSizeXCustom: 0, bgImageSizeXCustomUnit: 'px',
+	bgImageSizeY: 'auto', bgImageSizeYCustom: 0, bgImageSizeYCustomUnit: 'px',
+	light_fgcolor: '#333333', light_bgcolor: '#f5f5f5', light_bgimage: '',
+	dark_fgcolor: '#e0e0e0', dark_bgcolor: '#181818', dark_bgimage: ''
+};

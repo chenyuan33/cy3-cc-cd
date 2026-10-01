@@ -2,13 +2,13 @@ import { Hono } from "hono";
 import type { AppEnv, userInfo } from "../types";
 import { emailVerifyRequired, loginRequired, muted, notFound } from "./errorPages";
 import { Card } from "../components/card";
-import { createSubmitHandler, Form } from "../components/form";
+import { Form, FormInput, FormMdEditor, FormSelect } from "../components/form";
 import { renderTemplate } from "../components/renderTemplate";
 import { User } from "../components/user";
 import { Time } from "../components/time";
 import { Pages } from "../components/pages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../settings";
-import { MdEditor, MdInit, MdRender } from "../components/mdeditor";
+import { MdInit, MdRender } from "../components/mdeditor";
 import { html } from "hono/html";
 import { DeleteButton, PostButton, ReplyButton } from "../components/button";
 import { discussionCategories, inDiscussionCategory, type discussionCategoriesType } from "./api/discussion";
@@ -32,18 +32,13 @@ app.get('/', async c => {
 		<Card style={{ width: '300px' }}>
 			<h1>{translations.discussion.name}</h1>
 			<PostButton c={c} href={'/discussion/post' + (category ? '?category=' + category : '')} />
-			<Form action='' method='get' inputs={[{
-				id: 'category',
-				name: 'category',
-				label: translations.category,
-				main: {
-					type: 'select',
-					options: [
-						{ value: '', label: translations.allCategories, selected: !category },
-						...((Object.entries(discussionCategories) as [ discussionCategoriesType, (user: userInfo) => boolean ][]).map(([key]) => ({ value: key, label: translations.discussion.categoryName[key], selected: category === key })))
-					]
-				}
-			}]} submit={{ content: translations.filter }} locale={c.get('locale')} />
+			<Form action='' method='get'>
+				<FormSelect id='category' name='category' label={translations.category} options={[
+					{ value: '', label: translations.allCategories, selected: !category },
+					...((Object.entries(discussionCategories) as [ discussionCategoriesType, (user: userInfo) => boolean ][]).map(([key]) => ({ value: key, label: translations.discussion.categoryName[key], selected: category === key })))
+				]} />
+				<input type='submit' value={translations.filter} />
+			</Form>
 		</Card>
 		<div style={{ display: 'inline-block', flex: 1 }}>
 			{results.length ? results.map(({ id, uid, category, title, created_at, pin }: { id: number, uid: number, category: discussionCategoriesType, title: string, created_at: string, pin: number }) => <Card>
@@ -73,28 +68,24 @@ app.get('/post', c => {
 	return c.render(<Card>
 		<MdInit />
 		<h1>{translations.discussion.post}</h1>
-		<Form action='/api/discussion/post' method='post' inputs={[
-			{
-				id: 'category',
-				name: 'category',
-				label: translations.category,
-				main: {
-					type: 'select',
-					options: (Object.entries(discussionCategories) as [discussionCategoriesType, (user: userInfo) => boolean][]).map(([key, check]) => ({ value: key, label: translations.discussion.categoryName[key], selected: category === key, disabled: !check(currentUser) }))
-				}
-			},
-			{ id: 'title', name: 'title', label: translations.title, main: { type: 'input', inputType: 'text' }, required: true },
-			{ id: 'content', name: 'content', label: translations.content, main: { type: 'mdeditor' }, required: true }
-		]} submit={{ content: translations.discussion.post }} />
+		<Form action='/api/discussion/post' method='post'>
+			<FormSelect id='category' name='category' label={translations.category} options={[
+				{ value: '', label: translations.allCategories, selected: !category },
+				...((Object.entries(discussionCategories) as [ discussionCategoriesType, (user: userInfo) => boolean ][]).map(([key, check]) => ({ value: key, label: translations.discussion.categoryName[key], selected: category === key, disabled: !check(currentUser) })))
+			]} />
+			<FormInput id='title' name='title' label={translations.title} required type='text' />
+			<FormMdEditor id='content' name='content' label={translations.content} locale={c.get('locale')} required />
+			<input type='submit' value={translations.discussion.post} />
+		</Form>
 	</Card>, { title: translations.discussion.post });
 });
 app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 	const env = c.env as any, currentUser = c.get('currentUser'), discussion_id = parseInt(c.req.param('discussion_id')), translations = c.get('translations');
-	const discussion_info = await env.db.prepare('SELECT uid, category, title, content, created_at FROM discussion WHERE id = ?').bind(c.req.param('discussion_id')).first();
+	const discussion_info = await env.db.prepare('SELECT uid, category, title, content, created_at, pin FROM discussion WHERE id = ?').bind(c.req.param('discussion_id')).first();
 	if (!discussion_info) {
 		return notFound(c);
 	}
-	const { uid, category, title, content, created_at }: { uid: number, category: discussionCategoriesType, title: string, content: string, created_at: string } = discussion_info;
+	const { uid, category, title, content, created_at, pin }: { uid: number, category: discussionCategoriesType, title: string, content: string, created_at: string, pin: number } = discussion_info;
 	const perPage = 10;
 	const currentPage = Math.max(1, parseInt(c.get('reqBody').page || '1') || 1);
 	const { total } = await env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ?').bind(c.req.param('discussion_id')).first();
@@ -112,30 +103,27 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 					<DeleteButton c={c} href='/api/discussion/delete' arg={{ discussion_id }} redirect='/discussion' />
 				</> : <></>}
 			</div>
-			<h1>{title}</h1>
+			<h1>{pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'gold' }}></i> : <></>}{title}</h1>
 			<p style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }} id='discussion-description'>{renderTemplate(translations.discussion.itemDescription, {
 				__USER__: <User c={c} user={uid} />,
 				__CATEGORY__: <a href={`/discussion?category=${category}`}>{translations.discussion.categoryName[category]}</a>,
 				__CREATED_AT__: <Time c={c} time={created_at} />
 			})}</p>
 			<div id='discussion-content'><MdRender markdown={content} c={c} /></div>
-			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'discussion-edit-' + discussion_id} data-vis='-1' method='post' action='/api/discussion/edit' onsubmit={createSubmitHandler()}>
+			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'discussion-edit-' + discussion_id} data-vis='-1' method='post' action='/api/discussion/edit'>
 				<input type='hidden' name='discussion_id' value={discussion_id} />
-				<label for={'discussion-title-' + discussion_id}><strong>{translations.title}</strong></label>
-				&nbsp;
-				<input id={'discussion-title-' + discussion_id} name='title' value={title} required />
-				<br />
-				<MdEditor id={'discussion-edit-editor-' + discussion_id} name='content' required height='200px' locale={c.get('locale')} initialCode={content} />
-				<br />
-				<button type='submit'>{translations.save}</button>
-				<button type='button' onclick={`document.getElementById('discussion-edit-${discussion_id}').dataset.vis='-1'`}>{translations.cancel}</button>
+				<FormInput type='text' id={'discussion-title-' + discussion_id} name='title' label={translations.title} value={title} required />
+				<FormMdEditor id={'discussion-edit-editor-' + discussion_id} name='content' required height='200px' locale={c.get('locale')} initialCode={content} />
+				<input type='submit' value={translations.save} />
+				<input type='button' value={translations.cancel} onclick={`document.getElementById('discussion-edit-${discussion_id}').dataset.vis='-1'`} />
 				{html`<style>#discussion-edit-${discussion_id}[data-vis="-1"]{visibility:hidden;position:absolute;}#discussion-edit-${discussion_id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
-			</form> : <></>}
+			</Form> : <></>}
 		</Card>
-		{currentUser && (currentUser.permission & permissionAdmin) ? <Card><Form action='/admin/discussion/set-pin' method='post' inputs={[
-			{ id: 'setPinDiscussionId', name: 'discussion_id', main: { type: 'input', inputType: 'hidden', value: discussion_id.toString() } },
-			{ id: 'setPin', name: 'pin', label: translations.setPin, main: { type: 'input', inputType: 'number' } }
-		]} submit={{ content: translations.save }} /></Card> : <></>}
+		{currentUser && (currentUser.permission & permissionAdmin) ? <Card><Form action='/admin/discussion/set-pin' method='post'>
+			<input type='hidden' name='discussion_id' value={discussion_id} />
+			<FormInput id='setPin' name='pin' label={translations.setPin} type='number' />
+			<input type='submit' value={translations.save} />
+		</Form></Card> : <></>}
 		<hr />
 		{results.length ? await Promise.all(results.map(async ({ id, parent_id, uid, content, created_at }: { id: number, parent_id: number, uid: number, content: string, created_at: string }) => <Card>
 			<div style={{ position: 'absolute', right: '10px', top: '10px' }}>
@@ -160,15 +148,15 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 				<div><MdRender markdown={content} c={c} /></div>
 			</blockquote>)(x) : <blockquote>[{translations.deleted}]</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, created_at FROM discussion_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM discussion WHERE id = ?').bind(parent_id || discussion_id).first()) : <></>}
 			<div id={`discussion-reply${id}-content`}><MdRender markdown={content} c={c} /></div>
-			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'discussion-reply-edit-' + id} data-vis='-1' method='post' action='/api/discussion/reply/edit' onsubmit={createSubmitHandler()}>
+			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'discussion-reply-edit-' + id} data-vis='-1' method='post' action='/api/discussion/reply/edit'>
 				<input type='hidden' name='discussion_id' value={c.req.param('discussion_id')} />
 				<input type='hidden' name='reply_id' value={id} />
-				<MdEditor id={'discussion-reply-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
+				<FormMdEditor id={'discussion-reply-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
 				<br />
-				<button type='submit'>{translations.save}</button>
-				<button type='button' onclick={`document.getElementById('discussion-reply-edit-${id}').dataset.vis='-1'`}>{translations.cancel}</button>
+				<input type='submit' value={translations.save} />
+				<input type='button' value={translations.cancel} onclick={`document.getElementById('discussion-reply-edit-${id}').dataset.vis='-1'`} />
 				{html`<style>#discussion-reply-edit-${id}[data-vis="-1"]{visibility:hidden;position:absolute;}#discussion-reply-edit-${id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
-			</form> : <></>}
+			</Form> : <></>}
 		</Card>)) : <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{translations.noReplies}</h2></Card>}
 		<Pages c={c} currentPage={currentPage} totalPage={totalPage} />
 		<Card>
@@ -177,11 +165,12 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 				<p style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }} id='replying-description'></p>
 				<div id='replying-content'></div>
 			</blockquote>
-			<Form action='/api/discussion/reply' method='post' inputs={[
-				{ id: 'discussion_id', name: 'discussion_id', main: { type: 'input', inputType: 'hidden', value: c.req.param('discussion_id') } },
-				{ id: 'parent_id', name: 'parent_id', main: { type: 'input', inputType: 'hidden', value: '' } },
-				{ id: 'content', name: 'content', main: { type: 'mdeditor' }, required: true }
-			]} submit={<ReplyButton c={c} />} />
+			<Form action='/api/discussion/reply' method='post'>
+				<input type='hidden' name='discussion_id' value={c.req.param('discussion_id')} />
+				<input type='hidden' name='parent_id' value='' id='parent_id' />
+				<FormMdEditor id='reply-editor' name='content' required locale={c.get('locale')} />
+				<ReplyButton c={c} />
+			</Form>
 		</Card>
 	</>, { title: title + ' - ' + translations.discussion.categoryName[category] + ' - ' + translations.discussion.name });
 });

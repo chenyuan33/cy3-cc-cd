@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { type AppEnv, type ContextType } from "../types";
-import { html, raw } from "hono/html";
+import { raw } from "hono/html";
 import { alreadyLoggedIn, loginRequired, notFound } from "./errorPages";
 import { Card } from "../components/card";
-import { createSubmitHandler, Form } from "../components/form";
+import { Form, FormCheckbox, FormInput } from "../components/form";
 import { User, getDisplayUsername, userQuery } from "../components/user";
 import { Time } from "../components/time";
 import { Pages } from "../components/pages";
@@ -32,7 +32,7 @@ app.get('/register', c => {
                 gap: '20px'
             }}>
                 <Card style={{
-                    'min-width': '300px',
+                    'min-width': '400px',
                     display: 'flex',
                     'flex-direction': 'column',
                     'align-items': 'center',
@@ -40,19 +40,18 @@ app.get('/register', c => {
                 }}>
                     <link rel='stylesheet' type='text/css' href='/user/register.css' />
                     <h1>{translations.user.register}</h1>
-                    <Form action='/api/user/register' method='post' id='registerForm' inputs={[
-                        { id: 'name', name: 'name', label: translations.userInfo.username, main: { type: 'input', inputType: 'text', oninput: 'checkname()', autocomplete: 'username' }, required: true },
-                        { id: 'password', name: 'password', label: translations.userInfo.password, main: { type: 'input', inputType: 'password', autocomplete: 'new-password' }, required: true },
-                        { id: 'confirmPassword', label: translations.user.confirmPassword, main: { type: 'input', inputType: 'password', autocomplete: 'new-password' }, required: true }
-                    ]} submit={{ content: translations.user.register }} />
+                    <Form action='/api/user/register' method='post' id='registerForm'>
+						<ul id='namechecklist'>
+							<li><i class='fa-solid fa-xmark check-failed' id='namecheck-length'></i>{translations.user.registerUsernameLength}</li>
+							<li><i class='fa-solid fa-check check-success' id='namecheck-used'></i>{translations.user.registerUsernameExists}</li>
+						</ul>
+						<FormInput id='name' name='name' label={translations.userInfo.username} type='text' oninput='checkname()' autocomplete='username' required />
+						<FormInput id='password' name='password' label={translations.userInfo.password} type='password' autocomplete='new-password' required />
+						<FormInput id='confirmPassword' name='confirmPassword' label={translations.user.confirmPassword} type='password' autocomplete='new-password' required />
+						<input type='submit' value={translations.user.register} />
+					</Form>
                     <p>{raw(translations.user.registerToLogin)}</p>
                     <script src='/user/register.js'></script>
-                </Card>
-                <Card style={{ 'max-width': '400px' }}>
-                    <ul id='namechecklist'>
-                        <li><i class='fa-solid fa-xmark check-failed' id='namecheck-length'></i>{translations.user.registerUsernameLength}</li>
-                        <li><i class='fa-solid fa-check check-success' id='namecheck-used'></i>{translations.user.registerUsernameExists}</li>
-                    </ul>
                 </Card>
             </div>
         </div>,
@@ -71,17 +70,18 @@ app.get('/login', c => {
             'min-height': '100vh'
         }}>
             <Card style={{
-                'min-width': '300px',
+                'min-width': '400px',
                 display: 'flex',
                 'flex-direction': 'column',
                 'align-items': 'center',
                 position: 'relative'
             }}>
                 <h1>{translations.user.login}</h1>
-                <Form action='/api/user/login' method='post' inputs={[
-                    { id: 'name', name: 'name', label: translations.userInfo.username, main: { type: 'input', inputType: 'text', autocomplete: 'username' }, required: true },
-                    { id: 'password', name: 'password', label: translations.userInfo.password, main: { type: 'input', inputType: 'password', autocomplete: 'current-password' }, required: true }
-                ]} submit={{ content: translations.user.login }} />
+                <Form action='/api/user/login' method='post'>
+					<FormInput id='name' name='name' label={translations.userInfo.username} type='text' autocomplete='username' required />
+					<FormInput id='password' name='password' label={translations.userInfo.password} type='password' autocomplete='current-password' required />
+					<input type='submit' value={translations.user.login} />
+				</Form>
                 <p>{raw(translations.user.loginToRegister)}</p>
             </Card>
         </div>,
@@ -105,13 +105,12 @@ app.get('/settings', async c => {
                 }}>
                     <h2>{translations.user.settings.general.name}</h2>
                     <button onclick='Notification.requestPermission()'>{translations.user.settings.general.enableBrowserNotification}</button>
-                    <Form action='/api/user/general-settings' method='post' inputs={[
-                        { id: 'nameColorLight', name: 'nameColorLight', label: translations.user.settings.general.ChangeNameColorLight, main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_light }, required: true },
-                        { id: 'nameColorDark', name: 'nameColorDark', label: translations.user.settings.general.ChangeNameColorDark, main: { type: 'input', inputType: 'color', value: '#' + currentUser.name_color_dark }, required: true },
-						...((currentUser.permission & permissionAdmin) ? [
-							{ id: 'tag', name: 'tag', label: translations.user.tag, main: ({ type: 'input', inputType: 'text', value: currentUser.tag || '' } as { type: 'input', inputType: 'text', value: string }) }
-						] : [])
-                    ]} submit={{ content: translations.save }} />
+                    <Form action='/api/user/general-settings' method='post'>
+						<FormInput id='nameColorLight' name='nameColorLight' label={translations.user.settings.general.ChangeNameColorLight} type='color' value={'#' + currentUser.name_color_light} required />
+						<FormInput id='nameColorDark' name='nameColorDark' label={translations.user.settings.general.ChangeNameColorDark} type='color' value={'#' + currentUser.name_color_dark} required />
+						{((currentUser.permission & permissionAdmin) ? <FormInput id='tag' name='tag' label={translations.user.tag} type='text' value={currentUser.tag || ''} /> : null)}
+						<input type='submit' value={translations.save} />
+					</Form>
                 </Card>
                 <Card style={{
                     display: 'inline-flex',
@@ -120,11 +119,12 @@ app.get('/settings', async c => {
                     width: '300px'
                 }}>
                     <h2>{translations.user.settings.changePassword.name}</h2>
-                    <Form action='/api/user/change-password' method='post' id='changePassword' inputs={[
-                        { id: 'oldPassword', name: 'old', label: translations.user.settings.changePassword.old, main: { type: 'input', inputType: 'password', autocomplete: 'current-password' }, required: true },
-                        { id: 'newPassword', name: 'new', label: translations.user.settings.changePassword.new, main: { type: 'input', inputType: 'password', autocomplete: 'new-password' }, required: true },
-                        { id: 'confirmPassword', label: translations.user.settings.changePassword.confirm, main: { type: 'input', inputType: 'password', autocomplete: 'new-password' }, required: true }
-                    ]} submit={{ content: translations.user.settings.changePassword.name }} />
+                    <Form action='/api/user/change-password' method='post' id='changePassword'>
+						<FormInput id='oldPassword' name='old' label={translations.user.settings.changePassword.old} type='password' autocomplete='current-password' required />
+						<FormInput id='newPassword' name='new' label={translations.user.settings.changePassword.new} type='password' autocomplete='new-password' required />
+						<FormInput id='confirmPassword' name='confirm' label={translations.user.settings.changePassword.confirm} type='password' autocomplete='new-password' required />
+						<input type='submit' value={translations.user.settings.changePassword.name} />
+					</Form>
                 </Card>
                 <Card style={{
                     display: 'inline-flex',
@@ -133,10 +133,11 @@ app.get('/settings', async c => {
                     width: '300px'
                 }}>
                     <h2>{translations.user.settings.changeUsername.name}</h2>
-                    <Form action='/api/user/change-username' method='post' inputs={[
-                        { id: 'password', name: 'password', label: translations.userInfo.password, main: { type: 'input', inputType: 'password', autocomplete: 'current-password' }, required: true },
-                        { id: 'name', name: 'name', label: translations.userInfo.username, main: { type: 'input', inputType: 'text', autocomplete: 'username' }, required: true }
-                    ]} submit={{ content: translations.save }} />
+                    <Form action='/api/user/change-username' method='post'>
+						<FormInput id='password' name='password' label={translations.userInfo.password} type='password' autocomplete='current-password' required />
+						<FormInput id='name' name='name' label={translations.userInfo.username} type='text' autocomplete='username' required />
+						<input type='submit' value={translations.save} />
+					</Form>
                 </Card>
                 <Card style={{
                     display: 'inline-flex',
@@ -149,10 +150,11 @@ app.get('/settings', async c => {
                         ? translations.user.settings.changeEmail.current.replace('__EMAIL__', currentEmail)
                         : translations.user.settings.changeEmail.currentUnset
                     }</p>
-                    <Form action='/api/user/change-email' method='post' inputs={[
-                        { id: 'password', name: 'password', label: translations.userInfo.password, main: { type: 'input', inputType: 'password', autocomplete: 'current-password' }, required: true },
-                        { id: 'email', name: 'email', label: translations.userInfo.email, main: { type: 'input', inputType: 'email', autocomplete: 'email' }, required: true }
-                    ]} submit={{ content: translations.next }} />
+                    <Form action='/api/user/change-email' method='post'>
+						<FormInput id='password' name='password' label={translations.userInfo.password} type='password' autocomplete='current-password' required />
+						<FormInput id='email' name='email' label={translations.userInfo.email} type='email' autocomplete='email' required />
+						<input type='submit' value={translations.next} />
+					</Form>
                 </Card>
             </div>
             <script src='/user/settings.js'></script>
@@ -249,9 +251,9 @@ app.get('/notification', async c => {
     return c.render(<>
         <Card style={{ position: 'relative' }}>
             <h1>{translations.user.notification.name}</h1>
-            <form method='post' action='/api/user/notification/read-all' style={{ margin: 0 }} onsubmit={createSubmitHandler()}>
+            <Form action='/api/user/notification/read-all' method='post' style={{ margin: 0 }}>
                 <button type='submit' style={{ position: 'absolute', right: '15px', top: '15px' }}>{translations.readStatus.markReadAll}</button>
-            </form>
+            </Form>
         </Card>
         {results.length === 0 ? <Card><p>{translations.user.notification.nothing}</p></Card> : <></>}
         {await Promise.all(results.map(({ id, type, read, payload, created_at }: { id: number, type: string, read: number, payload: string, created_at: string }) => <Card style={{
@@ -264,11 +266,11 @@ app.get('/notification', async c => {
         }}>
             <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center', gap: '10px' }}>
                 <small>({read ? translations.readStatus.read : translations.readStatus.unread})</small>
-                <form method='post' action='/api/user/notification/read-status' style={{ margin: 0 }} onsubmit={createSubmitHandler()}>
+                <Form method='post' action='/api/user/notification/read-status' style={{ margin: 0 }}>
                     <input type='hidden' name='id' value={id} />
                     <input type='hidden' name='read' value={read ? '0' : '1'} />
                     <button type='submit'>{read ? translations.readStatus.markUnread : translations.readStatus.markRead}</button>
-                </form>
+                </Form>
             </div>
             <div style={{ margin: '12px 0' }}>{notificationContent(c, type, JSON.parse(payload))}</div>
             <div style={{ display: 'flex', 'justify-content': 'space-between', 'align-items': 'center' }}>
@@ -298,28 +300,26 @@ app.get('/:uid{[1-9][0-9]*}', async c => {
             </Card>
             {currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <>
 				<Card>
-					<Form action='/admin/user/warn' method='post' inputs={[
-						{ name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
-						{ name: 'comment', main: { type: 'input', inputType: 'text' }, required: true }
-					]} submit={{ content: translations.warn }} />
+					<Form action='/admin/user/warn' method='post'>
+						<input name='uid' type='hidden' value={user.id.toString()} />
+						<FormInput name='comment' type='text' required />
+						<input type='submit' value={translations.warn} />
+					</Form>
 				</Card>
 				<Card style={{ marginTop: '10px' }}>
-					<Form action='/admin/user/name-violation' method='post' inputs={[
-						{ id: 'username-violation-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
-						{ id: 'username-violation-comment', name: 'comment', label: translations.reason, main: { type: 'input', inputType: 'text' }, required: true }
-					]} submit={{ content: translations.user.toggleUsernameViolation }} />
+					<Form action='/admin/user/name-violation' method='post'>
+						<input type='hidden' name='uid' value={user.id.toString()} />
+						<FormInput type='text' name='comment' required label={translations.reason} />
+						<input type='submit' value={translations.user.toggleUsernameViolation} />
+					</Form>
 				</Card>
 				<Card>
-                    <Form action='/admin/user/permission/set' method='post' inputs={[
-                        { id: 'user-permission-set-uid', name: 'uid', main: { type: 'input', inputType: 'hidden', value: user.id.toString() } },
-                        { id: 'user-permission-comment', name: 'comment', label: translations.reason, main: { type: 'input', inputType: 'text' }, required: true },
-                        ...Array.from({ length: permissionCount }, (_, i) => i).map(x => 1 << x).filter(x => x !== permissionAdmin || currentUser.id === 1).map(permissionId => ({
-                            id: 'permission-' + permissionId,
-                            name: 'p' + permissionId,
-                            label: translations.permission[permissionId as allPermissions],
-                            main: { type: 'input', inputType: 'checkbox', checked: !!(user.permission & permissionId) }
-                        } as { id: string, name: string, label: string, main: { type: 'input', inputType: 'checkbox', checked: boolean } }))
-                    ]} submit={{ content: translations.save }} />
+                    <Form action='/admin/user/permission/set' method='post'>
+						<input type='hidden' name='uid' value={user.id.toString()} />
+						<FormInput type='text' name='comment' label={translations.reason} required />
+						{Array.from({ length: permissionCount }, (_, i) => i).map(x => 1 << x).filter(x => x !== permissionAdmin || currentUser.id === 1).map(permissionId => <FormCheckbox id={'permission-' + permissionId} name={'p' + permissionId} label={translations.permission[permissionId as allPermissions]} checked={!!(user.permission & permissionId)} />)}
+						<input type='submit' value={translations.save} />
+					</Form>
                 </Card>
 			</> : <></>}
         </>,

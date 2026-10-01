@@ -5,12 +5,11 @@ import type { FC, PropsWithChildren } from 'hono/jsx';
 import { raw } from 'hono/html';
 import { isLanguageSupported, translations, type supportedLanguagesShortCodeType } from './translations';
 import type { AppEnv } from './types';
-import { permissionAdmin, permissionVisit } from './settings';
+import { defaultTheme, permissionAdmin, permissionVisit } from './settings';
 import { User, userQuery } from './components/user';
 import { Card } from './components/card';
 import { renderTemplate } from './components/renderTemplate';
 import { Time } from './components/time';
-import { Form } from './components/form';
 import { banned, errorHTML, notFound } from './routes/errorPages';
 import apisRoutes from './routes/apis';
 import webSocketRoutes from './routes/ws';
@@ -22,8 +21,11 @@ import chatRoutes from './routes/chat';
 import adminRoutes from './routes/admin';
 import judgementRoutes from './routes/judgement';
 import fileRoutes from './routes/file';
+import themeRoutes from './routes/theme';
 import ideRoutes from './routes/ide';
 import type { discussionCategoriesType } from './routes/api/discussion';
+import { Form } from './components/form';
+import { ThemeLoader } from './components/themeLoader';
 const app = new Hono<AppEnv>();
 app.use(async (c, next) => {
 	const clonedReq = c.req.raw.clone();
@@ -88,8 +90,7 @@ app.use(async (c, next) => {
 		customLog: {
 			logType: 'Custom Log',
 			currentUser: currentUser,
-			ip: c.req.header('x-real-ip'),
-			reqBody: c.get('reqBody')
+			ip: c.req.header('x-real-ip') ?? c.req.header('cf-connecting-ip') ?? c.req.header('x-forwarded-for') ?? 'unknown'
 		}
 	});
 	await next();
@@ -107,11 +108,24 @@ app.use(jsxRenderer(async ({ children, title }) => {
 	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any, translations = c.get('translations');
 	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
 	const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0').bind(currentUser.id).first() : { privateMessageCount: 0 };
+	const currentTheme = (currentUser ? await env.db.prepare(`
+		SELECT
+			theme.usebgimage, theme.useFrostedGlass,
+			theme.bgImageRepeatX, theme.bgImageRepeatY,
+			theme.bgImageSizeX, theme.bgImageSizeXCustom, theme.bgImageSizeXCustomUnit,
+			theme.bgImageSizeY, theme.bgImageSizeYCustom, theme.bgImageSizeYCustomUnit,
+			theme.light_fgcolor, theme.light_bgcolor, theme.light_bgimage,
+			theme.dark_fgcolor, theme.dark_bgcolor, theme.dark_bgimage
+		FROM users
+		JOIN theme ON users.using_theme = theme.id
+		WHERE users.id = ?
+	`).bind(currentUser.id).first() : null) || defaultTheme;
 	return <html lang={locale}>
 		<head>
 			<meta charset='UTF-8' />
 			<meta name='viewport' content='width=device-width, initial-scale=1.0' />
 			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
+			<ThemeLoader theme={currentTheme} root='body' />
 			<link rel='stylesheet' type='text/css' href='/style.css' />
 			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
 			<script dangerouslySetInnerHTML={{ __html: `const translations=${JSON.stringify(translations)};` }}></script>
@@ -283,6 +297,10 @@ app.use(jsxRenderer(async ({ children, title }) => {
 					<i class='fa-solid fa-cloud-upload'></i>
 					<span class='sidebarTitle'>{translations.file.name}</span>
 				</a></p> : <></>}
+				<p><a href='/theme'>
+					<i class='fa-solid fa-paint-brush'></i>
+					<span class='sidebarTitle'>{translations.theme.list}</span>
+				</a></p>
 				<p><a href='javascript:void(0)' onclick='switchLight()'>
 					<i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
 					<span class='sidebarTitle'>{translations.renderer.theme}</span>
@@ -321,7 +339,9 @@ app.get('/', async c => {
 							|| checkin_date_object.getFullYear() !== today.getFullYear()
 							|| checkin_date_object.getMonth() !== today.getMonth()
 							|| checkin_date_object.getDate() !== today.getDate()) {
-							return <Form action='/api/check-in' method='post' inputs={[]} submit={{ content: translations.home.checkIn.button }} />;
+							return <Form action='/api/check-in' method='post'>
+								<input type='submit' value={translations.home.checkIn.button} />
+							</Form>;
 						}
 						const Good: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'red' }}>{children}</div>;
 						const Bad: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'light-dark(black, white)' }}>{children}</div>;
@@ -387,6 +407,7 @@ app.route('/ticket', ticketRoutes);
 app.route('/chat', chatRoutes);
 app.route('/judgement', judgementRoutes);
 app.route('/file', fileRoutes);
+app.route('/theme', themeRoutes);
 app.route('/ide', ideRoutes);
 app.onError((err, c) => {
 	console.error(err);

@@ -198,8 +198,49 @@ export default {
 		goToFolder: '创建或进入目录：',
 		fileName: '文件名',
 		size: '大小 / 字节',
-		operations: '操作',
 		folderEmpty: '目录为空。'
+	},
+	theme: {
+		name: '主题',
+		list: '主题商店',
+		themeColor: '主题颜色',
+		themeName: '主题名称',
+		numberOfUsers: '使用人数',
+		create: '创建主题',
+		edit: '编辑主题',
+		saveAsNew: '另存为新主题',
+		reset: '重置主题',
+		useBgImage: '使用背景图片',
+		bgImageRepeat: {
+			x: '背景图片横向重复',
+			y: '背景图片纵向重复'
+		},
+		bgImageSize: {
+			x: '背景图片宽度',
+			y: '背景图片高度',
+			auto: '自动',
+			cover: '覆盖',
+			contain: '包含',
+			custom: '自定义'
+		},
+		bgImageSizeCustom: {
+			x: '自定义背景图片宽度',
+			y: '自定义背景图片高度'
+		},
+		lengthUnits: {
+			px: '像素',
+			em: 'em',
+			rem: 'rem',
+			'%': '百分比',
+			vw: '视口宽度',
+			vh: '视口高度'
+		},
+		useFrostedGlass: '使用毛玻璃效果',
+		lightTheme: '浅色主题',
+		darkTheme: '深色主题',
+		fgcolor: '前景颜色',
+		bgcolor: '背景颜色',
+		bgimage: '背景图片'
 	},
 	admin: {
 		name: '管理',
@@ -326,6 +367,9 @@ export default {
     delete: '删除',
     deleteConfirm: '确定要删除吗？删除后将无法找回！',
     createdAt: '创建时间',
+	updatedAt: '更新时间',
+	operations: '操作',
+	apply: '应用',
     setPin: '设置置顶量',
     deleted: '已删除',
     selectConversation: '请选择对话或搜索用户',

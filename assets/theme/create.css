@@ -1,0 +1,31 @@
+.usebgcolor .onbgcolor {
+	display: block;
+}
+
+.usebgcolor .onbgimage {
+	display: none;
+}
+
+.usebgimage .onbgcolor {
+	display: none;
+}
+
+.usebgimage .onbgimage {
+	display: block;
+}
+
+.onbgimagexcustom {
+	display: none;
+}
+
+.onbgimageycustom {
+	display: none;
+}
+
+.usebgimagexcustom .onbgimagexcustom {
+	display: block;
+}
+
+.usebgimageycustom .onbgimageycustom {
+	display: block;
+}

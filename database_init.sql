@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS users (
     email_verify_code INT, 
     email_verify_time TIMESTAMP, 
     username_violation INTEGER NOT NULL DEFAULT 0, 
-    permission BIGINT NOT NULL DEFAULT 3, 
+    permission BIGINT NOT NULL DEFAULT 27, 
     checkin_date TIMESTAMP, 
     checkin_count INTEGER, 
     checkin_today_status INTEGER, 
@@ -18,7 +18,8 @@ CREATE TABLE IF NOT EXISTS users (
     checkin_today_bad2 INTEGER, 
     name_color_light TEXT NOT NULL DEFAULT "0066cc", 
     name_color_dark TEXT NOT NULL DEFAULT "66b2ff",
-	tag TEXT
+	tag TEXT,
+	using_theme INTEGER
 );
 CREATE TABLE IF NOT EXISTS feed (
     id INTEGER PRIMARY KEY,
@@ -44,7 +45,8 @@ CREATE TABLE IF NOT EXISTS discussion (
     category TEXT NOT NULL,
     title TEXT NOT NULL,
     content TEXT NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP, pin INTEGER NOT NULL DEFAULT 0,
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+	pin INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (uid) REFERENCES users(id)
 );
 CREATE TABLE IF NOT EXISTS discussion_reply (
@@ -117,6 +119,30 @@ CREATE TABLE IF NOT EXISTS ticket_quick_reply (
 	title TEXT NOT NULL,
 	content TEXT NOT NULL,
 	creator INTEGER NOT NULL
+);
+CREATE TABLE IF NOT EXISTS theme (
+	id INTEGER PRIMARY KEY AUTOINCREMENT,
+	uid INTEGER NOT NULL,
+	name TEXT NOT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	usebgimage INTEGER NOT NULL,
+	useFrostedGlass INTEGER NOT NULL,
+	bgImageRepeatX INTEGER NOT NULL,
+	bgImageRepeatY INTEGER NOT NULL,
+	bgImageSizeX TEXT NOT NULL,
+	bgImageSizeXCustom INTEGER,
+	bgImageSizeXCustomUnit TEXT,
+	bgImageSizeY TEXT NOT NULL,
+	bgImageSizeYCustom INTEGER,
+	bgImageSizeYCustomUnit TEXT,
+	light_fgcolor TEXT,
+	light_bgcolor TEXT,
+	light_bgimage TEXT,
+	dark_fgcolor TEXT,
+	dark_bgcolor TEXT,
+	dark_bgimage TEXT,
+	FOREIGN KEY (uid) REFERENCES users(id)
 );
 CREATE INDEX IF NOT EXISTS idx_ticket_created_at ON ticket(created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ticket_uid_created_at ON ticket(uid, created_at DESC);

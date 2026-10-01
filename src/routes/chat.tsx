@@ -5,22 +5,23 @@ import { accessDenied, loginRequired } from "./errorPages";
 import { User } from "../components/user";
 import { MdInit, MdRender } from "../components/mdeditor";
 import { Time } from "../components/time";
-import { Form } from "../components/form";
+import { Form, FormInput, FormMdEditor } from "../components/form";
 import { permissionChat } from "../settings";
 
 const app = new Hono<AppEnv>();
 
 app.use('/*', async (c, next) => {
-	if (!c.get('currentUser') || !(c.get('currentUser')!.permission & permissionChat)) {
+	const currentUser = c.get('currentUser');
+    if (!currentUser) {
+        return loginRequired(c);
+    }
+	if (!(currentUser.permission & permissionChat)) {
 		return accessDenied(c);
 	}
 	await next();
 });
 app.get('/', async c => {
-    const currentUser = c.get('currentUser');
-    if (!currentUser) {
-        return loginRequired(c);
-    }
+    const currentUser = c.get('currentUser')!;
     const env = c.env as any;
     const translations = c.get('translations');
     const { user: rawUser } = c.get('reqBody');
@@ -87,15 +88,10 @@ app.get('/', async c => {
         <div style={{ border: 'solid', 'border-radius': '10px', display: 'flex', position: 'absolute', top: '100px', bottom: '10px', left: '10px', right: '10px' }}>
             <div style={{ padding: '10px', 'border-right': 'solid 1px lightgray', position: 'relative', overflow: 'auto', width: '280px', flexShrink: 0 }}>
                 <h2>{translations.chat.recent}</h2>
-                <Form action='' method='get' inputs={[{
-                    id: 'findUser',
-                    name: 'user',
-                    main: {
-                        type: 'input',
-                        inputType: 'text',
-                        placeHolder: translations.searchUsernameOrUid
-                    }
-                }]} submit={{ content: translations.go }} />
+                <Form action='' method='get'>
+					<FormInput id='findUser' name='user' type='text' placeholder={translations.searchUsernameOrUid} />
+					<input type='submit' value={translations.go} />
+				</Form>
                 {recent.map(({
                     sender,
                     receiver,
@@ -197,10 +193,11 @@ app.get('/', async c => {
                                 })
                             }
                         </div>
-                        <Form action='/api/chat/send' method='post' inputs={[
-                            { id: 'receiver', name: 'uid', main: { type: 'input', inputType: 'hidden', value: validUser } },
-                            { id: 'content', name: 'content', main: { type: 'mdeditor', mdeditorHeight: '80px' }, required: true }
-                        ]} submit={{ content: translations.send }} style={{ padding: '8px 16px', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)', borderTop: '1px solid light-dark(#e0e0e0, #444)' }} />
+                        <Form action='/api/chat/send' method='post' style={{ padding: '8px 16px', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)', borderTop: '1px solid light-dark(#e0e0e0, #444)' }}>
+							<input type='hidden' name='uid' value={validUser} />
+							<FormMdEditor id='content' name='content' height='80px' required locale={c.get('locale')} />
+							<input type='submit' value={translations.send} />
+						</Form>
                     </>
                 ) : (
                     <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', color: '#999', padding: '20px' }}>

@@ -8,13 +8,13 @@ export const Select: FC<{
 	style: CSSProperties | string | undefined,
 	onchange: string | undefined,
 	options: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[]
-}> = ({ id, name, style, onchange, options }) => {
+}> = ({ id, name, style, onchange = '', options }) => {
 	if (!options.length) {
 		return <></>;
 	}
 	const defaultSelected = (options.filter(({ selected }) => selected)[0] || options[0])!;
 	return <>
-		<input type='hidden' id={id} name={name} onchange={onchange} value={defaultSelected.value} />
+		<input type='hidden' id={id} name={name} value={defaultSelected.value} />
 		<span
 			style={style}
 			id={'selector-main-' + id}
@@ -28,7 +28,7 @@ export const Select: FC<{
 					<div
 						id={'selector-option-' + value + '-of-' + id}
 						class={`selector-option ${value === defaultSelected.value ? 'selector-selected' : ''} ${disabled ? 'selector-disabled' : ''}`}
-						onclick={disabled ? '' : `document.getElementById('${id}').value='${value}';document.getElementById('${'selector-maincontent-' + id}').innerHTML='${label.toString()}'`}
+						onclick={disabled ? '' : `document.getElementById('${id}').value='${value}';document.getElementById('${'selector-maincontent-' + id}').innerHTML='${label.toString()}';(() => { ${onchange} })()`}
 					>{label}</div>
 				</div>) }
 			</div>

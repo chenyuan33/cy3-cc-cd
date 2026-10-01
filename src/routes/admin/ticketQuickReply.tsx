@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { type AppEnv } from "../../types";
 import { Card } from "../../components/card";
-import { Form } from "../../components/form";
+import { Form, FormInput } from "../../components/form";
 import { User } from "../../components/user";
 import { contentRequired, titleRequired } from "../errorPages";
 
@@ -31,10 +31,11 @@ app.get('/', async c => {
 		</table>
 		<details style={{ position: 'relative' }}>
 			<summary>{translations.admin.ticketQuickReply.new}</summary>
-			<Form action='/admin/ticket-quick-reply/new' method='post' inputs={[
-				{ name: 'title', label: translations.title, required: true, main: { type: 'input', inputType: 'text' } },
-				{ name: 'content', label: translations.content, required: true, main: { type: 'input', inputType: 'text' } }
-			]} submit={{ content: translations.admin.ticketQuickReply.new }} />
+			<Form action='/admin/ticket-quick-reply/new' method='post'>
+				<FormInput type='text' id='title' name='title' label={translations.title} required />
+				<FormInput type='text' id='content' name='content' label={translations.content} required />
+				<input type='submit' value={translations.admin.ticketQuickReply.new} />
+			</Form>
 		</details>
 	</Card>, { title: translations.admin.ticketQuickReply.name });
 });

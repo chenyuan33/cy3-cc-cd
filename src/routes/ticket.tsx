@@ -2,7 +2,7 @@ import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { emailVerifyRequired, loginRequired, muted, notFound } from "./errorPages";
 import { Card } from "../components/card";
-import { createSubmitHandler, Form } from "../components/form";
+import { Form, FormInput, FormMdEditor, FormSelect } from "../components/form";
 import { renderTemplate } from "../components/renderTemplate";
 import { User } from "../components/user";
 import { Time } from "../components/time";
@@ -41,40 +41,25 @@ app.get('/', async c => {
 		<Card style={{ width: '300px' }}>
 			<h1>{translations.ticket.name}</h1>
 			<PostButton c={c} href={'/ticket/post' + (category ? '?category=' + category : '')} />
-			<Form action='' method='get' inputs={[
-				{
-					id: 'category',
-					name: 'category',
-					label: translations.category,
-					main: {
-						type: 'select',
-						options: [
-							{ value: '', label: translations.allCategories, selected: !category },
-							...ticketCategories.map(categoryName => ({
-								value: categoryName,
-								label: translations.ticket.categoryName[categoryName],
-								selected: category === categoryName
-							}))
-						]
-					}
-				},
-				{
-					id: 'status',
-					name: 'status',
-					label: translations.status,
-					main: {
-						type: 'select',
-						options: [
-							{ value: '', label: translations.allStatuses, selected: !status },
-							...ticketStatus.map(statusName => ({
-								value: statusName,
-								label: <TicketStatus c={c} status={statusName} />,
-								selected: status === statusName
-							}))
-						]
-					}
-				}
-			]} submit={{ content: translations.filter }} locale={c.get('locale')} />
+			<Form action='' method='get'>
+				<FormSelect id='category' name='category' label={translations.category} options={[
+					{ value: '', label: translations.allCategories, selected: !category },
+					...ticketCategories.map(categoryName => ({
+						value: categoryName,
+						label: translations.ticket.categoryName[categoryName],
+						selected: category === categoryName
+					}))
+				]} />
+				<FormSelect id='status' name='status' label={translations.status} options={[
+					{ value: '', label: translations.allStatuses, selected: !status },
+					...ticketStatus.map(statusName => ({
+						value: statusName,
+						label: <TicketStatus c={c} status={statusName} />,
+						selected: status === statusName
+					}))
+				]} />
+				<input type='submit' value={translations.filter} />
+			</Form>
 		</Card>
 		<div style={{ display: 'inline-block', flex: 1 }}>
 			{results.length ? results.map(({ id, uid, assignee_uid, category, status, title, created_at }: { id: number, uid: number, assignee_uid: number, category: ticketCategoryType, status: ticketStatusType, title: string, created_at: string }) => <Card>
@@ -106,25 +91,17 @@ app.get('/post', c => {
 		<MdInit />
 		<script src='/ticket/post.js' />
 		<h1>{translations.ticket.post.name}</h1>
-		<Form action='/api/ticket/post' method='post' inputs={[
-			{
-				id: 'category',
-				name: 'category',
-				label: translations.category,
-				main: {
-					type: 'select',
-					options: ticketCategories.map(categoryName => ({
-						value: categoryName,
-						label: translations.ticket.categoryName[categoryName],
-						selected: category === categoryName
-					})),
-					onchange: 'refreshSimilarTicket()'
-				}
-			},
-			{ id: 'title', name: 'title', label: translations.title, main: { type: 'input', inputType: 'text', oninput: 'refreshSimilarTicket()' }, required: true },
-			{ main: { type: 'html', html: <div id='similar'></div> } },
-			{ id: 'content', name: 'content', label: translations.content, main: { type: 'mdeditor' }, required: true }
-		]} submit={{ content: translations.post }} />
+		<Form action='/api/ticket/post' method='post'>
+			<FormSelect id='category' name='category' label={translations.category} options={ticketCategories.map(categoryName => ({
+				value: categoryName,
+				label: translations.ticket.categoryName[categoryName],
+				selected: category === categoryName
+			}))} onchange='refreshSimilarTicket()' />
+			<FormInput id='title' name='title' label={translations.title} type='text' required oninput='refreshSimilarTicket()' />
+			<div id='similar'></div>
+			<FormMdEditor id='content' name='content' label={translations.content} required locale={c.get('locale')} />
+			<input type='submit' value={translations.post} />
+		</Form>
 	</Card>, { title: translations.ticket.post.name });
 });
 app.get('/:ticket_id{[1-9][0-9]*}', async c => {
@@ -156,7 +133,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				__STATUS__: <TicketStatus c={c} status={status} />
 			})}</p>
 			<div id='ticket-content'><MdRender markdown={content} c={c} /></div>
-			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'ticket-edit-' + ticket_id} data-vis='-1' method='post' action='/api/ticket/edit' onsubmit={createSubmitHandler()}>
+			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'ticket-edit-' + ticket_id} data-vis='-1' method='post' action='/api/ticket/edit'>
 				<input type='hidden' name='ticket_id' value={ticket_id} />
 				<label for={'ticket-title-' + ticket_id}><strong>{translations.title}</strong></label>
 				&nbsp;
@@ -164,10 +141,10 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				<br />
 				<MdEditor id={'ticket-edit-editor-' + ticket_id} name='content' required height='200px' locale={c.get('locale')} initialCode={content} />
 				<br />
-				<button type='submit'>{translations.save}</button>
+				<input type='submit' value={translations.save} />
 				<button type='button' onclick={`document.getElementById('ticket-edit-${ticket_id}').dataset.vis='-1'`}>{translations.cancel}</button>
 				{html`<style>#ticket-edit-${ticket_id}[data-vis="-1"]{visibility:hidden;position:absolute;}#ticket-edit-${ticket_id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
-			</form> : <></>}
+			</Form> : <></>}
 		</Card>
 		<hr />
 		{results.length ? await Promise.all(results.map(async ({ id, parent_id, uid, content, set_status, set_assignee, created_at }: { id: number, parent_id: number, uid: number, content: string, set_status: ticketStatusType, set_assignee: number, created_at: string }) => <Card>
@@ -201,15 +178,15 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				<div><MdRender markdown={content} c={c} /></div>
 			</blockquote>)(x) : <blockquote>[{translations.deleted}]</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, set_status, set_assignee, created_at FROM ticket_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM ticket WHERE id = ?').bind(parent_id || ticket_id).first()) : <></>}
 			<div id={`ticket-reply${id}-content`}><MdRender markdown={content} c={c} /></div>
-			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'ticket-reply-edit-' + id} data-vis='-1' method='post' action='/api/ticket/reply/edit' onsubmit={createSubmitHandler()}>
+			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'ticket-reply-edit-' + id} data-vis='-1' method='post' action='/api/ticket/reply/edit'>
 				<input type='hidden' name='ticket_id' value={c.req.param('ticket_id')} />
 				<input type='hidden' name='reply_id' value={id} />
 				<MdEditor id={'ticket-reply-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
 				<br />
-				<button type='submit'>{translations.save}</button>
+				<input type='submit' value={translations.save} />
 				<button type='button' onclick={`document.getElementById('ticket-reply-edit-${id}').dataset.vis='-1'`}>{translations.cancel}</button>
 				{html`<style>#ticket-reply-edit-${id}[data-vis="-1"]{visibility:hidden;position:absolute;}#ticket-reply-edit-${id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
-			</form> : <></>}
+			</Form> : <></>}
 		</Card>)) : <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{translations.noReplies}</h2></Card>}
 		<Pages c={c} currentPage={currentPage} totalPage={totalPage} />
 		<Card>
@@ -226,18 +203,19 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 					.map(({ title, content }: { title: string, content: string }) => <button onclick={`window['CodeMirrorEditor_mdeditor-input-content'].replaceSelection(${JSON.stringify(content)})`}>{title}</button>)}
 				</span>
 			</div> : <></>}
-			<Form action='/api/ticket/reply' method='post' inputs={[
-				{ id: 'ticket_id', name: 'ticket_id', main: { type: 'input', inputType: 'hidden', value: c.req.param('ticket_id') } },
-				{ id: 'parent_id', name: 'parent_id', main: { type: 'input', inputType: 'hidden', value: '' } },
-				{ id: 'content', name: 'content', main: { type: 'mdeditor' }, required: !currentUser || !(currentUser.permission & permissionAdmin) && (!assignee_uid || assignee_uid !== currentUser.id) },
-				...(currentUser && ((currentUser.permission & permissionAdmin) || assignee_uid && assignee_uid === currentUser.id) ? [
-					{ id: 'status', name: 'set_status', label: translations.ticket.setStatus, main: { type: 'select', options: [
+			<Form action='/api/ticket/reply' method='post'>
+				<input type='hidden' name='ticket_id' value={c.req.param('ticket_id')} />
+				<input type='hidden' name='parent_id' value='' id='parent_id' />
+				<FormMdEditor id='content' name='content' label={translations.content} required={!currentUser || !(currentUser.permission & permissionAdmin) && (!assignee_uid || assignee_uid !== currentUser.id)} locale={c.get('locale')} />
+				{currentUser && ((currentUser.permission & permissionAdmin) || assignee_uid && assignee_uid === currentUser.id) ? <>
+					<FormSelect id='status' name='set_status' label={translations.ticket.setStatus} options={[
 						{ value: '', label: translations.doNotModify, selected: true },
 						...ticketStatus.map(status => ({ value: status, label: <TicketStatus c={c} status={status} /> }))
-					] } },
-					{ id: 'set_assignee', name: 'set_assignee', label: translations.ticket.setAssignee, main: { type: 'input', inputType: 'number' } }
-				] as any : [])
-			]} submit={<ReplyButton c={c} />} />
+					]} />
+					<FormInput id='set_assignee' name='set_assignee' label={translations.ticket.setAssignee} type='number' />
+				</> : null}
+				<ReplyButton c={c} />
+			</Form>
 		</Card>
 	</>, { title: title + ' - ' + translations.ticket.categoryName[category] + ' - ' + translations.ticket.name });
 });

@@ -2,11 +2,22 @@ import { Hono } from "hono";
 import { S3Client, GetObjectCommand, PutObjectCommand, DeleteObjectCommand } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import type { AppEnv } from "../../types";
-import { accessDenied, notFound } from "../errorPages";
+import { accessDenied, loginRequired, notFound } from "../errorPages";
+import { permissionFile } from "../../settings";
 
 const app = new Hono<AppEnv>();
+app.use('/*', async (c, next) => {
+	const currentUser = c.get('currentUser');
+	if (!currentUser) {
+		return loginRequired(c);
+	}
+	if (!(currentUser.permission & permissionFile)) {
+		return accessDenied(c);
+	}
+	await next();
+});
 app.post('/upload', async c => {
-	const env = c.env as any, currentUser = c.get('currentUser');
+	const env = c.env as any, currentUser = c.get('currentUser')!;
 	const client = new S3Client({
 		region: env.B2_REGION,
 		endpoint: env.B2_ENDPOINT,
@@ -21,7 +32,7 @@ app.post('/upload', async c => {
 	if (typeof path !== 'string') {
 		return notFound(c);
 	}
-	if (!currentUser || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id)) {
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id)) {
 		return accessDenied(c);
 	}
 	if (!file) {

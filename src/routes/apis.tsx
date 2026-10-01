@@ -4,14 +4,17 @@ import feedRoutes from './api/feed';
 import discussionRoutes from './api/discussion';
 import ticketRoutes from './api/ticket';
 import fileRoutes from './api/file';
+import themeRoutes from './api/theme';
 import type { AppEnv } from '../types';
-import { loginRequired, notFound } from './errorPages';
+import { accessDenied, loginRequired, notFound } from './errorPages';
+import { permissionChat } from '../settings';
 const app = new Hono<AppEnv>();
 app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
 app.route('/file', fileRoutes);
+app.route('/theme', themeRoutes);
 app.get('/support-langs', async c => c.json(await ((await fetch('https://judge.cqiming.com/languages/')).json())));
 app.post('/check-in', async c => {
     const env = c.env as any, currentUser = c.get('currentUser');
@@ -35,6 +38,12 @@ app.post('/check-in', async c => {
 });
 app.post('/chat/send', async c => {
     const env = c.env as any, currentUser = c.get('currentUser');
+	if (!currentUser) {
+		return loginRequired(c);
+	}
+	if (!(currentUser.permission & permissionChat)) {
+		return accessDenied(c);
+	}
     if (!currentUser) {
         return loginRequired(c);
     }

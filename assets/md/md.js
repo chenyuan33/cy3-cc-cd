@@ -39,13 +39,25 @@ const inlineMdToHtml = async (md) => {
         .replaceAll(/\b_(.+?)_\b/g, '<em>$1</em>')
         .replaceAll(/~~(.+?)~~/g, '<del>$1</del>')
         .replaceAll(/!\[(.*?)\]\((.+?)\)/g, (_, alt, url) => {
-            const isExternal = /^https?:\/\//i.test(url) || /^\/\//.test(url);
-            if (isExternal) {
-                return `<a href="${url}" target="_blank" rel="noreferrer noopener">${alt || url}</a>`;
-            }
-            return `<img src="${url}" alt="${alt}" />`;
+			const parsedURL = new URL(url, location.href);
+            if (['http:', 'https:'].includes(parsedURL.protocol)) {
+				if (parsedURL.hostname === location.hostname) {
+					return `<img src="${url}" alt="${alt}" />`;
+				} else {
+					return `<a href="${url}" target="_blank" rel="noreferrer noopener">${alt || url}</a>`;
+				}
+            } else {
+				return alt || url;
+			}
         })
-        .replaceAll(/\[(.+?)\]\((.+?)\)/g, '<a href="$2">$1</a>');
+        .replaceAll(/\[(.+?)\]\((.+?)\)/g, (_, alt, url) => {
+			const parsedURL = new URL(url, location.href);
+            if (['http:', 'https:'].includes(parsedURL.protocol)) {
+				return `<a href="${url}" target="_blank" rel="noreferrer noopener">${alt || url}</a>`;
+            } else {
+				return alt || url;
+			}
+        });
     for (let uid of users) {
         usersObject[uid] = await (await fetch('/api/user/uidToHtml?id=' + uid)).text();
     }
@@ -83,26 +95,28 @@ function parseMarkdownTable(lines) {
     return { header, aligns, rows };
 }
 
-function renderTable(table) {
+async function renderTable(table) {
     let html = '<table>';
     html += '<thead><tr>';
-    table.header.forEach((h, i) => {
+    for (let i = 0; i < table.header.length; i++) {
+        const h = table.header[i];
         const align = table.aligns[i] === 'left' ? ' style="text-align:left"' :
             table.aligns[i] === 'right' ? ' style="text-align:right"' :
                 table.aligns[i] === 'center' ? ' style="text-align:center"' : '';
-        html += `<th${align}>${h}</th>`;
-    });
+        html += `<th${align}>${await inlineMdToHtml(h)}</th>`;
+    };
     html += '</tr></thead><tbody>';
-    table.rows.forEach(row => {
+    for (const row of table.rows) {
         html += '<tr>';
-        row.forEach((cell, i) => {
+        for (let i = 0; i < row.length; i++) {
+            const cell = row[i];
             const align = table.aligns[i] === 'left' ? ' style="text-align:left"' :
                 table.aligns[i] === 'right' ? ' style="text-align:right"' :
                     table.aligns[i] === 'center' ? ' style="text-align:center"' : '';
-            html += `<td${align}>${cell}</td>`;
-        });
+            html += `<td${align}>${await inlineMdToHtml(cell)}</td>`;
+        };
         html += '</tr>';
-    });
+    };
     html += '</tbody></table>';
     return html;
 }
@@ -186,7 +200,7 @@ const mdToHtml = async (md) => {
             if (!(/^\s*\|.*\|\s*$/.test(curLine))) {
                 const table = parseMarkdownTable(tableLines);
                 if (table) {
-                    html += renderTable(table);
+                    html += await renderTable(table);
                 } else {
                     html += tableLines.join('\n');
                 }
@@ -286,7 +300,7 @@ const mdToHtml = async (md) => {
     }
     if (state === 'table') {
         const table = parseMarkdownTable(tableLines);
-        if (table) html += renderTable(table);
+        if (table) html += await renderTable(table);
         else html += tableLines.join('\n');
     }
 

@@ -2,9 +2,9 @@ import { Hono } from "hono";
 import { DOMParser, Node } from '@xmldom/xmldom'; (globalThis as any).DOMParser = DOMParser; (globalThis as any).Node = Node;
 import { GetObjectCommand, paginateListObjectsV2, S3Client, type ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
 import { type AppEnv } from "../types";
-import { Form } from "../components/form";
+import { Form, FormInput } from "../components/form";
 import { Card } from "../components/card";
-import { accessDenied, notFound } from "./errorPages";
+import { accessDenied, loginRequired, notFound } from "./errorPages";
 import { User } from "../components/user";
 import type { JSX } from "hono/jsx/jsx-runtime";
 import { renderTemplate } from "../components/renderTemplate";
@@ -13,14 +13,18 @@ import { permissionFile } from "../settings";
 
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
-	if (!c.get('currentUser') || !(c.get('currentUser')!.permission & permissionFile)) {
+	const currentUser = c.get('currentUser');
+	if (!currentUser) {
+		return loginRequired(c);
+	}
+	if (!(currentUser.permission & permissionFile)) {
 		return accessDenied(c);
 	}
 	await next();
 });
 app.get('/:path{.*}', async c => {
-	const currentUser = c.get('currentUser'), path = decodeURIComponent(c.req.param('path')), translations = c.get('translations'), env = c.env as any, currentPage = parseInt(c.get('reqBody').page || '1') || 1;
-	if (!currentUser || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
+	const currentUser = c.get('currentUser')!, path = decodeURIComponent(c.req.param('path')), translations = c.get('translations'), env = c.env as any, currentPage = parseInt(c.get('reqBody').page || '1') || 1;
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
 		return accessDenied(c);
 	}
 	const client = new S3Client({
@@ -78,10 +82,11 @@ app.get('/:path{.*}', async c => {
 			}
 			return [cur];
 		}, [] as JSX.Element[])}
-		<Form action='/api/file/upload' method='post' enctype='multipart/form-data' inputs={[
-			{ id: 'file', name: 'file', required: true, main: { type: 'input', inputType: 'file' } },
-			{ name: 'path', main: { type: 'input', inputType: 'hidden', value: path } }
-		]} submit={{ content: translations.upload }} style={{ display: 'flex', gap: '5px' }} />
+		<Form action='/api/file/upload' method='post' enctype='multipart/form-data' style={{ display: 'flex', gap: '5px' }}>
+			<FormInput id='file' name='file' required type='file' />
+			<input name='path' type='hidden' value={path} />
+			<input type='submit' value={translations.upload} />
+		</Form>
 		<br />
 		<label for='goToFolder'>{translations.file.goToFolder}</label>
 		&nbsp;
@@ -92,7 +97,7 @@ app.get('/:path{.*}', async c => {
 			<thead><tr>
 				<th style={{ textAlign: 'left', width: '100%' }}>{translations.file.name}</th>
 				<th style={{ whiteSpace: 'nowrap' }}>{translations.file.size}</th>
-				<th style={{ whiteSpace: 'nowrap' }}>{translations.file.operations}</th>
+				<th style={{ whiteSpace: 'nowrap' }}>{translations.operations}</th>
 			</tr></thead>
 			<tbody>
 				{(currentPageContent.CommonPrefixes || []).map(({ Prefix }) => Prefix ? <tr>

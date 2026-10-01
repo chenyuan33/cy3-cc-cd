@@ -1,14 +1,14 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { notFound } from "./errorPages";
-import { MdEditor, MdInit, MdRender } from "../components/mdeditor";
+import { MdInit, MdRender } from "../components/mdeditor";
 import { Card } from "../components/card";
 import { Feed } from "../components/feed";
 import { User } from "../components/user";
 import { Time } from "../components/time";
 import { html } from "hono/html";
 import { Pages } from "../components/pages";
-import { createSubmitHandler } from "../components/form";
+import { Form, FormMdEditor } from "../components/form";
 import { DeleteButton, PostButton, ReplyButton } from "../components/button";
 
 const app = new Hono<AppEnv>();
@@ -47,21 +47,19 @@ app.get('/:feed_id{[1-9][0-9]*}?', async c => {
 					<DeleteButton c={c} href='/api/feed/delete' arg={{ id: feed_id }} redirect='/feed' />
 				</> : <></>}
 				<div><MdRender markdown={content} c={c} /></div>
-				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'feed-edit-' + feed_id} data-vis='-1' method='post' action='/api/feed/edit' onsubmit={createSubmitHandler()}>
+				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'feed-edit-' + feed_id} data-vis='-1' method='post' action='/api/feed/edit'>
 					<input type='hidden' name='id' value={feed_id} />
-					<MdEditor id={'feed-edit-editor-' + feed_id} name='content' required height='100px' locale={locale} initialCode={content} />
-					<br />
-					<button type='submit'>{translations.edit}</button>
-					<button type='button' onclick={`document.getElementById('feed-edit-${feed_id}').dataset.vis='-1'`}>{translations.cancel}</button>
+					<FormMdEditor id={'feed-edit-editor-' + feed_id} name='content' required height='100px' locale={locale} initialCode={content} />
+					<input type='submit' value={translations.edit} />
+					<input type='button' value={translations.cancel} onclick={`document.getElementById('feed-edit-${feed_id}').dataset.vis='-1'`} />
 					{html`<style>#feed-edit-${feed_id}[data-vis="-1"]{visibility:hidden;position:absolute;}#feed-edit-${feed_id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
-				</form> : <></>}
+				</Form> : <></>}
 			</Card> : <></>}
-			<form action='/api/feed/reply' method='post' onsubmit={createSubmitHandler()}>
+			<Form action='/api/feed/reply' method='post'>
 				<input type='hidden' name='parent_id' value={feed_id} />
-				<MdEditor id='main-reply' name='content' required height='100px' locale={locale} />
-				<br />
+				<FormMdEditor id='main-reply' name='content' required height='100px' locale={locale} />
 				{feed_id ? <ReplyButton c={c} /> : <PostButton c={c} />}
-			</form>
+			</Form>
 		</Card>
 		{await Promise.all((results || []).map(async ({ id }: { id: number }) => <Feed c={c} id={id} />))}
 		<Pages c={c} currentPage={currentPage} totalPage={totalPage} />

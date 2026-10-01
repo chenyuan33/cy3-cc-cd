@@ -3,10 +3,10 @@ import type { ContextType } from "../types";
 import { Card } from "./card";
 import { User } from "./user";
 import { Time } from "./time";
-import { html, raw } from "hono/html";
-import { MdEditor, MdRender } from "./mdeditor";
+import { html } from "hono/html";
+import { MdRender } from "./mdeditor";
 import { enableEmailVerify } from "../settings";
-import { createSubmitHandler } from "./form";
+import { Form, FormMdEditor } from "./form";
 import { DeleteButton, ReplyButton } from "./button";
 
 export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, repliesCount?: number, pathIds?: Set<number> }> = async ({ c, id, recursionDepth = 5, repliesCount = 5, pathIds = new Set<number>() }) => {
@@ -38,21 +38,21 @@ export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, rep
 			</> : <></>}
 		</div>
 		<div><MdRender markdown={content} c={c} /></div>
-		{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <form id={'feed-edit-' + id} data-vis='-1' method='post' action='/api/feed/edit' onsubmit={createSubmitHandler()}>
+		{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'feed-edit-' + id} data-vis='-1' method='post' action='/api/feed/edit'>
 			<input type='hidden' name='id' value={id} />
-			<MdEditor id={'feed-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
+			<FormMdEditor id={'feed-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
 			<br />
-			<button type='submit'>{translations.save}</button>
+			<input type='submit' value={translations.save} />
 			<button type='button' onclick={`document.getElementById('feed-edit-${id}').dataset.vis='-1'`}>{translations.cancel}</button>
 			{html`<style>#feed-edit-${id}[data-vis="-1"]{visibility:hidden;position:absolute;}#feed-edit-${id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
-		</form> : <></>}
-		{currentUser ? <form id={'feed-reply-' + id} data-vis='-1' method='post' action='/api/feed/reply' onsubmit={createSubmitHandler()}>
+		</Form> : <></>}
+		{currentUser ? <Form id={'feed-reply-' + id} data-vis='-1' method='post' action='/api/feed/reply'>
 			<input type='hidden' name='parent_id' value={id} />
-			<MdEditor id={'feed-reply-' + id} name='content' height='100px' locale={c.get('locale')} />
+			<FormMdEditor id={'feed-reply-' + id} name='content' height='100px' locale={c.get('locale')} />
 			<br />
-			<button type='submit' disabled={!currentUser || enableEmailVerify && !c.get('currentUserEmail')}>{translations.reply}</button>
+			<input type='submit' value={translations.reply} disabled={!currentUser || enableEmailVerify && !c.get('currentUserEmail')} />
 			{html`<style>#feed-reply-${id}[data-vis="-1"]{visibility:hidden;position:absolute;}#feed-reply-${id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
-		</form> : <></>}
+		</Form> : <></>}
 		{recursionDepth ? <FeedReplies c={c} id={id} recursionDepth={recursionDepth - 1} repliesCount={repliesCount} pathIds={nextPathIds} /> : <></>}
 	</Card>;
 };

@@ -7,7 +7,7 @@ import validator from "validator";
 import { Card } from "../../components/card";
 import { raw } from "hono/html";
 import { getDisplayUsername, User } from "../../components/user";
-import { createSubmitHandler } from "../../components/form";
+import { Form } from "../../components/form";
 import { permissionAdmin } from "../../settings";
 import { rateLimit } from "@elithrar/workers-hono-rate-limit";
 
@@ -30,7 +30,7 @@ const login = async (uid: number, c: ContextType) => {
 	}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`);
 	return c.redirect('/');
 };
-app.on('get', ['/register', '/login', '/change-username', '/change-password', '/change-email', '/change-email/verify'], (c, next) => rateLimit((c.env as any).rateLimiter, c => c.req.header('cf-connecting-ip') ?? '')(c, next));
+app.on('post', ['/register', '/login', '/change-username', '/change-password', '/change-email', '/change-email/verify'], (c, next) => rateLimit((c.env as any).rateLimiter, c => c.req.header('cf-connecting-ip') ?? '')(c, next));
 app.post('/register', async c => {
 	const reqBody = c.get('reqBody');
 	if (c.get('currentUser')) {
@@ -156,7 +156,7 @@ app.post('/change-email', async c => {
 	}
 	const code = crypto.getRandomValues(new Uint32Array(1))[0]! % Math.pow(2, 31);
 	await env.db.prepare('UPDATE users SET email_verify_code = ?, email_verify_time = CURRENT_TIMESTAMP WHERE id = ?').bind(code, currentUser.id).run();
-	return c.render(<form method='post' action='/api/user/change-email/verify' onsubmit={createSubmitHandler()}>
+	return c.render(<Form method='post' action='/api/user/change-email/verify'>
 		<Card style={{
 			display: 'flex',
 			'flex-direction': 'column',
@@ -173,9 +173,9 @@ app.post('/change-email', async c => {
 				createAlert('${translations.copiedSuccessfully}');
 			})()`}>{code}</code>
 			<input type='hidden' name='email' value={reqBody.email} />
-			<button type='submit' style={{ 'font-size': 'large' }}>{translations.verify}</button>
+			<input type='submit' style={{ 'font-size': 'large' }} value={translations.verify} />
 		</Card>
-	</form>, { title: translations.user.settings.changeEmail.name });
+	</Form>, { title: translations.user.settings.changeEmail.name });
 });
 app.post('/change-email/verify', async c => {
 	const currentUser = c.get('currentUser'), env = c.env as any, reqBody = c.get('reqBody'), translations = c.get('translations');
