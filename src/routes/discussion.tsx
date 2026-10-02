@@ -66,14 +66,14 @@ app.get('/post', c => {
 		return muted(c);
 	}
 	return c.render(<Card>
-		<MdInit />
+		<MdInit c={c} />
 		<h1>{translations.discussion.post}</h1>
 		<Form action='/api/discussion/post' method='post'>
 			<FormSelect id='category' name='category' label={translations.category} options={
 				(Object.entries(discussionCategories) as [ discussionCategoriesType, (user: userInfo) => boolean ][]).map(([key, check]) => ({ value: key, label: translations.discussion.categoryName[key], selected: category === key, disabled: !check(currentUser) }))
 			} />
 			<FormInput id='title' name='title' label={translations.title} required type='text' />
-			<FormMdEditor id='content' name='content' label={translations.content} locale={c.get('locale')} required />
+			<FormMdEditor c={c} id='content' name='content' label={translations.content} required />
 			<input type='submit' value={translations.discussion.post} />
 		</Form>
 	</Card>, { title: translations.discussion.post });
@@ -92,7 +92,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 	const { results } = await env.db.prepare('SELECT id, parent_id, uid, content, created_at FROM discussion_reply WHERE discussion_id = ? ORDER BY created_at LIMIT ? OFFSET ?')
 		.bind(discussion_id, perPage, (currentPage - 1) * perPage).all();
 	return c.render(<>
-		<MdInit />
+		<MdInit c={c} />
 		<Card>
 			<div style={{ position: 'absolute', right: '10px', top: '10px' }}>
 				<ReplyButton c={c} onclick='document.getElementById("replying-blockquote").style.display="block";document.getElementById("replying-description").innerHTML=document.getElementById("discussion-description").innerHTML;document.getElementById("replying-content").innerHTML=document.getElementById("discussion-content").innerHTML;document.getElementById("parent_id").value="0";' />
@@ -112,7 +112,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'discussion-edit-' + discussion_id} data-vis='-1' method='post' action='/api/discussion/edit'>
 				<input type='hidden' name='discussion_id' value={discussion_id} />
 				<FormInput type='text' id={'discussion-title-' + discussion_id} name='title' label={translations.title} value={title} required />
-				<FormMdEditor id={'discussion-edit-editor-' + discussion_id} name='content' required height='200px' locale={c.get('locale')} initialCode={content} />
+				<FormMdEditor c={c} id={'discussion-edit-editor-' + discussion_id} name='content' required height='200px' initialCode={content} />
 				<input type='submit' value={translations.save} />
 				<input type='button' value={translations.cancel} onclick={`document.getElementById('discussion-edit-${discussion_id}').dataset.vis='-1'`} />
 				{html`<style>#discussion-edit-${discussion_id}[data-vis="-1"]{visibility:hidden;position:absolute;}#discussion-edit-${discussion_id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
@@ -150,7 +150,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'discussion-reply-edit-' + id} data-vis='-1' method='post' action='/api/discussion/reply/edit'>
 				<input type='hidden' name='discussion_id' value={c.req.param('discussion_id')} />
 				<input type='hidden' name='reply_id' value={id} />
-				<FormMdEditor id={'discussion-reply-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
+				<FormMdEditor c={c} id={'discussion-reply-edit-editor-' + id} name='content' required height='100px' initialCode={content} />
 				<br />
 				<input type='submit' value={translations.save} />
 				<input type='button' value={translations.cancel} onclick={`document.getElementById('discussion-reply-edit-${id}').dataset.vis='-1'`} />
@@ -167,7 +167,7 @@ app.get('/:discussion_id{[1-9][0-9]*}', async c => {
 			<Form action='/api/discussion/reply' method='post'>
 				<input type='hidden' name='discussion_id' value={c.req.param('discussion_id')} />
 				<input type='hidden' name='parent_id' value='' id='parent_id' />
-				<FormMdEditor id='reply-editor' name='content' required locale={c.get('locale')} />
+				<FormMdEditor c={c} id='reply-editor' name='content' required />
 				<ReplyButton c={c} />
 			</Form>
 		</Card>

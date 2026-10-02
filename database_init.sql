@@ -142,6 +142,7 @@ CREATE TABLE IF NOT EXISTS theme (
 	dark_fgcolor TEXT,
 	dark_bgcolor TEXT,
 	dark_bgimage TEXT,
+	editor TEXT,
 	FOREIGN KEY (uid) REFERENCES users(id)
 );
 CREATE INDEX IF NOT EXISTS idx_ticket_created_at ON ticket(created_at DESC);

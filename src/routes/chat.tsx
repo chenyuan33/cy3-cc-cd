@@ -82,7 +82,7 @@ app.get('/', async c => {
 	`).bind(currentUser.id, currentUser.id, currentUser.id).all();
 
     return c.render(<Card style={{ position: 'fixed', top: '50px', bottom: '10px', left: '70px', right: '10px' }}>
-        <MdInit />
+        <MdInit c={c} />
         <link rel='stylesheet' type='text/css' href='/chat.css' />
         <h1>{translations.chat.name}</h1>
         <div style={{ border: 'solid', 'border-radius': '10px', display: 'flex', position: 'absolute', top: '100px', bottom: '10px', left: '10px', right: '10px' }}>
@@ -195,7 +195,7 @@ app.get('/', async c => {
                         </div>
                         <Form action='/api/chat/send' method='post' style={{ padding: '8px 16px', backgroundColor: 'light-dark(#f9f9f9, #2a2a2a)', borderTop: '1px solid light-dark(#e0e0e0, #444)' }}>
 							<input type='hidden' name='uid' value={validUser} />
-							<FormMdEditor id='content' name='content' height='80px' required locale={c.get('locale')} />
+							<FormMdEditor c={c} id='content' name='content' height='80px' required />
 							<input type='submit' value={translations.send} />
 						</Form>
                     </>

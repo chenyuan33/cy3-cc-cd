@@ -211,6 +211,7 @@ export default {
 		saveAsNew: '另存为新主题',
 		reset: '重置主题',
 		useBgImage: '使用背景图片',
+		editor: '设置使用的编辑器',
 		bgImageRepeat: {
 			x: '背景图片横向重复',
 			y: '背景图片纵向重复'

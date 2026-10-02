@@ -165,3 +165,7 @@ dist
 .env*
 !.env.example
 .wrangler/
+
+# libraries
+
+/assets/lib/*

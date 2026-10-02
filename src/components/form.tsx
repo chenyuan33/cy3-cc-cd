@@ -2,6 +2,7 @@ import type { FC, PropsWithChildren } from "hono/jsx";
 import { MdEditor } from "./mdeditor";
 import type { JSX } from "hono/jsx/jsx-runtime";
 import { Select } from "./select";
+import type { ContextType } from "../types";
 
 export const Form: FC<PropsWithChildren<{ [x: string]: any }>> = ({ children, ...props }) => <form {...props} onsubmit={`var _form = this; var _button = _form.querySelector('[type="submit"]'); if (_button && _button.dataset.submitting === 'true') return false; if (_button) { _button.dataset.submitting = 'true'; _button.disabled = true; } var _result = true; try { _result = (function(){ ${props.onsubmit || ''} })(); } catch (_error) { if (_button) { _button.dataset.submitting = 'false'; _button.disabled = false; } throw _error; } if (_result === false && _button) { _button.dataset.submitting = 'false'; _button.disabled = false; } return _result;`}>{children}</form>;
 export const FormInput: FC<{
@@ -37,16 +38,16 @@ export const FormCheckbox: FC<{
 	{label && <label for={id}><strong>{label}</strong></label>}
 </div>;
 export const FormMdEditor: FC<{
+	c: ContextType,
 	id?: string,
 	name?: string,
 	label?: string,
 	required?: boolean,
 	height?: string,
-	locale: string,
 	initialCode?: string
-}> = ({ id, name, label, required, height = '300px', locale, initialCode = '' }) => <div style={{ height: `calc(${height} + 10px)` }}>
+}> = ({ c, id, name, label, required, height = '300px', initialCode = '' }) => <div style={{ height: `calc(${height} + 10px)` }}>
 	{label && <label for={'mdeditor-input-' + id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
-	<MdEditor id={id} name={name} required={required} style={{ position: 'relative', left: label ? '200px' : 0, width: label ? 'calc(100% - 200px)' : '100%' }} height={height} locale={locale} initialCode={initialCode} />
+	<MdEditor c={c} id={id} name={name} required={required} style={{ position: 'relative', left: label ? '200px' : 0, width: label ? 'calc(100% - 200px)' : '100%' }} height={height} locale={c.get('locale')} initialCode={initialCode} />
 </div>;
 export const FormSelect: FC<{
 	id?: string,

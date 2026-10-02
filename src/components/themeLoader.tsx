@@ -1,14 +1,8 @@
 import { raw } from "hono/html";
 import type { FC } from "hono/jsx";
+import type { themeInfo } from "../types";
 
-export const ThemeLoader: FC<{ theme: {
-	usebgimage: number | boolean, useFrostedGlass: number | boolean,
-	bgImageRepeatX: number | boolean, bgImageRepeatY: number | boolean,
-	bgImageSizeX: 'auto' | 'cover' | 'contain' | 'custom', bgImageSizeXCustom: number, bgImageSizeXCustomUnit: 'px' | 'em' | 'rem' | '%' | 'vw' | 'vh',
-	bgImageSizeY: 'auto' | 'cover' | 'contain' | 'custom', bgImageSizeYCustom: number, bgImageSizeYCustomUnit: 'px' | 'em' | 'rem' | '%' | 'vw' | 'vh',
-	light_fgcolor: string, light_bgcolor: string, light_bgimage: string,
-	dark_fgcolor: string, dark_bgcolor: string, dark_bgimage: string
-}, root: string }> = ({ theme, root }) => <style>
+export const ThemeLoader: FC<{ theme: themeInfo, root: string }> = ({ theme, root }) => <style>
 	{raw(root + ' {')}
 		{theme.usebgimage ? `
 			background-repeat: ${theme.bgImageRepeatX

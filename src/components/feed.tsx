@@ -40,7 +40,7 @@ export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, rep
 		<div><MdRender markdown={content} c={c} /></div>
 		{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'feed-edit-' + id} data-vis='-1' method='post' action='/api/feed/edit'>
 			<input type='hidden' name='id' value={id} />
-			<FormMdEditor id={'feed-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
+			<FormMdEditor c={c} id={'feed-edit-editor-' + id} name='content' required height='100px' initialCode={content} />
 			<br />
 			<input type='submit' value={translations.save} />
 			<button type='button' onclick={`document.getElementById('feed-edit-${id}').dataset.vis='-1'`}>{translations.cancel}</button>
@@ -48,7 +48,7 @@ export const Feed: FC<{ c: ContextType, id: number, recursionDepth?: number, rep
 		</Form> : <></>}
 		{currentUser ? <Form id={'feed-reply-' + id} data-vis='-1' method='post' action='/api/feed/reply'>
 			<input type='hidden' name='parent_id' value={id} />
-			<FormMdEditor id={'feed-reply-' + id} name='content' height='100px' locale={c.get('locale')} />
+			<FormMdEditor c={c} id={'feed-reply-' + id} name='content' height='100px' />
 			<br />
 			<input type='submit' value={translations.reply} disabled={!currentUser || enableEmailVerify && !c.get('currentUserEmail')} />
 			{html`<style>#feed-reply-${id}[data-vis="-1"]{visibility:hidden;position:absolute;}#feed-reply-${id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}

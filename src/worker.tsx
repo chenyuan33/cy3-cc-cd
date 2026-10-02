@@ -28,7 +28,7 @@ import { Form } from './components/form';
 import { ThemeLoader } from './components/themeLoader';
 const app = new Hono<AppEnv>();
 app.use(async (c, next) => {
-	const clonedReq = c.req.raw.clone();
+	const clonedReq = c.req.raw.clone(), env = c.env as any;
 	if (c.req.method === 'POST' || c.req.method === 'PUT') {
 		const contentType = c.req.header('Content-Type')?.split(';')[0];
 		if (contentType === 'application/json') {
@@ -51,15 +51,27 @@ app.use(async (c, next) => {
 	});
 	let uid: number | null = null;
 	if (cookies.session) {
-		const { payload } = await jwtVerify(cookies.session, new TextEncoder().encode((c.env as any).JWT_SECRET)).catch(() => ({ payload: null }));
+		const { payload } = await jwtVerify(cookies.session, new TextEncoder().encode(env.JWT_SECRET)).catch(() => ({ payload: null }));
 		if (payload) {
 			uid = parseInt(payload.uid as string);
 		}
 	}
 	const currentUser = uid ? await userQuery(uid, c) : null;
 	c.set('currentUser', currentUser);
-	const { email } = currentUser ? await (c.env as any).db.prepare('SELECT email FROM users WHERE id = ?').bind(currentUser.id).first() : {};
+	const { email } = currentUser ? await env.db.prepare('SELECT email FROM users WHERE id = ?').bind(currentUser.id).first() : {};
 	c.set('currentUserEmail', email ?? null);
+	c.set('usingTheme', (currentUser ? await env.db.prepare(`
+		SELECT
+			theme.usebgimage, theme.useFrostedGlass, theme.editor,
+			theme.bgImageRepeatX, theme.bgImageRepeatY,
+			theme.bgImageSizeX, theme.bgImageSizeXCustom, theme.bgImageSizeXCustomUnit,
+			theme.bgImageSizeY, theme.bgImageSizeYCustom, theme.bgImageSizeYCustomUnit,
+			theme.light_fgcolor, theme.light_bgcolor, theme.light_bgimage,
+			theme.dark_fgcolor, theme.dark_bgcolor, theme.dark_bgimage
+		FROM users
+		JOIN theme ON users.using_theme = theme.id
+		WHERE users.id = ?
+	`).bind(currentUser.id).first() : null) || defaultTheme);
 	const url = new URL(c.req.url);
 	const queryLocale = url.searchParams.get('lang')?.toLowerCase();
 	if (queryLocale && isLanguageSupported(queryLocale)) {
@@ -108,24 +120,12 @@ app.use(jsxRenderer(async ({ children, title }) => {
 	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any, translations = c.get('translations');
 	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
 	const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0').bind(currentUser.id).first() : { privateMessageCount: 0 };
-	const currentTheme = (currentUser ? await env.db.prepare(`
-		SELECT
-			theme.usebgimage, theme.useFrostedGlass,
-			theme.bgImageRepeatX, theme.bgImageRepeatY,
-			theme.bgImageSizeX, theme.bgImageSizeXCustom, theme.bgImageSizeXCustomUnit,
-			theme.bgImageSizeY, theme.bgImageSizeYCustom, theme.bgImageSizeYCustomUnit,
-			theme.light_fgcolor, theme.light_bgcolor, theme.light_bgimage,
-			theme.dark_fgcolor, theme.dark_bgcolor, theme.dark_bgimage
-		FROM users
-		JOIN theme ON users.using_theme = theme.id
-		WHERE users.id = ?
-	`).bind(currentUser.id).first() : null) || defaultTheme;
 	return <html lang={locale}>
 		<head>
 			<meta charset='UTF-8' />
 			<meta name='viewport' content='width=device-width, initial-scale=1.0' />
 			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
-			<ThemeLoader theme={currentTheme} root='body' />
+			<ThemeLoader theme={c.get('usingTheme')} root='body' />
 			<link rel='stylesheet' type='text/css' href='/style.css' />
 			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
 			<script dangerouslySetInnerHTML={{ __html: `const translations=${JSON.stringify(translations)};` }}></script>

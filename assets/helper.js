@@ -42,7 +42,7 @@ const createDialog = (content, buttons) => {
 }
 const createAlert = content => createDialog(content, [{ text: translations.ok }]);
 const createConfirm = content => createDialog(content, [{ text: translations.cancel, callback: () => false }, { text: translations.ok, callback: () => true }]);
-const CodeMirrorEditors = [], switchLight = () => {
+const CodeMirrorEditors = [], MonacoEditors = [], switchLight = () => {
 	switch (localStorage.lightMode) {
 		case 'dark':
 			localStorage.lightMode = 'system';
@@ -86,10 +86,10 @@ const CodeMirrorEditors = [], switchLight = () => {
 	probe.style.height = '0';
 	probe.style.backgroundColor = 'light-dark(black, white)';
 	document.body.appendChild(probe);
-	const bgColor = getComputedStyle(probe).backgroundColor;
+	const lightMode = getComputedStyle(probe).backgroundColor === 'rgb(0, 0, 0)';
 	document.body.removeChild(probe);
-	const CodeMirrorTheme = ['rgb(0, 0, 0)'].includes(bgColor) ? 'duotone-light' : 'duotone-dark';
-	CodeMirrorEditors.forEach(editor => editor.setOption('theme', CodeMirrorTheme));
+	CodeMirrorEditors.forEach(editor => editor.setOption('theme', lightMode ? 'duotone-light' : 'duotone-dark'));
+	MonacoEditors.forEach(editor => editor.updateOptions({ 'theme': lightMode ? 'vs-light' : 'vs-dark' }));
 }, setPage = page => {
 	const url = new URL(location.href);
 	url.searchParams.set('page', page);

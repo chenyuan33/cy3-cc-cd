@@ -6,7 +6,7 @@ import validator from "validator";
 const app = new Hono<AppEnv>();
 app.on('post', ['/create', '/save/:id{\\d+}'], async c => {
 	const env = c.env as any, currentUser = c.get('currentUser'), {
-		name, useFrostedGlass,
+		name, useFrostedGlass, editor,
 		useBgImage, bgImageRepeatX, bgImageRepeatY,
 		bgImageSizeX, bgImageSizeXCustom, bgImageSizeXCustomUnit,
 		bgImageSizeY, bgImageSizeYCustom, bgImageSizeYCustomUnit,
@@ -22,7 +22,7 @@ app.on('post', ['/create', '/save/:id{\\d+}'], async c => {
 	}
 	const bgImageSizeValidValues = ['auto', 'cover', 'contain', 'custom'];
 	const bgImageSizeCustomValidUnits = Object.keys(c.get('translations').theme.lengthUnits);
-	if (!name || !light_fgcolor || !dark_fgcolor || (useBgImage ? (false
+	if (!name || !light_fgcolor || !dark_fgcolor || !editor || !['CodeMirror', 'MonacoEditor'].includes(editor) || (useBgImage ? (false
 		|| !light_bgimage || !validator.isURL(light_bgimage, { require_protocol: true })
 		|| !dark_bgimage || !validator.isURL(dark_bgimage, { require_protocol: true })
 		|| !bgImageSizeX || !bgImageSizeValidValues.includes(bgImageSizeX)
@@ -42,7 +42,7 @@ app.on('post', ['/create', '/save/:id{\\d+}'], async c => {
 		await env.db.prepare(`
 			UPDATE theme
 			SET
-				updated_at = CURRENT_TIMESTAMP, name = ?, useFrostedGlass = ?,
+				updated_at = CURRENT_TIMESTAMP, name = ?, useFrostedGlass = ?, editor = ?,
 				usebgimage = ?, bgImageRepeatX = ?, bgImageRepeatY = ?,
 				bgImageSizeX = ?, bgImageSizeXCustom = ?, bgImageSizeXCustomUnit = ?,
 				bgImageSizeY = ?, bgImageSizeYCustom = ?, bgImageSizeYCustomUnit = ?,
@@ -50,7 +50,7 @@ app.on('post', ['/create', '/save/:id{\\d+}'], async c => {
 				dark_fgcolor = ?, dark_bgcolor = ?, dark_bgimage = ?
 			WHERE id = ?
 		`).bind(
-			name, useFrostedGlass ? 1 : 0,
+			name, useFrostedGlass ? 1 : 0, editor,
 			useBgImage ? 1 : 0, bgImageRepeatX ? 1 : 0, bgImageRepeatY ? 1 : 0,
 			bgImageSizeX, bgImageSizeXCustom, bgImageSizeXCustomUnit,
 			bgImageSizeY, bgImageSizeYCustom, bgImageSizeYCustomUnit,
@@ -61,14 +61,14 @@ app.on('post', ['/create', '/save/:id{\\d+}'], async c => {
 		return c.redirect('/theme/' + id);
 	} else {
 		return c.redirect('/theme/' + (await env.db.prepare(`INSERT INTO theme (
-			uid, name, useFrostedGlass,
+			uid, name, useFrostedGlass, editor,
 			usebgimage, bgImageRepeatX, bgImageRepeatY,
 			bgImageSizeX, bgImageSizeXCustom, bgImageSizeXCustomUnit,
 			bgImageSizeY, bgImageSizeYCustom, bgImageSizeYCustomUnit,
 			light_fgcolor, light_bgcolor, light_bgimage,
 			dark_fgcolor, dark_bgcolor, dark_bgimage
 		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING id`).bind(
-			currentUser.id, name, useFrostedGlass ? 1 : 0,
+			currentUser.id, name, useFrostedGlass ? 1 : 0, editor,
 			useBgImage ? 1 : 0, bgImageRepeatX ? 1 : 0, bgImageRepeatY ? 1 : 0,
 			bgImageSizeX, bgImageSizeXCustom, bgImageSizeXCustomUnit,
 			bgImageSizeY, bgImageSizeYCustom, bgImageSizeYCustomUnit,

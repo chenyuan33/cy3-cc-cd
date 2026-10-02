@@ -1,13 +1,13 @@
 import { type CSSProperties, type FC } from 'hono/jsx';
-import { CodeMirrorEditor, CodeMirrorInit, CodeMirrorLangInit } from './codemirror';
 import katex from 'katex';
 import { User } from './user';
 import type { ContextType } from '../types';
+import { Editor, EditorInit, EditorLangInit } from './editor';
 
-export const MdInit: FC<{}> = () => <>
-    {/* CodeMirror 核心 */}
-	<CodeMirrorInit />
-	<CodeMirrorLangInit lang='markdown' />
+export const MdInit: FC<{ c: ContextType }> = ({ c }) => <>
+    {/* 编辑器核心 */}
+	<EditorInit c={c} />
+	<EditorLangInit c={c} lang='markdown' />
     {/* 自定义编辑器样式 */}
     <link rel="stylesheet" href="/md/editor.css" />
     {/* KaTeX */}
@@ -20,6 +20,7 @@ export const MdInit: FC<{}> = () => <>
 </>;
 let mdeditorid = 0;
 export const MdEditor: FC<{
+	c: ContextType,
     initialCode?: string,
     id?: string | undefined,
     name?: string | undefined,
@@ -27,19 +28,20 @@ export const MdEditor: FC<{
     height?: string,
     locale?: string | undefined,
     style?: CSSProperties
-}> = ({ initialCode = '', id, name = '', required = false, height = '300px', locale = 'en', style = {} }) => {
+}> = ({ c, initialCode = '', id, name = '', required = false, height = '300px', locale = 'en', style = {} }) => {
 	id = id || 'mdeditor-' + ++mdeditorid;
     return <>
         <div class='mdeditor-div' style={{ height: height, ...style }}>
             <div class='mdeditor-input-cell'>
-				<CodeMirrorEditor
+				<Editor
+					c={c}
 					id={'mdeditor-input-' + id}
 					className='mdeditor-input'
 					name={name}
 					required={required}
 					initialCode={initialCode}
 					height={height}
-					mode='markdown'
+					lang='md'
 					onchange={`mdeditorOutputRefresh('${id}')`}
 					extraKeys={`{
 						"Ctrl-B": function(cm) { wrapSelection(cm, '**', '**'); },

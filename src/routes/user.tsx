@@ -339,7 +339,7 @@ app.get('/:uid{[1-9][0-9]*}/feed', async c => {
     const { results } = (await env.db.prepare('SELECT id FROM feed WHERE uid = ? AND parent_id = 0 AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
         .bind(uid, perPage, (currentPage - 1) * perPage).all());
     return c.render(<>
-        <MdInit />
+        <MdInit c={c} />
         <Card>
             <h1>{translations.user.profile.feed.replace('__USERNAME__', getDisplayUsername(user, c))}</h1>
         </Card>

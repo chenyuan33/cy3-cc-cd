@@ -20,7 +20,7 @@ app.get('/', async c => {
 	const { results } = await env.db.prepare(`
 		SELECT
 			id, uid, name, created_at, updated_at,
-			usebgimage, useFrostedGlass,
+			usebgimage, useFrostedGlass, editor,
 			bgImageRepeatX, bgImageRepeatY,
 			bgImageSizeX, bgImageSizeXCustom, bgImageSizeXCustomUnit,
 			bgImageSizeY, bgImageSizeYCustom, bgImageSizeYCustomUnit,
@@ -49,7 +49,7 @@ app.get('/', async c => {
 			<tbody>
 				{results.map(async ({ id, uid, name, created_at, updated_at, ...theme }: {
 					id: number, uid: number, name: string, created_at: string, updated_at: string,
-					usebgimage: number | boolean, useFrostedGlass: number | boolean,
+					usebgimage: number | boolean, useFrostedGlass: number | boolean, editor: string,
 					bgImageRepeatX: number | boolean, bgImageRepeatY: number | boolean,
 					bgImageSizeX: 'auto' | 'cover' | 'contain' | 'custom', bgImageSizeXCustom: number, bgImageSizeXCustomUnit: 'px' | 'em' | 'rem' | '%' | 'vw' | 'vh',
 					bgImageSizeY: 'auto' | 'cover' | 'contain' | 'custom', bgImageSizeYCustom: number, bgImageSizeYCustomUnit: 'px' | 'em' | 'rem' | '%' | 'vw' | 'vh',
@@ -88,7 +88,7 @@ app.on('get', ['/create', '/:id{\\d+}'], async c => {
 	}
 	const theme = id ? await env.db.prepare(`
 		SELECT
-			uid, name, useFrostedGlass,
+			uid, name, useFrostedGlass, editor,
 			usebgimage, bgImageRepeatX, bgImageRepeatY,
 			bgImageSizeX, bgImageSizeXCustom, bgImageSizeXCustomUnit,
 			bgImageSizeY, bgImageSizeYCustom, bgImageSizeYCustomUnit,
@@ -97,6 +97,7 @@ app.on('get', ['/create', '/:id{\\d+}'], async c => {
 		FROM theme
 		WHERE id = ?
 	`).bind(id).first() : { uid: currentUser.id, name: '', ...defaultTheme };
+	console.log(theme);
 	if (id && !theme) {
 		return notFound(c);
 	}
@@ -129,6 +130,10 @@ app.on('get', ['/create', '/:id{\\d+}'], async c => {
 				<FormSelect id='bgImageSizeYCustomUnit' name='bgImageSizeYCustomUnit' class='onbgimageycustom' options={Object.entries(translations.theme.lengthUnits).map(([value, label]) => ({ value, label: `${value} (${label})`, checked: theme.bgImageSizeYCustomUnit === value }))} />
 			</div>
 			<FormCheckbox id='useFrostedGlass' name='useFrostedGlass' label={translations.theme.useFrostedGlass} checked={!!theme.useFrostedGlass} />
+			<FormSelect id='editor' name='editor' label={translations.theme.editor} options={[
+				{ value: 'CodeMirror', label: 'CodeMirror', selected: theme.editor === 'CodeMirror' },
+				{ value: 'MonacoEditor', label: 'MonacoEditor', selected: theme.editor === 'MonacoEditor' }
+			]} />
 			<h2>{translations.theme.lightTheme}</h2>
 			<FormInput id='light_fgcolor' name='light_fgcolor' label={translations.theme.fgcolor} required type='color' value={theme.light_fgcolor || '#000000'} />
 			<FormInput id='light_bgcolor' class='onbgcolor' name='light_bgcolor' label={translations.theme.bgcolor} required type='color' value={theme.light_bgcolor || '#ffffff'} />

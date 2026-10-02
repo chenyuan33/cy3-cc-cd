@@ -88,7 +88,7 @@ app.get('/post', c => {
 		return muted(c);
 	}
 	return c.render(<Card>
-		<MdInit />
+		<MdInit c={c} />
 		<script src='/ticket/post.js' />
 		<h1>{translations.ticket.post.name}</h1>
 		<Form action='/api/ticket/post' method='post'>
@@ -99,7 +99,7 @@ app.get('/post', c => {
 			}))} onchange='refreshSimilarTicket()' />
 			<FormInput id='title' name='title' label={translations.title} type='text' required oninput='refreshSimilarTicket()' />
 			<div id='similar'></div>
-			<FormMdEditor id='content' name='content' label={translations.content} required locale={c.get('locale')} />
+			<FormMdEditor c={c} id='content' name='content' label={translations.content} required />
 			<input type='submit' value={translations.post} />
 		</Form>
 	</Card>, { title: translations.ticket.post.name });
@@ -118,7 +118,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 	const { results } = await env.db.prepare('SELECT id, parent_id, uid, content, set_status, set_assignee, created_at FROM ticket_reply WHERE ticket_id = ? ORDER BY created_at LIMIT ? OFFSET ?')
 		.bind(ticket_id, perPage, (currentPage - 1) * perPage).all();
 	return c.render(<>
-		<MdInit />
+		<MdInit c={c} />
 		<Card>
 			<div style={{ position: 'absolute', right: '10px', top: '10px' }}>
 				<ReplyButton c={c} onclick='document.getElementById("replying-blockquote").style.display="block";document.getElementById("replying-description").innerHTML=document.getElementById("ticket-description").innerHTML;document.getElementById("replying-content").innerHTML=document.getElementById("ticket-content").innerHTML;document.getElementById("parent_id").value="0";' />
@@ -139,7 +139,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				&nbsp;
 				<input id={'ticket-title-' + ticket_id} name='title' value={title} required />
 				<br />
-				<MdEditor id={'ticket-edit-editor-' + ticket_id} name='content' required height='200px' locale={c.get('locale')} initialCode={content} />
+				<MdEditor c={c} id={'ticket-edit-editor-' + ticket_id} name='content' required height='200px' locale={c.get('locale')} initialCode={content} />
 				<br />
 				<input type='submit' value={translations.save} />
 				<button type='button' onclick={`document.getElementById('ticket-edit-${ticket_id}').dataset.vis='-1'`}>{translations.cancel}</button>
@@ -181,7 +181,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'ticket-reply-edit-' + id} data-vis='-1' method='post' action='/api/ticket/reply/edit'>
 				<input type='hidden' name='ticket_id' value={c.req.param('ticket_id')} />
 				<input type='hidden' name='reply_id' value={id} />
-				<MdEditor id={'ticket-reply-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
+				<MdEditor c={c} id={'ticket-reply-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
 				<br />
 				<input type='submit' value={translations.save} />
 				<button type='button' onclick={`document.getElementById('ticket-reply-edit-${id}').dataset.vis='-1'`}>{translations.cancel}</button>
@@ -206,7 +206,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 			<Form action='/api/ticket/reply' method='post'>
 				<input type='hidden' name='ticket_id' value={c.req.param('ticket_id')} />
 				<input type='hidden' name='parent_id' value='' id='parent_id' />
-				<FormMdEditor id='content' name='content' label={translations.content} required={!currentUser || !(currentUser.permission & permissionAdmin) && (!assignee_uid || assignee_uid !== currentUser.id)} locale={c.get('locale')} />
+				<FormMdEditor c={c} id='content' name='content' label={translations.content} required={!currentUser || !(currentUser.permission & permissionAdmin) && (!assignee_uid || assignee_uid !== currentUser.id)} />
 				{currentUser && ((currentUser.permission & permissionAdmin) || assignee_uid && assignee_uid === currentUser.id) ? <>
 					<FormSelect id='status' name='set_status' label={translations.ticket.setStatus} options={[
 						{ value: '', label: translations.doNotModify, selected: true },

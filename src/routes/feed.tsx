@@ -32,7 +32,7 @@ app.get('/:feed_id{[1-9][0-9]*}?', async c => {
 	const { results } = (await env.db.prepare('SELECT id FROM feed WHERE parent_id = ? AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
 		.bind(feed_id, perPage, (currentPage - 1) * perPage).all());
 	return c.render(<>
-		<MdInit />
+		<MdInit c={c} />
 		<Card>
 			<h1>{translations.feeds}</h1>
 			{feed_id ? <Card>
@@ -49,7 +49,7 @@ app.get('/:feed_id{[1-9][0-9]*}?', async c => {
 				<div><MdRender markdown={content} c={c} /></div>
 				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'feed-edit-' + feed_id} data-vis='-1' method='post' action='/api/feed/edit'>
 					<input type='hidden' name='id' value={feed_id} />
-					<FormMdEditor id={'feed-edit-editor-' + feed_id} name='content' required height='100px' locale={locale} initialCode={content} />
+					<FormMdEditor c={c} id={'feed-edit-editor-' + feed_id} name='content' required height='100px' initialCode={content} />
 					<input type='submit' value={translations.edit} />
 					<input type='button' value={translations.cancel} onclick={`document.getElementById('feed-edit-${feed_id}').dataset.vis='-1'`} />
 					{html`<style>#feed-edit-${feed_id}[data-vis="-1"]{visibility:hidden;position:absolute;}#feed-edit-${feed_id}[data-vis="1"]{visibility:visible;position:relative;}</style>`}
@@ -57,7 +57,7 @@ app.get('/:feed_id{[1-9][0-9]*}?', async c => {
 			</Card> : <></>}
 			<Form action='/api/feed/reply' method='post'>
 				<input type='hidden' name='parent_id' value={feed_id} />
-				<FormMdEditor id='main-reply' name='content' required height='100px' locale={locale} />
+				<FormMdEditor c={c} id='main-reply' name='content' required height='100px' />
 				{feed_id ? <ReplyButton c={c} /> : <PostButton c={c} />}
 			</Form>
 		</Card>

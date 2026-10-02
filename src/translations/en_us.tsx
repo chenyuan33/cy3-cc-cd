@@ -211,6 +211,7 @@ export default {
 		saveAsNew: 'Save as New Theme',
 		reset: 'Reset Theme',
 		useBgImage: 'Use Background Image',
+		editor: 'Set the Editor to Use',
 		bgImageRepeat: {
 			x: 'Repeat Background Image Horizontally',
 			y: 'Repeat Background Image Vertically'
