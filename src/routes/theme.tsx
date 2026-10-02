@@ -8,6 +8,7 @@ import { Time } from "../components/time";
 import { Form, FormCheckbox, FormInput, FormSelect } from "../components/form";
 import { loginRequired, notFound } from "./errorPages";
 import { defaultTheme } from "../settings";
+import { ThemeLoader } from "../components/themeLoader";
 
 const app = new Hono<AppEnv>();
 app.get('/', async c => {
@@ -16,7 +17,19 @@ app.get('/', async c => {
 	const currentPage = Math.max(1, parseInt(c.get('reqBody').page || '1') || 1);
 	const { total } = await env.db.prepare('SELECT COUNT(*) as total FROM theme').first();
 	const totalPage = Math.ceil(total / perPage);
-	const { results } = await env.db.prepare('SELECT id, uid, name, created_at, updated_at, light_bgcolor, dark_bgcolor, light_bgimage, dark_bgimage FROM theme LIMIT ? OFFSET ?').bind(perPage, (currentPage - 1) * perPage).all();
+	const { results } = await env.db.prepare(`
+		SELECT
+			id, uid, name, created_at, updated_at,
+			usebgimage, useFrostedGlass,
+			bgImageRepeatX, bgImageRepeatY,
+			bgImageSizeX, bgImageSizeXCustom, bgImageSizeXCustomUnit,
+			bgImageSizeY, bgImageSizeYCustom, bgImageSizeYCustomUnit,
+			light_fgcolor, light_bgcolor, light_bgimage,
+			dark_fgcolor, dark_bgcolor, dark_bgimage
+		FROM theme
+		LIMIT ?
+		OFFSET ?
+	`).bind(perPage, (currentPage - 1) * perPage).all();
 	return c.render(<Card>
 		<h1>{translations.theme.list}</h1>
 		<button><a href='/theme/create'>{translations.theme.create}</a></button>
@@ -34,9 +47,22 @@ app.get('/', async c => {
 				</tr>
 			</thead>
 			<tbody>
-				{results.map(async ({ id, uid, name, created_at, updated_at, light_bgcolor, dark_bgcolor, light_bgimage, dark_bgimage }: { id: number, uid: number, name: string, created_at: string, updated_at: string, light_bgcolor: string, dark_bgcolor: string, light_bgimage: string, dark_bgimage: string }) => (
+				{results.map(async ({ id, uid, name, created_at, updated_at, ...theme }: {
+					id: number, uid: number, name: string, created_at: string, updated_at: string,
+					usebgimage: number | boolean, useFrostedGlass: number | boolean,
+					bgImageRepeatX: number | boolean, bgImageRepeatY: number | boolean,
+					bgImageSizeX: 'auto' | 'cover' | 'contain' | 'custom', bgImageSizeXCustom: number, bgImageSizeXCustomUnit: 'px' | 'em' | 'rem' | '%' | 'vw' | 'vh',
+					bgImageSizeY: 'auto' | 'cover' | 'contain' | 'custom', bgImageSizeYCustom: number, bgImageSizeYCustomUnit: 'px' | 'em' | 'rem' | '%' | 'vw' | 'vh',
+					light_fgcolor: string, light_bgcolor: string, light_bgimage: string,
+					dark_fgcolor: string, dark_bgcolor: string, dark_bgimage: string
+				}) => (
 					<tr key={id}>
-						<td><div style={{ backgroundColor: `light-dark(${light_bgcolor}, ${dark_bgcolor})`, backgroundImage: `light-dark(url(${light_bgimage}), url(${dark_bgimage}))` }}></div></td>
+						<td style={{ position: 'relative' }}>
+							<div id={'themeColor' + id} style={{ position: 'absolute', top: '10%', bottom: '10%', left: '10%', right: '10%', borderRadius: '5%' }}>
+								<ThemeLoader theme={theme} root={'#themeColor' + id} />
+								<ThemeLoader theme={theme} root={`body:has(#themeColor${id}:hover)`} />
+							</div>
+						</td>
 						<td>{name}</td>
 						<td><User c={c} user={uid} /></td>
 						<td><Time c={c} time={created_at}></Time></td>

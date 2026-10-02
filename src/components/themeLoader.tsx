@@ -20,6 +20,7 @@ export const ThemeLoader: FC<{ theme: {
 			background-image: light-dark(url(${theme.light_bgimage}), url(${theme.dark_bgimage}));
 		` : `
 			background-color: light-dark(${theme.light_bgcolor}, ${theme.dark_bgcolor});
+			background-image: unset;
 		`}
 		color: light-dark({theme.light_fgcolor}, {theme.dark_fgcolor});
 		--use-frosted-glass: {theme.useFrostedGlass ? 1 : 0};

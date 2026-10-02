@@ -94,7 +94,7 @@ app.post('/delete/:id{\\d+}', async c => {
 	if (currentUser.id !== 1 && currentUser.id !== id) {
 		return accessDenied(c);
 	}
-	await env.db.prepare('DELETE FROM users WHERE id = ?').bind(id).run();
+	await env.db.prepare('DELETE FROM theme WHERE id = ?').bind(id).run();
 	return c.redirect('/theme');
 });
 export default app;
