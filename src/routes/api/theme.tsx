@@ -17,7 +17,7 @@ app.on('post', ['/create', '/save/:id{\\d+}'], async c => {
 		return loginRequired(c);
 	}
 	const id = c.req.param('id') ? (await env.db.prepare('SELECT id FROM theme WHERE id = ?').bind(parseInt(c.req.param('id'))).first())?.id ?? 0 : 0;
-	if (currentUser.id !== 1 && currentUser.id !== id) {
+	if (id && currentUser.id !== 1 && currentUser.id !== id) {
 		return accessDenied(c);
 	}
 	const bgImageSizeValidValues = ['auto', 'cover', 'contain', 'custom'];
