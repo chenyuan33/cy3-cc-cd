@@ -20,12 +20,11 @@ const _SpeakButton: FC<{
 	} else {
 		buttonContent = translations[text];
 	}
-	return <input
+	return <button
 		type={type}
 		onclick={onclick}
 		disabled={!currentUser || enableEmailVerify && !currentUserEmail || !(currentUser!.permission & permissionSpeak)}
-		value={buttonContent}
-	/>;
+	>{raw(buttonContent)}</button>;
 };
 const _SpeakButtonOrLink: FC<{
 	c: ContextType,
