@@ -1,18 +1,18 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { emailVerifyRequired, loginRequired, muted, notFound } from "./errorPages";
-import { Card } from "../components/card";
-import { Form, FormInput, FormMdEditor, FormSelect } from "../components/form";
+import { Card } from "../client/components/card";
+import { Form, FormInput, FormMdEditor, FormSelect } from "../client/components/form";
 import { renderTemplate } from "../components/renderTemplate";
-import { User } from "../components/user";
-import { Time } from "../components/time";
-import { Pages } from "../components/pages";
+import { Time } from "../client/components/time";
+import { Pages } from "../client/components/pages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../settings";
-import { MdEditor, MdInit, MdRender } from "../components/mdeditor";
+import { MdEditor } from "../client/components/md/editor";
+import { MdRender } from "../client/components/md/renderer";
 import { html } from "hono/html";
 import { inTicketCategory, inTicketStatus, ticketCategories, ticketStatus, type ticketCategoryType, type ticketStatusType } from "./api/ticket";
 import { TicketStatus } from "../components/ticketStatus";
-import { DeleteButton, PostButton, ReplyButton } from "../components/button";
+import { DeleteButton, PostButton, ReplyButton } from "../client/components/button";
 
 const app = new Hono<AppEnv>();
 app.get('/', async c => {
@@ -89,7 +89,7 @@ app.get('/post', c => {
 	}
 	return c.render(<Card>
 		<MdInit c={c} />
-		<script src='/ticket/post.js' />
+		<script src='/public/ticket/post.js' />
 		<h1>{translations.ticket.post.name}</h1>
 		<Form action='/api/ticket/post' method='post'>
 			<FormSelect id='category' name='category' label={translations.category} options={ticketCategories.map(categoryName => ({

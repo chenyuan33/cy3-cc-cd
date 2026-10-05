@@ -1,93 +1,18 @@
 import { Hono } from "hono";
 import { type AppEnv, type ContextType } from "../types";
-import { raw } from "hono/html";
-import { alreadyLoggedIn, loginRequired, notFound } from "./errorPages";
-import { Card } from "../components/card";
-import { Form, FormCheckbox, FormInput } from "../components/form";
-import { User, getDisplayUsername, userQuery } from "../components/user";
-import { Time } from "../components/time";
-import { Pages } from "../components/pages";
-import { MdInit } from "../components/mdeditor";
-import { Feed } from "../components/feed";
+import { loginRequired, notFound } from "./errorPages";
+import { Card } from "../client/components/card";
+import { Form, FormCheckbox, FormInput } from "../client/components/form";
+import { Time } from "../client/components/time";
+import { Pages } from "../client/components/pages";
+import { Feed } from "../client/components/feed";
 import { renderTemplate } from "../components/renderTemplate";
 import { TicketStatus } from "../components/ticketStatus";
 import { permissionAdmin, permissionCount, type allPermissions } from "../settings";
-import { translations } from "../translations";
+import { messages } from "../i18n";
+import { userQuery } from "./api/user";
+const translations = messages;
 const app = new Hono<AppEnv>();
-app.get('/register', c => {
-	const translations = c.get('translations');
-    if (c.get('currentUser')) {
-        return alreadyLoggedIn(c);
-    }
-    return c.render(
-        <div style={{
-            display: 'flex',
-            'justify-content': 'center',
-            'align-items': 'center',
-            'min-height': '100vh'
-        }}>
-            <div style={{
-                display: 'flex',
-                'flex-wrap': 'wrap',
-                gap: '20px'
-            }}>
-                <Card style={{
-                    'min-width': '400px',
-                    display: 'flex',
-                    'flex-direction': 'column',
-                    'align-items': 'center',
-                    position: 'relative'
-                }}>
-                    <link rel='stylesheet' type='text/css' href='/user/register.css' />
-                    <h1>{translations.user.register}</h1>
-                    <Form action='/api/user/register' method='post' id='registerForm'>
-						<ul id='namechecklist'>
-							<li><i class='fa-solid fa-xmark check-failed' id='namecheck-length'></i>{translations.user.registerUsernameLength}</li>
-							<li><i class='fa-solid fa-check check-success' id='namecheck-used'></i>{translations.user.registerUsernameExists}</li>
-						</ul>
-						<FormInput id='name' name='name' label={translations.userInfo.username} type='text' oninput='checkname()' autocomplete='username' required />
-						<FormInput id='password' name='password' label={translations.userInfo.password} type='password' autocomplete='new-password' required />
-						<FormInput id='confirmPassword' name='confirmPassword' label={translations.user.confirmPassword} type='password' autocomplete='new-password' required />
-						<input type='submit' value={translations.user.register} />
-					</Form>
-                    <p>{raw(translations.user.registerToLogin)}</p>
-                    <script src='/user/register.js'></script>
-                </Card>
-            </div>
-        </div>,
-        { title: translations.user.register }
-    );
-});
-app.get('/login', c => {
-    if (c.get('currentUser')) {
-        return alreadyLoggedIn(c);
-    }
-	const translations = c.get('translations');
-    return c.render(
-        <div style={{
-            display: 'grid',
-            'place-items': 'center',
-            'min-height': '100vh'
-        }}>
-            <Card style={{
-                'min-width': '400px',
-                display: 'flex',
-                'flex-direction': 'column',
-                'align-items': 'center',
-                position: 'relative'
-            }}>
-                <h1>{translations.user.login}</h1>
-                <Form action='/api/user/login' method='post'>
-					<FormInput id='name' name='name' label={translations.userInfo.username} type='text' autocomplete='username' required />
-					<FormInput id='password' name='password' label={translations.userInfo.password} type='password' autocomplete='current-password' required />
-					<input type='submit' value={translations.user.login} />
-				</Form>
-                <p>{raw(translations.user.loginToRegister)}</p>
-            </Card>
-        </div>,
-        { title: translations.user.login }
-    );
-});
 app.get('/settings', async c => {
     const translations = c.get('translations'), currentUser = c.get('currentUser'), currentEmail = c.get('currentUserEmail');
     if (!currentUser) {
@@ -157,7 +82,7 @@ app.get('/settings', async c => {
 					</Form>
                 </Card>
             </div>
-            <script src='/user/settings.js'></script>
+            <script src='/public/user/settings.js'></script>
         </>,
         { title: translations.user.settings.name }
     );

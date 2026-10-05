@@ -1,13 +1,12 @@
 import { Hono } from "hono";
-import type { AppEnv, ContextType } from "../../types";
-import { accessDenied, alreadyLoggedIn, emailRequired, emailUsed, errorHTML, invalidEmail, invalidPassword, loginRequired, noSuchUsername, notFound, passwordRequired, registerUsernameExists, registerUsernameLength, usernameRequired, verifyFailed } from "../errorPages";
+import type { AppEnv, ContextType, userInfo } from "../../types";
+import { accessDenied, alreadyLoggedIn, emailRequired, emailUsed, errorJson, invalidEmail, invalidPassword, loginRequired, noSuchUsername, notFound, passwordRequired, registerUsernameExists, registerUsernameLength, usernameRequired, verifyFailed } from "../errorPages";
 import { SignJWT } from "jose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
-import { Card } from "../../components/card";
+import { Card } from "../../client/components/card";
 import { raw } from "hono/html";
-import { getDisplayUsername, User } from "../../components/user";
-import { Form } from "../../components/form";
+import { Form } from "../../client/components/form";
 import { permissionAdmin } from "../../settings";
 import { rateLimit } from "@elithrar/workers-hono-rate-limit";
 
@@ -28,9 +27,15 @@ const login = async (uid: number, c: ContextType) => {
 		.setExpirationTime('30d')
 		.sign(new TextEncoder().encode((c.env as any).JWT_SECRET))
 	}; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=2592000`);
-	return c.redirect('/');
+	return c.json({ success: true });
 };
 app.on('post', ['/register', '/login', '/change-username', '/change-password', '/change-email', '/change-email/verify'], (c, next) => rateLimit((c.env as any).rateLimiter, c => c.req.header('cf-connecting-ip') ?? '')(c, next));
+export const userInfoDatas = ['id', 'name', 'created_at', 'permission', 'username_violation', 'name_color_light', 'name_color_dark', 'tag'];
+export const userQuery = async (user: number, c: ContextType): Promise<userInfo> => await (c.env as any).db
+		.prepare(`SELECT ${userInfoDatas.join()} FROM users WHERE id = ?`)
+		.bind(user)
+		.first();
+app.get('/query/:uid{\\d+}', async c => c.json(await userQuery(parseInt(c.req.param('uid')), c)));
 app.post('/register', async c => {
 	const reqBody = c.get('reqBody');
 	if (c.get('currentUser')) {
@@ -74,7 +79,7 @@ app.post('/login', async c => {
 });
 app.get('/logout', c => {
 	c.header('Set-Cookie', 'session=; HttpOnly; Secure; SameSite=strict; Path=/; Max-Age=0');
-	return c.redirect('/');
+	return c.json({ success: true });
 });
 app.post('/general-settings', async c => {
 	const currentUser = c.get('currentUser'), { nameColorLight, nameColorDark, tag } = c.get('reqBody'), env = c.env as any;

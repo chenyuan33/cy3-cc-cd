@@ -3,6 +3,7 @@
 	"main": "src/worker.tsx",
 	"workers_dev": true,
 	"preview_urls": true,
+	"compatibility_flags": ["nodejs_compat"],
 	"compatibility_date": "2026-06-13",
 	"routes": [
 		{
@@ -48,6 +49,8 @@
 		}
 	},
 	"assets": {
-		"directory": "./assets"
+		"directory": "./public",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [ "/api/*", "/ws/*" ]
 	}
 }

@@ -1,20 +1,13 @@
 import { Hono } from 'hono';
 import { jwtVerify } from 'jose';
-import { jsxRenderer, useRequestContext } from 'hono/jsx-renderer';
-import type { FC, PropsWithChildren } from 'hono/jsx';
-import { raw } from 'hono/html';
-import { isLanguageSupported, translations, type supportedLanguagesShortCodeType } from './translations';
+import { languageDetector } from 'hono/language';
 import type { AppEnv } from './types';
-import { defaultTheme, permissionAdmin, permissionVisit } from './settings';
-import { User, userQuery } from './components/user';
-import { Card } from './components/card';
-import { renderTemplate } from './components/renderTemplate';
-import { Time } from './components/time';
-import { banned, errorHTML, notFound } from './routes/errorPages';
+import { defaultTheme, permissionVisit } from './settings';
+import { userQuery } from './routes/api/user';
+import { banned, errorJson, notFound } from './routes/errorPages';
 import apisRoutes from './routes/apis';
 import webSocketRoutes from './routes/ws';
 import userRoutes from './routes/user';
-import feedRoutes from './routes/feed';
 import discussionRoutes from './routes/discussion';
 import ticketRoutes from './routes/ticket';
 import chatRoutes from './routes/chat';
@@ -23,10 +16,21 @@ import judgementRoutes from './routes/judgement';
 import fileRoutes from './routes/file';
 import themeRoutes from './routes/theme';
 import ideRoutes from './routes/ide';
-import type { discussionCategoriesType } from './routes/api/discussion';
-import { Form } from './components/form';
-import { ThemeLoader } from './components/themeLoader';
+import { renderer } from './renderer';
+import { i18nMiddleware, type supportedLanguagesShortCodeType } from './i18n';
 const app = new Hono<AppEnv>();
+app.use(languageDetector({
+	supportedLanguages: ['en', 'en_us', 'zh', 'zh_cn', 'zh_hans', 'zh_hans_cn'],
+	fallbackLanguage: 'en',
+	order: ['path', 'querystring', 'cookie', 'header'],
+	lookupQueryString: 'lang',
+	lookupCookie: 'lang',
+	caches: ['cookie'],
+	cookieOptions: {
+		httpOnly: false
+	}
+}));
+app.use(i18nMiddleware);
 app.use(async (c, next) => {
 	const clonedReq = c.req.raw.clone(), env = c.env as any;
 	if (c.req.method === 'POST' || c.req.method === 'PUT') {
@@ -40,6 +44,8 @@ app.use(async (c, next) => {
 		} else if (contentType === 'application/x-www-form-urlencoded') {
 			const text = await clonedReq.text();
 			c.set('reqBody', Object.fromEntries(new URLSearchParams(text)));
+		} else if (contentType === 'multipart/form-data') {
+			c.set('reqBody', Object.fromEntries(Array.from(await clonedReq.formData()).filter(([_, value]) => typeof value === 'string')) as Record<string, string>);
 		}
 	} else {
 		c.set('reqBody', Object.fromEntries(new URL(c.req.url).searchParams));
@@ -72,32 +78,7 @@ app.use(async (c, next) => {
 		JOIN theme ON users.using_theme = theme.id
 		WHERE users.id = ?
 	`).bind(currentUser.id).first() : null) || defaultTheme);
-	const url = new URL(c.req.url);
-	const queryLocale = url.searchParams.get('lang')?.toLowerCase();
-	if (queryLocale && isLanguageSupported(queryLocale)) {
-		c.set('locale', queryLocale);
-	} else {
-		const cookieLocale = cookies.locale?.toLowerCase();
-		if (cookieLocale && isLanguageSupported(cookieLocale)) {
-			c.set('locale', cookieLocale);
-		} else {
-			const acceptLanguage = c.req.header('accept-language') ?? '';
-			const preferred = acceptLanguage
-				.split(',')
-				.map(value => (value.split(';')[0] ?? value).trim().toLowerCase())
-				.find(value => isLanguageSupported(value) || isLanguageSupported(value.split('-')[0] ?? value));
-			const normalized = preferred?.split('-')[0];
-			if (preferred && isLanguageSupported(preferred)) {
-				c.set('locale', preferred);
-			} else if (normalized && isLanguageSupported(normalized)) {
-				c.set('locale', normalized);
-			} else {
-				c.set('locale', 'en');
-			}
-		}
-	}
-	c.set('shortLocale', c.get('locale').split(/[_\-]/)[0] as supportedLanguagesShortCodeType);
-	c.set('translations', translations[c.get('locale')]);
+	c.set('shortLocale', c.get('language').split(/[_\-]/)[0] as supportedLanguagesShortCodeType);
 	console.log({
 		customLog: {
 			logType: 'Custom Log',
@@ -107,290 +88,14 @@ app.use(async (c, next) => {
 	});
 	await next();
 });
-declare module 'hono' {
-	interface ContextRenderer {
-		(
-			content: string | Promise<string>,
-			props: { title: string }
-		): Response
-	}
-};
-app.use(jsxRenderer(async ({ children, title }) => {
-	const c = useRequestContext<AppEnv>();
-	const locale = c.get('locale'), currentUser = c.get('currentUser'), env = c.env as any, translations = c.get('translations');
-	const { notificationCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS notificationCount FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first() : { notificationCount: 0 };
-	const { privateMessageCount } = currentUser ? await env.db.prepare('SELECT COUNT(*) AS privateMessageCount FROM private_messages WHERE receiver = ? AND read = 0').bind(currentUser.id).first() : { privateMessageCount: 0 };
-	return <html lang={locale}>
-		<head>
-			<meta charset='UTF-8' />
-			<meta name='viewport' content='width=device-width, initial-scale=1.0' />
-			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
-			<ThemeLoader theme={c.get('usingTheme')} root='body' />
-			<link rel='stylesheet' type='text/css' href='/style.css' />
-			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
-			<script dangerouslySetInnerHTML={{ __html: `const translations=${JSON.stringify(translations)};` }}></script>
-			<script src='/helper.js'></script>
-			<title>{title} - cy3's site</title>
-		</head>
-		<body>
-			<noscript><h3>{translations.renderer.noscript}</h3></noscript>
-
-			{/* 顶部导航栏 */}
-			<header style={{
-				position: 'fixed',
-				top: 0,
-				left: 0,
-				right: 0,
-				height: '50px',
-				display: 'flex',
-				alignItems: 'center',
-				justifyContent: 'space-between',
-				padding: '0 30px',
-				zIndex: 2
-			}}>
-				{/* 最左侧网站图标，点击跳转首页 */}
-				<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-					<a href='/' style={{ display: 'inline-flex', alignItems: 'center' }}>
-						<img src='/favicon.ico' alt='Home' style={{ height: '50px', width: '50px' }} />
-					</a>
-					<i class='fa-solid fa-server' style={{ fontSize: '20px', color: 'yellow' }} title={translations.serverConnectStatus.connecting} id='serverConnectStatus'></i>
-				</div>
-
-				{/* 右侧用户相关元素 */}
-				<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-					{currentUser ? (
-						<>
-							{/* 管理面板（仅管理员可见，只显示图标，位于铃铛左边） */}
-							{currentUser.permission & permissionAdmin ? (
-								<a
-									href='/admin'
-									style={{
-										textDecoration: 'none',
-										color: 'var(--text)',
-										fontSize: '20px',
-										display: 'inline-flex',
-										alignItems: 'center',
-										position: 'relative',
-										top: '-1px'
-									}}
-									title={translations.admin.name}
-								>
-									<i class='fa-solid fa-user-shield'></i>
-								</a>
-							) : null}
-
-							{/* 私信图标（位于管理面板右侧、铃铛左侧） */}
-							<a href='/chat' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
-								<span style={{ position: 'relative', display: 'inline-block' }}>
-									<i class='fa-solid fa-envelope' style={{ fontSize: '20px' }}></i>
-									{privateMessageCount ? (
-										<sup style={{
-											padding: '1px 5px',
-											backgroundColor: 'red',
-											color: 'white',
-											borderRadius: '5px',
-											position: 'absolute',
-											top: '-5px',
-											right: '-10px',
-											fontSize: '10px'
-										}}>
-											{privateMessageCount}
-										</sup>
-									) : null}
-								</span>
-							</a>
-
-							{/* 通知项（铃铛） */}
-							<a href='/user/notification' style={{ textDecoration: 'none', color: 'var(--text)', display: 'inline-flex', alignItems: 'center' }}>
-								<span style={{ position: 'relative', display: 'inline-block' }}>
-									<i class='fa-solid fa-bell' style={{ fontSize: '20px' }}></i>
-									{notificationCount ? (
-										<sup style={{
-											padding: '1px 5px',
-											backgroundColor: 'red',
-											color: 'white',
-											borderRadius: '5px',
-											position: 'absolute',
-											top: '-5px',
-											right: '-10px',
-											fontSize: '10px'
-										}}>
-											{notificationCount}
-										</sup>
-									) : null}
-								</span>
-							</a>
-
-							{/* 用户名 */}
-							<User user={currentUser} c={c} />
-
-							{/* 用户设置（仅图标，位于用户名右侧） */}
-							<a
-								href='/user/settings'
-								style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px', display: 'inline-flex', alignItems: 'center' }}
-								title={translations.user.settings.name}
-							>
-								<i class='fa-solid fa-gear'></i>
-							</a>
-
-							{/* 登出 */}
-							<a
-								href='/api/user/logout'
-								style={{ textDecoration: 'none', color: 'var(--text)', fontSize: '20px' }}
-							>
-								<i class='fa-solid fa-sign-out-alt'></i>
-							</a>
-						</>
-					) : (
-						<>
-							<a href='/user/login' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-								<i class='fa-solid fa-sign-in-alt'></i> {translations.user.login}
-							</a>
-							<a href='/user/register' style={{ textDecoration: 'none', fontSize: '18px', color: 'var(--text)' }}>
-								<i class='fa-solid fa-user-plus'></i> {translations.user.register}
-							</a>
-						</>
-					)}
-				</div>
-			</header>
-
-			{/* 侧边栏 */}
-			<nav style={{
-				position: 'fixed',
-				top: '50px',
-				left: '-10px',
-				height: 'calc(100% - 50px)',
-				padding: '10px',
-				'padding-left': '20px',
-				'overflow-x': 'hidden',
-				'overflow-y': 'auto',
-				'white-space': 'nowrap',
-				transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)',
-				'border-radius': '10px',
-				'z-index': 1
-			}}>
-				<p><a href='/'>
-					<i class='fa-solid fa-house'></i>
-					<span class='sidebarTitle'>{translations.home.name}</span>
-				</a></p>
-				<p><a href='/feed'>
-					<i class='fa-solid fa-rss'></i>
-					<span class='sidebarTitle'>{translations.feeds}</span>
-				</a></p>
-				<p><a href='/discussion'>
-					<i class='fa-solid fa-comments'></i>
-					<span class='sidebarTitle'>{translations.discussion.name}</span>
-				</a></p>
-				<p><a href='/ticket'>
-					<i class='fa-solid fa-ticket'></i>
-					<span class='sidebarTitle'>{translations.ticket.name}</span>
-				</a></p>
-				<p><a href='/ide'>
-					<i class='fa-solid fa-code'></i>
-					<span class='sidebarTitle'>{translations.ide}</span>
-				</a></p>
-				<p><a href='/judgement'>
-					<i class='fa-solid fa-user-plus'></i>
-					<span class='sidebarTitle'>{translations.judgement.name}</span>
-				</a></p>
-				{currentUser ? <p><a href={`/file/user/${currentUser.id}/`}>
-					<i class='fa-solid fa-cloud-upload'></i>
-					<span class='sidebarTitle'>{translations.file.name}</span>
-				</a></p> : <></>}
-				<p><a href='/theme'>
-					<i class='fa-solid fa-paint-brush'></i>
-					<span class='sidebarTitle'>{translations.theme.list}</span>
-				</a></p>
-				<p><a href='javascript:void(0)' onclick='switchLight()'>
-					<i class='fa-solid fa-circle-half-stroke' id='lightSwitchIcon'></i>
-					<span class='sidebarTitle'>{translations.renderer.theme}</span>
-				</a></p>
-			</nav>
-
-			{/* 主体内容：添加顶部内边距，防止被固定顶部导航栏遮挡 */}
-			<main style={{ paddingTop: '50px' }}>{children}</main>
-		</body>
-	</html>;
-}));
+app.use(renderer);
 app.use(async (c, next) => {
 	if (c.get('currentUser') && !(c.get('currentUser')!.permission & permissionVisit)) {
 		return banned(c);
 	}
 	await next();
 });
-app.get('/', async c => {
-	const locale = c.get('shortLocale'), env = c.env as any, nextDay = new Date(), translations = c.get('translations');
-	nextDay.setDate(nextDay.getDate() + 1);
-	nextDay.setHours(0, 0, 0, 0);
-	const { results: discussions } = await env.db.prepare('SELECT id, uid, category, title, created_at, pin FROM discussion ORDER BY pin DESC, created_at DESC LIMIT 10').bind().all();
-	return c.render(<>
-		<Card>
-			<h1>{translations.home.name}</h1>
-		</Card>
-		<div style={{ display: 'grid', 'grid-template-columns': 'repeat(2, 1fr)', gap: '20px' }}>
-			<Card style={{ display: 'flex', 'flex-direction': 'column', 'align-items': 'center' }}>
-				<h2>{translations.home.checkIn.name}</h2>
-				{c.get('currentUser')
-					? (async () => {
-						const { checkin_date, checkin_count, checkin_today_status, checkin_today_good1, checkin_today_good2, checkin_today_bad1, checkin_today_bad2 }: { checkin_date: string, checkin_count: number, checkin_today_status: -3 | -2 | -1 | 0 | 1 | 2 | 3, checkin_today_good1: number, checkin_today_good2: number, checkin_today_bad1: number, checkin_today_bad2: number } = await env.db.prepare('SELECT checkin_date, checkin_count, checkin_today_status, checkin_today_good1, checkin_today_good2, checkin_today_bad1, checkin_today_bad2 FROM users WHERE id = ?').bind(c.get('currentUser')?.id).first();
-						const checkin_date_object = new Date(checkin_date + 'Z');
-						const today = new Date();
-						if (!checkin_date
-							|| checkin_date_object.getFullYear() !== today.getFullYear()
-							|| checkin_date_object.getMonth() !== today.getMonth()
-							|| checkin_date_object.getDate() !== today.getDate()) {
-							return <Form action='/api/check-in' method='post'>
-								<input type='submit' value={translations.home.checkIn.button} />
-							</Form>;
-						}
-						const Good: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'red' }}>{children}</div>;
-						const Bad: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'light-dark(black, white)' }}>{children}</div>;
-						const GoodContent: FC<{ id: number }> = async ({ id }) => {
-							const { title_en, good_en, title_zh, good_zh } = await env.db.prepare(`SELECT title_${locale}, good_${locale} FROM checkin_texts WHERE id = ?`).bind(id).first();
-							return <div style={{ padding: '10px' }}><strong>{translations.home.checkIn.good}{title_en ?? title_zh}</strong><br />{good_en ?? good_zh}</div>;
-						};
-						const BadContent: FC<{ id: number }> = async ({ id }) => {
-							const { title_en, bad_en, title_zh, bad_zh } = await env.db.prepare(`SELECT title_${locale}, bad_${locale} FROM checkin_texts WHERE id = ?`).bind(id).first();
-							return <div style={{ padding: '10px' }}><strong>{translations.home.checkIn.bad}{title_en ?? title_zh}</strong><br />{bad_en ?? bad_zh}</div>;
-						};
-						return <>
-							<p>{renderTemplate(translations.home.checkIn.resetTime, { __DATE__: <Time c={c} time={nextDay} /> })}</p>
-							<p>{renderTemplate(translations.home.checkIn.count, { __COUNT__: checkin_count.toString() })}</p>
-							<h2 style={{
-								color: {
-									'-3': 'light-dark(black, white)',
-									'-2': 'light-dark(black, white)',
-									'-1': 'light-dark(black, white)',
-									0: 'green',
-									1: 'red',
-									2: 'red',
-									3: 'red'
-								}[checkin_today_status as number]
-							}}>{translations.home.checkIn.status[checkin_today_status]}</h2>
-							<p style={{ 'font-size': 'smaller', color: 'gray' }}>{translations.home.checkIn.referenceOnly}</p>
-							<div style={{ display: 'grid', width: '100%', 'grid-template-columns': 'repeat(2, 1fr)' }}>
-								<div style={{ display: 'flex', 'align-items': 'center', 'justify-content': 'center' }}>{checkin_today_good1 && checkin_today_good2 ? <Good><GoodContent id={checkin_today_good1} /><GoodContent id={checkin_today_good2} /></Good> : <Bad><strong>{translations.home.checkIn.everythingBad}</strong></Bad>}</div>
-								<div style={{ display: 'flex', 'align-items': 'center', 'justify-content': 'center' }}>{checkin_today_bad1 && checkin_today_bad2 ? <Bad><BadContent id={checkin_today_bad1} /><BadContent id={checkin_today_bad2} /></Bad> : <Good><strong>{translations.home.checkIn.everythingGood}</strong></Good>}</div>
-							</div>
-						</>;
-					})()
-					: <p>{raw(translations.home.checkIn.afterLogin)}</p>}
-			</Card>
-			<Card>
-				<h2>{translations.home.recentDiscussions}</h2>
-				{discussions.length ? discussions.map(({ id, uid, category, title, created_at, pin }: { id: number, uid: number, category: discussionCategoriesType, title: string, created_at: string, pin: number }) => <Card>
-					{pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'red' }}></i> : <></>}
-					<a href={'/discussion/' + id}>{title}</a><br />
-					{renderTemplate(translations.discussion.itemDescription, {
-						__USER__: <User c={c} user={uid} />,
-						__CATEGORY__: <a href={`/discussion?category=${category}`}>{translations.discussion.categoryName[category]}</a>,
-						__CREATED_AT__: <Time c={c} time={created_at} />
-					})}
-				</Card>) : <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{translations.nothing}</h2></Card>}
-			</Card>
-		</div>
-	</>, { title: translations.home.name });
-});
+app.get('/', c => c.render(<></>));
 app.get('/private-message', (c) => {
 	const query = c.req.query();
 	const searchParams = new URLSearchParams(query).toString();
@@ -401,7 +106,6 @@ app.route('/api', apisRoutes);
 app.route('/ws', webSocketRoutes);
 app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
-app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
 app.route('/chat', chatRoutes);
@@ -411,7 +115,12 @@ app.route('/theme', themeRoutes);
 app.route('/ide', ideRoutes);
 app.onError((err, c) => {
 	console.error(err);
-	return errorHTML(c, err, 500);
+	return errorJson(c, err, 500);
 });
-app.notFound(c => notFound(c));
+app.notFound(c => {
+	if (c.req.path.startsWith('/api/') || c.req.path.startsWith('/ws')) {
+		return notFound(c);
+	}
+	return c.render(<></>);
+});
 export default app;

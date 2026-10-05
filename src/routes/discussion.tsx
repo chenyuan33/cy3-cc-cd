@@ -1,16 +1,15 @@
 import { Hono } from "hono";
 import type { AppEnv, userInfo } from "../types";
 import { emailVerifyRequired, loginRequired, muted, notFound } from "./errorPages";
-import { Card } from "../components/card";
-import { Form, FormInput, FormMdEditor, FormSelect } from "../components/form";
+import { Card } from "../client/components/card";
+import { Form, FormInput, FormMdEditor, FormSelect } from "../client/components/form";
 import { renderTemplate } from "../components/renderTemplate";
-import { User } from "../components/user";
-import { Time } from "../components/time";
-import { Pages } from "../components/pages";
+import { Time } from "../client/components/time";
+import { Pages } from "../client/components/pages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../settings";
-import { MdInit, MdRender } from "../components/mdeditor";
+import { MdRender } from "../client/components/md/renderer";
 import { html } from "hono/html";
-import { DeleteButton, PostButton, ReplyButton } from "../components/button";
+import { DeleteButton, PostButton, ReplyButton } from "../client/components/button";
 import { discussionCategories, inDiscussionCategory, type discussionCategoriesType } from "./api/discussion";
 
 const app = new Hono<AppEnv>();

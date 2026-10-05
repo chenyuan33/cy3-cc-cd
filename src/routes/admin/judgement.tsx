@@ -2,11 +2,10 @@
 import { Hono } from 'hono';
 import { raw } from 'hono/html';
 import type { AppEnv } from '../../types';
-import { Card } from '../../components/card';
+import { Card } from '../../client/components/card';
 import { accessDenied } from '../errorPages';
 import { permissionAdmin, permissionCount, type allPermissions } from '../../settings';
-import { User } from '../../components/user';
-import { Pages } from '../../components/pages';
+import { Pages } from '../../client/components/pages';
 
 const app = new Hono<AppEnv>();
 app.get('/', async (c) => {
@@ -149,7 +148,7 @@ app.get('/', async (c) => {
 					window.__permissionAdmin = ${permissionAdmin};
 				`
             }} />
-            <script src="/js/admin-judgement.js"></script>
+            <script src="/public/js/admin-judgement.js"></script>
         </Card>,
         { title: translations.admin.judgement.adminJudgementTitle }
     );

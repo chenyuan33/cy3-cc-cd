@@ -1,14 +1,13 @@
 import { Hono } from "hono";
-import { DOMParser, Node } from '@xmldom/xmldom'; (globalThis as any).DOMParser = DOMParser; (globalThis as any).Node = Node;
-import { GetObjectCommand, paginateListObjectsV2, S3Client, type ListObjectsV2CommandOutput } from "@aws-sdk/client-s3";
+import { DOMParser } from '@xmldom/xmldom';
+import { AwsClient } from "aws4fetch";
 import { type AppEnv } from "../types";
-import { Form, FormInput } from "../components/form";
-import { Card } from "../components/card";
+import { Form, FormInput } from "../client/components/form";
+import { Card } from "../client/components/card";
 import { accessDenied, loginRequired, notFound } from "./errorPages";
-import { User } from "../components/user";
 import type { JSX } from "hono/jsx/jsx-runtime";
 import { renderTemplate } from "../components/renderTemplate";
-import { DeleteLink } from "../components/button";
+import { DeleteLink } from "../client/components/button";
 import { permissionFile } from "../settings";
 
 const app = new Hono<AppEnv>();
@@ -27,41 +26,61 @@ app.get('/:path{.*}', async c => {
 	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
 		return accessDenied(c);
 	}
-	const client = new S3Client({
-		region: env.B2_REGION,
-		endpoint: env.B2_ENDPOINT,
-		credentials: {
-			accessKeyId: env.B2_APPLICATION_KEY_ID,
-			secretAccessKey: env.B2_SECRET_ACCESS_KEY,
-		},
-		forcePathStyle: true,
+	const aws = new AwsClient({
+		accessKeyId: env.B2_APPLICATION_KEY_ID,
+		secretAccessKey: env.B2_SECRET_ACCESS_KEY,
+		service: 's3',
+		region: env.B2_REGION
 	});
 	if (path && !path.endsWith('/')) {
 		c.header('Cache-Control', 'public, max-age=3600, must-revalidate');
 		try {
-			const response = await client.send(new GetObjectCommand({
-				Bucket: env.B2_BUCKET_NAME,
-				Key: path,
-			}));
-			c.header('Content-Length', response.ContentLength?.toString() || '');
+			const response = await aws.fetch(new URL(`https://${env.B2_BUCKET_NAME}.${env.B2_ENDPOINT}/${path}`).toString());
+			c.header('Content-Length', response.headers.get('Content-Length')?.toString() || '');
 			if (['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'video/mp4', 'audio/mpeg'].includes(response.ContentType || '')) {
-				c.header('Content-Type', response.ContentType);
+				c.header('Content-Type', response.headers.get('Content-Type') ?? undefined);
 			} else {
 				c.header('Content-Type', 'application/octet-stream');
 			}
-			return c.body(response.Body as ReadableStream);
+			return c.body(response.body as ReadableStream);
 		} catch {
 			return notFound(c);
 		}
 	}
-	const paginator = paginateListObjectsV2({ client }, { Bucket: env.B2_BUCKET_NAME, Prefix: path, Delimiter: '/' });
-	let currentPageCount = 0, currentPageContent: ListObjectsV2CommandOutput | undefined;
-	for await (const page of paginator) {
-		if (++currentPageCount === currentPage) {
-			currentPageContent = page;
+	let currentPageCount = 0;
+	let currentPageContent: any = null;
+	let continuationToken: string | null | undefined;
+	while (currentPageCount < currentPage) {
+		const listUrl = new URL(`https://${env.B2_BUCKET_NAME}.${env.B2_ENDPOINT}/`);
+		listUrl.searchParams.set('list-type', '2');
+		listUrl.searchParams.set('prefix', path);
+		listUrl.searchParams.set('delimiter', '/');
+		if (continuationToken) {
+			listUrl.searchParams.set('continuation-token', continuationToken);
 		}
+		const res = await aws.fetch(listUrl.toString());
+		if (!res.ok) {
+			throw new Error(`S3 List failed: ${res.status}`);
+		}
+		const xmlText = await res.text();
+		const doc = new DOMParser().parseFromString(xmlText, 'text/xml');
+		const isTruncated = doc.getElementsByTagName('IsTruncated')[0]?.textContent === 'true';
+		continuationToken = doc.getElementsByTagName('NextContinuationToken')[0]?.textContent;
+		if (++currentPageCount === currentPage) {
+			currentPageContent = {
+				CommonPrefixes: Array.from(doc.getElementsByTagName('CommonPrefixes')).map(el => ({
+					Prefix: el.getElementsByTagName('Prefix')[0]?.textContent,
+				})),
+				Contents: Array.from(doc.getElementsByTagName('Contents')).map(el => ({
+					Key: el.getElementsByTagName('Key')[0]?.textContent,
+					Size: parseInt(el.getElementsByTagName('Size')[0]?.textContent || '0', 10),
+				})),
+			};
+			break;
+		}
+		if (!isTruncated) break;
 	}
-	if (currentPageContent === undefined) {
+	if (currentPageContent === undefined || currentPageContent === null) {
 		return notFound(c);
 	}
 	let currentDir = '/file/';

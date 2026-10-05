@@ -1,8 +1,7 @@
 import { Hono } from "hono";
 import { type AppEnv } from "../../types";
-import { Card } from "../../components/card";
-import { Form, FormInput } from "../../components/form";
-import { User } from "../../components/user";
+import { Card } from "../../client/components/card";
+import { Form, FormInput } from "../../client/components/form";
 import { contentRequired, titleRequired } from "../errorPages";
 
 const app = new Hono<AppEnv>();

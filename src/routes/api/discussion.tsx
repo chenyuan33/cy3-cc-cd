@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { AppEnv, userInfo } from "../../types";
-import { accessDenied, categoryNotFound, categoryRequired, contentRequired, emailVerifyRequired, errorHTML, loginRequired, muted, notFound, titleRequired } from "../errorPages";
+import { accessDenied, categoryNotFound, categoryRequired, contentRequired, emailVerifyRequired, errorJson, loginRequired, muted, notFound, titleRequired } from "../errorPages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../../settings";
 import { processAt } from "../../at";
 

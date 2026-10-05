@@ -2,10 +2,10 @@ import { Hono } from "hono";
 import type { AppEnv } from "../types";
 import { permissionAdmin, permissionCount } from "../settings";
 import { accessDenied, missingParams, notFound } from "./errorPages";
-import { Card } from "../components/card";
+import { Card } from "../client/components/card";
 import judgementRoutes from './admin/judgement';
 import ticketQuickReplyRoutes from './admin/ticketQuickReply';
-import { Form } from "../components/form";
+import { Form } from "../client/components/form";
 
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {

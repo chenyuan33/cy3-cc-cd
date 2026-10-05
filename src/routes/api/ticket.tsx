@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../../types";
-import { accessDenied, categoryNotFound, categoryRequired, contentRequired, emailVerifyRequired, errorHTML, loginRequired, muted, notFound, titleRequired } from "../errorPages";
+import { accessDenied, categoryNotFound, categoryRequired, contentRequired, emailVerifyRequired, errorJson, loginRequired, muted, notFound, titleRequired } from "../errorPages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../../settings";
 import { processAt } from "../../at";
-import { segmenter } from "../../translations";
+import { segmenter } from "../../i18n";
 import { TicketStatus } from "../../components/ticketStatus";
 export const ticketStatus = ['new', 'inProgress', 'pending', 'infoNeeded', 'resolved', 'closed'] as const;
 export type ticketStatusType = (typeof ticketStatus)[number];
@@ -17,7 +17,7 @@ export const inTicketCategory = (category: string): category is ticketCategoryTy
 };
 const app = new Hono<AppEnv>();
 app.get('/similar', async c => {
-	const locale = c.get('locale'), { title, category } = c.get('reqBody'), env = c.env as any;
+	const locale = c.get('shortLocale'), { title, category } = c.get('reqBody'), env = c.env as any;
     if (!title) {
         return titleRequired(c);
     }

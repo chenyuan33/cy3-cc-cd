@@ -1,8 +1,7 @@
 import { Hono } from 'hono';
 import type { AppEnv } from '../types';
-import { Card } from '../components/card';
-import { User } from '../components/user';
-import { Time } from '../components/time';
+import { Card } from '../client/components/card';
+import { Time } from '../client/components/time';
 import { permissionCount, type allPermissions } from '../settings';
 import { raw } from 'hono/html';
 

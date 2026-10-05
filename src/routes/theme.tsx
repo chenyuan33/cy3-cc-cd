@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
-import { Card } from "../components/card";
-import { Pages } from "../components/pages";
-import { DeleteButton, DeleteLink, FetchButton, FetchLink } from "../components/button";
-import { User } from "../components/user";
-import { Time } from "../components/time";
-import { Form, FormCheckbox, FormInput, FormSelect } from "../components/form";
+import { Card } from "../client/components/card";
+import { Pages } from "../client/components/pages";
+import { DeleteButton, DeleteLink, FetchButton, FetchLink } from "../client/components/button";
+import { Time } from "../client/components/time";
+import { Form, FormCheckbox, FormInput, FormSelect } from "../client/components/form";
 import { loginRequired, notFound } from "./errorPages";
 import { defaultTheme } from "../settings";
 import { ThemeLoader } from "../components/themeLoader";
@@ -102,8 +101,8 @@ app.on('get', ['/create', '/:id{\\d+}'], async c => {
 		return notFound(c);
 	}
 	return c.render(<Card>
-		<link rel='stylesheet' type='text/css' href='/theme/create.css' />
-		<script src='/theme/create.js'></script>
+		<link rel='stylesheet' type='text/css' href='/public/theme/create.css' />
+		<script src='/public/theme/create.js'></script>
 		<h1>{id ? translations.theme.edit + ' - ' + theme.name : translations.theme.create}</h1>
 		<FetchButton c={c} href={`/api/theme/apply/${id}`} redirect='' text={translations.apply} />
 		<Form action='/api/theme/create' method='post' class='usebgcolor'>

@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 import { type AppEnv } from "../types";
 import { loginRequired } from "./errorPages";
-import { Card } from "../components/card";
+import { Card } from "../client/components/card";
 import { memoryLimitDefault, memoryLimitMax, timeLimitDefault, timeLimitMax } from "../settings";
-import { Editor, EditorInit, EditorLangInit } from "../components/editor";
+import { Editor } from "../client/components/editor/editor";
 
 const app = new Hono<AppEnv>();
 app.get('/', c => {
@@ -16,7 +16,7 @@ app.get('/', c => {
 		<EditorLangInit c={c} lang='clike' />
 		<EditorLangInit c={c} lang='python' />
 		<EditorLangInit c={c} lang='javascript' />
-		<script src='/ide.js' />
+		<script src='/public/ide.js' />
 		<h1>{translations.ide}</h1>
 		<div style={{ display: 'flex', gap: '20px' }}>
 			<span><label for='lang'>{translations.onlineJudge.language}&nbsp;</label><select id='lang'></select></span>

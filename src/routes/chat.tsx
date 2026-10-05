@@ -1,11 +1,10 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../types";
-import { Card } from "../components/card";
+import { Card } from "../client/components/card";
 import { accessDenied, loginRequired } from "./errorPages";
-import { User } from "../components/user";
-import { MdInit, MdRender } from "../components/mdeditor";
-import { Time } from "../components/time";
-import { Form, FormInput, FormMdEditor } from "../components/form";
+import { MdRender } from "../client/components/md/renderer";
+import { Time } from "../client/components/time";
+import { Form, FormInput, FormMdEditor } from "../client/components/form";
 import { permissionChat } from "../settings";
 
 const app = new Hono<AppEnv>();
@@ -83,7 +82,7 @@ app.get('/', async c => {
 
     return c.render(<Card style={{ position: 'fixed', top: '50px', bottom: '10px', left: '70px', right: '10px' }}>
         <MdInit c={c} />
-        <link rel='stylesheet' type='text/css' href='/chat.css' />
+        <link rel='stylesheet' type='text/css' href='/public/chat.css' />
         <h1>{translations.chat.name}</h1>
         <div style={{ border: 'solid', 'border-radius': '10px', display: 'flex', position: 'absolute', top: '100px', bottom: '10px', left: '10px', right: '10px' }}>
             <div style={{ padding: '10px', 'border-right': 'solid 1px lightgray', position: 'relative', overflow: 'auto', width: '280px', flexShrink: 0 }}>
