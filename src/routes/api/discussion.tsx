@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { AppEnv, userInfo } from "../../types";
-import { accessDenied, categoryNotFound, categoryRequired, contentRequired, emailVerifyRequired, errorJson, loginRequired, muted, notFound, titleRequired } from "../errorPages";
+import { accessDenied, categoryNotFound, categoryRequired, contentRequired, emailVerifyRequired, errorJson, loginRequired, missingParams, muted, notFound, titleRequired } from "../errorPages";
 import { enableEmailVerify, permissionAdmin, permissionSpeak } from "../../settings";
 import { processAt } from "../../at";
 import { userInfoDatas, userQuery } from "./user";
@@ -51,7 +51,7 @@ app.get('/list', async c => {
 	}
 });
 app.get('/detail/:id{\\d+}', async c => {
-	const env = c.env as any, id = parseInt(c.req.param('id')), { page_, perpage } = c.get('reqBody');
+	const env = c.env as any, id = parseInt(c.req.param('id')), { page: page_, perpage } = c.get('reqBody');
 	const page = Math.max(parseInt(page_ || '1') || 1, 1);
 	const perPage = Math.max(1, Math.min(parseInt(perpage || '20') || 20, 20));
 	const info = await env.db.prepare(`
@@ -76,8 +76,8 @@ app.get('/detail/:id{\\d+}', async c => {
 				CASE
 					WHEN d.parent_id = 0 THEN json_object (
 						'id', 0,
-						'content', d.content,
-						'created_at', d.created_at,
+						'content', di.content,
+						'created_at', di.created_at,
 						'user', json_object (
 							${userInfoDatas.map(key => `'${key}', u.${key}`)}
 						)
@@ -102,6 +102,7 @@ app.get('/detail/:id{\\d+}', async c => {
 					${userInfoDatas.map(key => `'${key}', u.${key}`)}
 				) AS user
 			FROM discussion_reply d
+			JOIN discussion di ON d.discussion_id = di.id
 			JOIN users u ON d.uid = u.id
 			LEFT JOIN discussion_reply p ON d.parent_id = p.id
 			LEFT JOIN users pu ON p.uid = pu.id
@@ -239,7 +240,6 @@ app.post('/reply/edit', async c => {
 });
 app.post('/reply/delete', async c => {
     const currentUser = c.get('currentUser'), env = c.env as any, { reply_id } = c.get('reqBody');
-    console.log(c.get('reqBody'));
     if (!currentUser) {
         return loginRequired(c);
     }
@@ -255,5 +255,17 @@ app.post('/reply/delete', async c => {
     }
     await env.db.prepare('DELETE FROM discussion_reply WHERE id = ?').bind(reply_id).run();
     return c.json({ success: true });
+});
+app.get('/reply/redirect', async c => {
+    const env = c.env as any, { id } = c.get('reqBody');
+    if (!id) {
+        return missingParams(c);
+    }
+    const reply = await env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(id).first();
+    if (!reply) {
+        return c.json({ discussion_id: null });
+    }
+	const { discussion_id } = await env.db.prepare('SELECT discussion_id FROM discussion_reply WHERE id = ?').bind(id).first();
+    return c.json({ discussion_id, page: Math.floor((await env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ? AND id < ?').bind(discussion_id, id).first()).total / 10) + 1 });
 });
 export default app;

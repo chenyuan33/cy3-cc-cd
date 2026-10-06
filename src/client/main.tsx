@@ -18,6 +18,7 @@ import { isLightMode } from './utils/isLightMode';
 import { DiscussionList } from './pages/discussion/list';
 import { DiscussionPost } from './pages/discussion/post';
 import { DiscussionDetail } from './pages/discussion/detail';
+import { DiscussionReplyRedirect } from './pages/discussion/replyRedirect';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -28,6 +29,7 @@ const routes = defineRoutes(route => [
 	route('/discussion', () => <DiscussionList key='discussionList' />),
 	route('/discussion/post', () => <DiscussionPost key='discussionPost' />),
 	route('/discussion/:id{\\d+}', () => <DiscussionDetail key='discussionDetail' />),
+	route('/discussion/reply/:id{\\d+}', () => <DiscussionReplyRedirect key='discussionReplyRedirect' />),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {

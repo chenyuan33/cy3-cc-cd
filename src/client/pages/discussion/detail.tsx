@@ -19,7 +19,7 @@ import { Pages } from "../../components/pages";
 
 export const DiscussionDetail = () => {
 	const [search, setSearch] = useState(location.search);
-	useEffect(subscribeUrlChange(setSearch));
+	useEffect(subscribeUrlChange(setSearch), []);
 	const currentUser = useCurrentUser(), id = parseInt(useParams<'/discussion/:id'>().id), page = Math.max(1, parseInt(new URLSearchParams(search).get('page') || '1') || 1), perPage = 10;
 	const [data, setData] = useState<{ exists: false } | {
 		exists: true,
