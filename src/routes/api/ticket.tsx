@@ -147,47 +147,40 @@ app.post('/reply', async c => {
     return c.redirect('/ticket/' + ticket_id, 303);
 });
 app.post('/reply/edit', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { ticket_id, reply_id, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), env = c.env as any, { reply_id, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
-    if (!ticket_id || !reply_id || !content) {
+    if (!reply_id || !content) {
         return contentRequired(c);
     }
-    const reply = await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ? AND ticket_id = ?').bind(reply_id, ticket_id).first();
+    const reply = await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(reply_id).first();
     if (!reply) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== reply.uid) {
         return accessDenied(c);
     }
-    await env.db.prepare('UPDATE ticket_reply SET content = ? WHERE id = ? AND ticket_id = ?').bind(content, reply_id, ticket_id).run();
+    await env.db.prepare('UPDATE ticket_reply SET content = ? WHERE id = ?').bind(content, reply_id).run();
     return c.redirect('/ticket/' + ticket_id, 303);
 });
 app.post('/reply/delete', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { ticket_id, reply_id } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), env = c.env as any, { reply_id } = c.get('reqBody');
     console.log(c.get('reqBody'));
     if (!currentUser) {
         return loginRequired(c);
     }
-    if (!ticket_id || !reply_id) {
+    if (!reply_id) {
         return notFound(c);
     }
-    if (!(await env.db.prepare('SELECT uid FROM ticket WHERE id = ?').bind(ticket_id).first())) {
-        return notFound(c);
-    }
-    const reply = await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ? AND ticket_id = ?').bind(reply_id, ticket_id).first();
+    const reply = await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(reply_id).first();
     if (!reply) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== reply.uid) {
         return accessDenied(c);
     }
-    if (currentUser.id !== reply.uid) {
-        const { created_at: reply_created_at, content: reply_content } = await env.db.prepare('SELECT created_at, content FROM ticket_reply WHERE id = ?').bind(reply_id).first();
-        await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "ticket-reply-deleted-by-ticket-owner", ?)').bind(reply.uid, JSON.stringify({ ticket_id, uid: currentUser.id, reply_created_at, reply_content })).run();
-    }
-    await env.db.prepare('DELETE FROM ticket_reply WHERE id = ? AND ticket_id = ?').bind(reply_id, ticket_id).run();
+    await env.db.prepare('DELETE FROM ticket_reply WHERE id = ?').bind(reply_id).run();
     return c.redirect('/ticket/' + ticket_id, 303);
 });
 export default app;

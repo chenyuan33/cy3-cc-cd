@@ -35,6 +35,20 @@ hr {
     border-top: 1px solid light-dark(#e0e0e0, #333333);
 }
 
+.description {
+	font-size: smaller;
+	color: light-dark(gray, lightgray);
+}
+
+[data-vis="-1"] {
+	visibility: hidden;
+	position: absolute;
+}
+[data-vis="1"] {
+	visibility: visible;
+	position: relative;
+}
+
 /* Navbar */
 nav {
     width: 40px;

@@ -1,4 +1,5 @@
 import { Hono } from 'hono';
+import adminRoutes from './api/admin';
 import userRoutes, { userInfoDatas } from './api/user';
 import feedRoutes from './api/feed';
 import discussionRoutes, { type discussionCategoriesType } from './api/discussion';
@@ -60,6 +61,7 @@ app.get('/home', async c => {
 		}),
 	});
 });
+app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);

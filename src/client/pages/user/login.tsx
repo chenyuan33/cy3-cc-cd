@@ -1,10 +1,11 @@
 import { navigate } from "@w3cj/ruta";
 import { Card } from "../../components/card";
 import { Form, FormInput } from "../../components/form";
-import { reloadCurrentUser, useCurrentUser } from "../../currentUser";
+import { reloadCurrentUser, useCurrentUser } from "../../utils/currentUser";
 import { t, tString } from "../../i18n";
-import { useTitle } from "../../useTitle";
+import { useTitle } from "../../utils/useTitle";
 import { AlreadyLoggedIn } from "../error"
+import { A } from "../../components/a";
 
 export const Login = () => {
 	const currentUser = useCurrentUser();
@@ -18,21 +19,21 @@ export const Login = () => {
 		'min-height': '100vh'
 	}}>
 		<Card style={{
-			'min-width': '400px',
+			'min-width': '300px',
 			display: 'flex',
 			'flex-direction': 'column',
 			'align-items': 'center',
 			position: 'relative'
 		}}>
 			<h1>{t('user.login')}</h1>
-			<Form action='/api/user/login' method='post' onSuccess={() => {
+			<Form action='/api/user/login' method='post' alignInput='100px' onSuccess={() => {
 				location.href = '/';
 			}}>
 				<FormInput id='name' name='name' label={tString('userInfo.username')} type='text' autocomplete='username' required />
 				<FormInput id='password' name='password' label={tString('userInfo.password')} type='password' autocomplete='current-password' required />
 				<button type='submit'>{t('user.login')}</button>
 			</Form>
-			<p>{t('user.loginToRegister')}</p>
+			<p>{t('user.loginToRegister', { link: <A href='/user/register'>{t('user.loginToRegisterLink')}</A> })}</p>
 		</Card>
 	</div>;
 };

@@ -62,8 +62,10 @@ export default {
 		registerUsernameLength: '用户名必须在 3 到 30 个字符之间。',
 		registerUsernameExists: '用户名不能已存在。',
 		login: '登录',
-		registerToLogin: '已有账号？<a href="/user/login">前往登录！</a>',
-		loginToRegister: '没有账号？<a href="/user/register">注册一个！</a>',
+		registerToLogin: '已有账号？{link}',
+		registerToLoginLink: '前往登录！',
+		loginToRegister: '没有账号？{link}',
+		loginToRegisterLink: '注册一个！',
 		confirmPassword: '确认密码',
 		passwordNotMatch: '密码不匹配。',
 		settings: {
@@ -144,7 +146,7 @@ export default {
 			academic: '学术',
 		},
 		itemDescription: '{user} · {category} · {createdAt}',
-		replyItemDescription: '__USER__ · __CREATED_AT__'
+		replyItemDescription: '{user} · {createdAt}'
 	},
 	ticket: {
 		name: '工单',
@@ -325,6 +327,7 @@ export default {
 	post: '发布',
 	postAfterLogin: '<a href="/user/login">登录</a>后发布',
 	postAfterEmailVerify: '<a href="/user/settings">邮箱验证</a>后发布',
+	postSuccessfully: '发布成功',
 	reply: '回复',
 	replyAfterLogin: '<a href="/user/login">登录</a>后回复',
 	replyAfterEmailVerify: '<a href="/user/settings">邮箱验证</a>后回复',
@@ -379,6 +382,7 @@ export default {
 	operations: '操作',
 	apply: '应用',
     setPin: '设置置顶量',
+	setPinSuccessfully: '置顶量设置成功',
     deleted: '已删除',
     selectConversation: '请选择对话或搜索用户',
     userNotFound: '未找到用户 “{username}”',

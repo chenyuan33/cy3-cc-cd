@@ -1,12 +1,13 @@
 import { useState, useEffect } from 'hono/jsx';
-let listeners: ((msg: string) => void)[] = [];
-export const toast = (message: string) => listeners.forEach(fn => fn(message));
+import type { JSX } from 'hono/jsx/jsx-runtime';
+let listeners: ((msg: string | JSX.Element, type: 'success' | 'error') => void)[] = [];
+export const toast = (message: string | JSX.Element, type: 'success' | 'error') => listeners.forEach(fn => fn(message, type));
 export const ToastContainer = () => {
-	const [messages, setMessages] = useState<{ id: number; text: string }[]>([]);
+	const [messages, setMessages] = useState<{ id: number; text: string | JSX.Element; type: 'success' | 'error' }[]>([]);
 	useEffect(() => {
-		const handler = (msg: string) => {
+		const handler = (msg: string | JSX.Element, type: 'success' | 'error') => {
 			const id = Date.now();
-			setMessages(prev => [...prev, { id, text: msg }]);
+			setMessages(prev => [...prev, { id, text: msg, type }]);
 			setTimeout(() => {
 				setMessages(prev => prev.filter(m => m.id !== id));
 			}, 3000);
@@ -25,10 +26,13 @@ export const ToastContainer = () => {
 		flexDirection: 'column',
 		gap: '10px',
 	}}>
-		{messages.map(({ id, text }) => (
+		{messages.map(({ id, text, type }) => (
 			<div key={id} style={{
 				padding: '12px 20px',
-				backgroundColor: '#c00',
+				backgroundColor: {
+					success: '#0c0',
+					error: '#c00',
+				}[type],
 				color: 'white',
 				borderRadius: '5px',
 				boxShadow: '0 2px 8px rgba(0,0,0,0.2)',

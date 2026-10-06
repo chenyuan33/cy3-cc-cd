@@ -2,7 +2,7 @@ import type { FC } from "hono/jsx";
 import { Card } from "../components/card";
 import { t, tString } from "../i18n";
 import type { JSX } from "hono/jsx/jsx-runtime";
-import { useTitle } from "../useTitle";
+import { useTitle } from "../utils/useTitle";
 
 export const ErrorPage: FC<{ msg: string | JSX.Element }> = ({ msg }) => {
 	useTitle(tString('error.somethingWentWrong'));

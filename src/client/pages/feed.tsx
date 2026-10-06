@@ -8,15 +8,18 @@ import { Pages } from "../components/pages";
 import { Form, FormMdEditor } from "../components/form";
 import { DeleteButton, PostButton, ReplyButton } from "../components/button";
 import { t, tString } from "../i18n";
-import { useCurrentUser } from "../currentUser";
+import { useCurrentUser } from "../utils/currentUser";
 import { NotFound } from "./error";
 import { navigate, useParams } from "@w3cj/ruta";
-import { useTitle } from "../useTitle";
+import { useTitle } from "../utils/useTitle";
 import { useEffect, useState } from "hono/jsx";
 import type { feedInfo } from "../../routes/api/feed";
 import { setValueMdEditor } from "../components/md/editor";
+import { subscribeUrlChange } from "../utils/urlSearch";
 
 export default () => {
+	const [search, setSearch] = useState(location.search);
+	useEffect(subscribeUrlChange(setSearch), []);
 	const feed_id = parseInt((useParams<'/feed/:id' | '/feed'>() as { id?: string }).id || '0'), currentUser = useCurrentUser();
 	useTitle(tString('feeds'));
 	const [data, setData] = useState<{
@@ -25,9 +28,9 @@ export default () => {
 		total: number
 	} | null | undefined>(undefined);
 	const perPage = 10;
-	const currentPage = Math.max(1, parseInt(new URLSearchParams(location.search).get('page') || '1') || 1);
+	const currentPage = Math.max(1, parseInt(new URLSearchParams(search).get('page') || '1') || 1);
 	const loadData = async () => setData(await (await fetch(`/api/feed/query/${feed_id}?page=${currentPage}&perpage=${perPage}`)).json());
-	useEffect(() => {loadData()}, [feed_id]);
+	useEffect(() => {loadData()}, [feed_id, currentPage]);
 	if (data === undefined) {
 		return <Card>
 			<h1>{t('feeds')}</h1>
@@ -62,7 +65,6 @@ export default () => {
 					<FormMdEditor id={'feed-edit-editor-' + feed_id} name='content' required height='100px' initialCode={content} />
 					<button type='submit'>{t('save')}</button>
 					<button type='button' onclick={() => document.getElementById('feed-edit-' + feed_id)!.dataset.vis = '-1'}>{t('cancel')}</button>
-					<style dangerouslySetInnerHTML={{ __html: `#feed-edit-${feed_id}[data-vis="-1"]{visibility:hidden;position:absolute;}#feed-edit-${feed_id}[data-vis="1"]{visibility:visible;position:relative;}` }} />
 				</Form> : <></>}
 			</Card> : <></>}
 			<Form action='/api/feed/reply' method='post' onSuccess={() => {

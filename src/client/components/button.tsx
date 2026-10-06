@@ -1,9 +1,10 @@
 import type { FC } from "hono/jsx";
 import { enableEmailVerify, permissionSpeak } from "../../settings";
 import { t, tString } from "../i18n";
-import { useCurrentUser, useCurrentUserEmail } from "../currentUser";
+import { useCurrentUser, useCurrentUserEmail } from "../utils/currentUser";
 import { createConfirm } from "./dialog";
 import { navigate } from "@w3cj/ruta";
+import { A } from "./a";
 
 const _SpeakButton: FC<{
 	type: 'button' | 'submit',
@@ -32,14 +33,15 @@ const _SpeakButtonOrLink: FC<{
 	onClick?: ((event: MouseEvent) => void) | undefined,
 	href?: string | undefined
 }> = ({ text, href, onClick }) => href && useCurrentUser() && (!enableEmailVerify || useCurrentUserEmail()) && (useCurrentUser()!.permission & permissionSpeak)
-	? <a href={href}><_SpeakButton type='button' text={text} onClick={onClick} /></a>
+	? <A href={href}><_SpeakButton type='button' text={text} onClick={onClick} /></A>
 	: <_SpeakButton type='submit' text={text} onClick={onClick} />;
 export const PostButton: FC<{ onClick?: ((event: MouseEvent) => void) | undefined, href?: string }> = ({ onClick, href }) => <_SpeakButtonOrLink onClick={onClick} href={href} text='post' />;
 export const ReplyButton: FC<{ onClick?: ((event: MouseEvent) => void) | undefined, href?: string }> = ({ onClick, href }) => <_SpeakButtonOrLink onClick={onClick} href={href} text='reply' />;
 export const DeleteButton: FC<{ href: string, arg?: Object, redirect: string, onSuccess?: () => void }> = ({ href, arg, redirect, onSuccess }) => <button class='dangerousButton' onClick={async () => {
 	if (await createConfirm(tString('deleteConfirm'))) {
 		await fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } });
-		navigate(redirect);
+		const url = new URL(redirect, location.href);
+		navigate(url.pathname + url.search);
 		onSuccess?.();
 	}
 }}>{t('delete')}</button>;
@@ -48,7 +50,8 @@ export const FetchLink: FC<{ href: string, arg?: Object, redirect: string, text:
 export const DeleteLink: FC<{ href: string, arg?: Object, redirect: string, onSuccess?: () => void }> = ({ href, arg, redirect, onSuccess }) => <a class='dangerousLink' href='javascript:void(0)' onclick={async () => {
 	if (await createConfirm(tString('deleteConfirm'))) {
 		fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } });
-		navigate(redirect);
+		const url = new URL(redirect, location.href);
+		navigate(url.pathname + url.search);
 		onSuccess?.();
 	}
 }}>{t('delete')}</a>;

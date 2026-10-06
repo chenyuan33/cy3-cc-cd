@@ -4,11 +4,12 @@ import { Form } from "../components/form";
 import { Time } from "../components/time";
 import { User } from "../components/user";
 import { t, tString } from "../i18n";
-import type { discussionCategoriesType } from "../../routes/api/discussion";
-import { useTitle } from "../useTitle";
-import { useCurrentUser } from "../currentUser";
+import type { discussionBasicInfo, discussionCategoriesType } from "../../routes/api/discussion";
+import { useTitle } from "../utils/useTitle";
+import { useCurrentUser } from "../utils/currentUser";
 import type { userInfo } from "../../types";
 import { A } from "../components/a";
+import { DiscussionItem } from "../components/discussionItem";
 
 const Good: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'red' }}>{children}</div>;
 const Bad: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'light-dark(black, white)' }}>{children}</div>;
@@ -20,7 +21,7 @@ export default () => {
 	nextDay.setHours(0, 0, 0, 0);
 	const currentUser = useCurrentUser();
 	const [data, setData] = useState<{
-		discussions: { id: number, user: userInfo, category: discussionCategoriesType, title: string, created_at: string, pin: number }[],
+		discussions: discussionBasicInfo[],
 		notCheckedIn: boolean,
 		checkin_count: number,
 		checkin_today_status: -3 | -2 | -1 | 0 | 1 | 2 | 3,
@@ -87,15 +88,7 @@ export default () => {
 			</Card>
 			<Card>
 				<h2>{t('home.recentDiscussions')}</h2>
-				{discussions.length ? discussions.map(({ id, user, category, title, created_at, pin }) => <Card>
-					{pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'gold', position: 'absolute', top: '10px', right: '10px' }}></i> : <></>}
-					<A href={'/discussion/' + id}>{title}</A><br />
-					{t('discussion.itemDescription', {
-						user: <User user={user} />,
-						category: <A href={`/discussion?category=${category}`}>{t(`discussion.categoryName.${category}`)}</A>,
-						createdAt: <Time time={created_at} />
-					})}
-				</Card>) : <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{t('nothing')}</h2></Card>}
+				{discussions.length ? discussions.map(item => <DiscussionItem discussion={item} />) : <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{t('nothing')}</h2></Card>}
 			</Card>
 		</div>
 	</>;

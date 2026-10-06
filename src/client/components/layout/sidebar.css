@@ -1,0 +1,13 @@
+.sidebar-layout-parent {
+	display: grid;
+	grid-template-columns: minmax(260px, 30%) minmax(0, 1fr);
+	gap: 24px;
+}
+
+@media (max-width: 768px) {
+	.sidebar-layout-parent {
+		grid-template-columns: 1fr;
+		gap: 16px;
+		padding: 16px;
+	}
+}

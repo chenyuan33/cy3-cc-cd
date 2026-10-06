@@ -1,6 +1,6 @@
 import { useEffect, useRef, type CSSProperties, type FC } from "hono/jsx";
 import type { editor } from "monaco-editor";
-import { isLightMode } from "../../isLightMode";
+import { isLightMode } from "../../utils/isLightMode";
 
 export const MonacoEditors: editor.IStandaloneCodeEditor[] = [];
 const MonacoEditorMap = new Map<string, editor.IStandaloneCodeEditor>();

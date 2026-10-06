@@ -155,18 +155,6 @@ app.post('/user/permission/set', async c => {
     return c.redirect('/user/' + uid, 303);
 });
 
-app.post('/discussion/set-pin', async c => {
-    const { discussion_id, pin } = c.get('reqBody'), env = c.env as any;
-    if (!discussion_id) {
-        return notFound(c);
-    }
-    if (!await env.db.prepare('SELECT id FROM discussion WHERE id = ?').bind(discussion_id).first()) {
-        return notFound(c);
-    }
-    await env.db.prepare('UPDATE discussion SET pin = ? WHERE id = ?').bind(pin, discussion_id).run();
-    return c.redirect('/discussion/' + discussion_id, 303);
-});
-
 app.post('/add-a-check-in-type', async c => {
     const env = c.env as any, { title_en, good_en, bad_en, title_zh, good_zh, bad_zh } = c.get('reqBody');
     await env.db.prepare(`INSERT INTO checkin_texts (title_en, good_en, bad_en, title_zh, good_zh, bad_zh) VALUES (?, ?, ?, ?, ?, ?)`).bind(title_en, good_en, bad_en, title_zh, good_zh, bad_zh).run();

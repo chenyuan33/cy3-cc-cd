@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, type FC } from "hono/jsx";
 import { tString } from "../../i18n";
 import { render } from "hono/jsx/dom";
 
-const inlineMdToHtml = async (md: string) => {
+const inlineMdToHtml = (md: string) => {
     const codes: string[] = [], maths: { math: string, displayMode: boolean }[] = [], signs: string[] = [];
     let html = md
         .replaceAll(/\$\$([\s\S]*?)\$\$/g, (_, math) => {
@@ -88,7 +88,7 @@ function parseMarkdownTable(lines: string[]) {
     return { header, aligns, rows };
 }
 
-async function renderTable(table: {
+function renderTable(table: {
     header: string[];
     aligns: ("center" | "left" | "right")[];
     rows: string[][];
@@ -98,7 +98,7 @@ async function renderTable(table: {
         const align = table.aligns[i] === 'left' ? ' style="text-align:left"' :
             table.aligns[i] === 'right' ? ' style="text-align:right"' :
                 table.aligns[i] === 'center' ? ' style="text-align:center"' : '';
-        html += `<th${align}>${await inlineMdToHtml(table.header[i]!)}</th>`;
+        html += `<th${align}>${inlineMdToHtml(table.header[i]!)}</th>`;
     };
     html += '</tr></thead><tbody>';
     for (const row of table.rows) {
@@ -107,7 +107,7 @@ async function renderTable(table: {
             const align = table.aligns[i] === 'left' ? ' style="text-align:left"' :
                 table.aligns[i] === 'right' ? ' style="text-align:right"' :
                     table.aligns[i] === 'center' ? ' style="text-align:center"' : '';
-            html += `<td${align}>${await inlineMdToHtml(row[i]!)}</td>`;
+            html += `<td${align}>${inlineMdToHtml(row[i]!)}</td>`;
         };
         html += '</tr>';
     };
@@ -122,10 +122,10 @@ type marker = {
 	content: string,
 	subMarker: marker | null,
 	started(): boolean,
-	start(started: boolean, attr?: Object): Promise<undefined>;
-	restart(): Promise<undefined>;
+	start(started: boolean, attr?: Object): void;
+	restart(): void;
 }
-export const mdToHtml = async (md: string) => {
+export const mdToHtml = (md: string) => {
     let html = '';
     const lines = md.split('\n');
 
@@ -137,26 +137,26 @@ export const mdToHtml = async (md: string) => {
         started() {
             return this._started;
         },
-        async start(started: boolean, attr = {}) {
+        start(started: boolean, attr = {}) {
             if (this._started !== started) {
                 this._started = started;
                 if (!started) {
                     if (contentOutline || this.name === 'li' && /^(\n|#{1,6} |>|\+ |- |\* |\d+\. |\+{3,}|-{3,}|_{3,})/.test(this.content)) {
-                        html += await mdToHtml(this.content);
+                        html += mdToHtml(this.content);
                     } else {
-                        html += await inlineMdToHtml(this.content);
+                        html += inlineMdToHtml(this.content);
                     }
                 }
                 this.content = '';
                 if (!started && this.subMarker) {
-                    await this.subMarker.start(false);
+                    this.subMarker.start(false);
                 }
                 html += `<${started ? '' : '/'}${htmlTagName} ${started ? Object.entries(attr).map(([key, val]) => `${key}=${val.replaceAll('"', '&quot;')}`).join(' ') : ''}>`;
             }
         },
-        async restart() {
-            await this.start(false);
-            await this.start(true);
+        restart() {
+            this.start(false);
+            this.start(true);
         }
     });
 
@@ -165,12 +165,12 @@ export const mdToHtml = async (md: string) => {
     const unorderedListMarker = markerGenerator('ul', true, markerGenerator('li', false));
     const orderedListMarker = markerGenerator('ol', true, markerGenerator('li', false));
 
-    const startMarker = async (startMarker: string | null, attr: Object = {}) => {
+    const startMarker = (startMarker: string | null, attr: Object = {}) => {
         for (const marker of [paragraphMarker, blockquoteMarker, unorderedListMarker, orderedListMarker]) {
-            await marker.start(startMarker === marker.name, attr);
+            marker.start(startMarker === marker.name, attr);
         }
     };
-    const endMarker = async () => await startMarker(null);
+    const endMarker = () => startMarker(null);
 
     let state = 'normal';
     let codeBlockLang = '';
@@ -202,7 +202,7 @@ export const mdToHtml = async (md: string) => {
             if (!(/^\s*\|.*\|\s*$/.test(curLine))) {
                 const table = parseMarkdownTable(tableLines);
                 if (table) {
-                    html += await renderTable(table);
+                    html += renderTable(table);
                 } else {
                     html += tableLines.join('\n');
                 }
@@ -216,7 +216,7 @@ export const mdToHtml = async (md: string) => {
         }
 
         if (trimed.startsWith('```')) {
-            await endMarker();
+            endMarker();
             codeBlockLang = trimed.substring(3).trim();
             state = 'codeBlock';
             codeBlockLines = [];
@@ -225,7 +225,7 @@ export const mdToHtml = async (md: string) => {
         }
 
         if (/^\s*\|.*\|\s*$/.test(curLine) && i + 1 < lines.length && /^\s*\|.*\|\s*$/.test(lines[i + 1]!.trim())) {
-            await endMarker();
+            endMarker();
             tableLines = [curLine];
             state = 'table';
             i++;
@@ -235,29 +235,29 @@ export const mdToHtml = async (md: string) => {
         let gened = false;
         for (let headingLevel = 6; headingLevel > 0; headingLevel--) {
             if (trimed.startsWith('#'.repeat(headingLevel) + ' ')) {
-                await endMarker();
-                html += `<h${headingLevel}>${await inlineMdToHtml(trimed.substring(headingLevel + 1))}</h${headingLevel}>`;
+                endMarker();
+                html += `<h${headingLevel}>${inlineMdToHtml(trimed.substring(headingLevel + 1))}</h${headingLevel}>`;
                 gened = true;
                 break;
             }
         }
         if (gened) { i++; continue; }
         if (trimed == '') {
-            await endMarker();
+            endMarker();
             i++;
             continue;
         }
         if (trimed.startsWith('>') || blockquoteMarker.started()) {
-            await startMarker('blockquote');
+            startMarker('blockquote');
             blockquoteMarker.content += (trimed.startsWith('>') ? trimed.substring(1) : trimed).trim() + '\n';
             i++;
             continue;
         } else {
-            await blockquoteMarker.start(false);
+            blockquoteMarker.start(false);
         }
         if (trimed.startsWith('+ ') || trimed.startsWith('- ') || trimed.startsWith('* ')) {
-            await startMarker('ul');
-            await unorderedListMarker.subMarker!.restart();
+            startMarker('ul');
+            unorderedListMarker.subMarker!.restart();
             unorderedListMarker.subMarker!.content += trimed.substring(2).trim() + '\n';
             i++;
             continue;
@@ -266,11 +266,11 @@ export const mdToHtml = async (md: string) => {
             i++;
             continue;
         } else {
-            await unorderedListMarker.start(false);
+            unorderedListMarker.start(false);
         }
         if (/^\d+\. /.test(trimed)) {
-            await startMarker('ol', { start: parseInt(trimed).toString() });
-            await orderedListMarker.subMarker!.restart();
+            startMarker('ol', { start: parseInt(trimed).toString() });
+            orderedListMarker.subMarker!.restart();
             orderedListMarker.subMarker!.content += trimed.replace(/^\d+\. /, '').trim() + '\n';
             i++;
             continue;
@@ -279,15 +279,15 @@ export const mdToHtml = async (md: string) => {
             i++;
             continue;
         } else {
-            await orderedListMarker.start(false);
+            orderedListMarker.start(false);
         }
         if (/^([*_\-])\1{2,}$/g.test(trimed)) {
-            await endMarker();
+            endMarker();
             html += '<hr />';
             i++;
             continue;
         }
-        await startMarker('p');
+        startMarker('p');
         paragraphMarker.content += trimed + '\n';
         if (curLine.endsWith('  ') || curLine.endsWith('\\')) {
             html += '<br />';
@@ -302,28 +302,24 @@ export const mdToHtml = async (md: string) => {
     }
     if (state === 'table') {
         const table = parseMarkdownTable(tableLines);
-        if (table) html += await renderTable(table);
+        if (table) html += renderTable(table);
         else html += tableLines.join('\n');
     }
 
-    await endMarker();
+    endMarker();
     return html;
 };
 export const MdRender: FC<{ markdown: string }> = ({ markdown }) => {
-	const [html, setHtml] = useState<string | null>();
+	const html = mdToHtml(markdown);
 	const containerRef = useRef<HTMLElement>(null);
-	useEffect(() => {(async () => setHtml(await mdToHtml(markdown)))()}, [markdown]);
 	useEffect(() => {
 		if (typeof html !== 'string' || containerRef.current === null) {
 			return;
 		}
 		containerRef.current.querySelectorAll('[data-md-uid]').forEach(ele => {
+			(ele as HTMLElement).innerHTML = '';
 			render(<User user={parseInt(ele.getAttribute('data-md-uid') || '0')} />, ele as HTMLElement);
 		});
 	}, [html]);
-	if (typeof html === 'string') {
-		return <span data-markdown={markdown} dangerouslySetInnerHTML={{ __html: html }} ref={containerRef} />;
-	} else {
-		return <span data-markdown={markdown}>{markdown}</span>
-	}
+	return <span data-markdown={markdown} dangerouslySetInnerHTML={{ __html: html }} ref={containerRef} />;
 };

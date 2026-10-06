@@ -4,7 +4,7 @@ import { render, useEffect, useState, type FC, type PropsWithChildren } from 'ho
 import { loadI18n, t, tString } from './i18n';
 import { permissionAdmin } from '../settings';
 import { User } from './components/user';
-import { CurrentUserProvider, useCurrentUser } from './currentUser';
+import { CurrentUserProvider, useCurrentUser } from './utils/currentUser';
 import { A } from './components/a';
 import { NotFound } from './pages/error';
 import { Register } from './pages/user/register';
@@ -14,7 +14,10 @@ import './style.css';
 import { toast, ToastContainer } from './components/toast';
 import { CodeMirrorEditors } from './components/editor/codemirror';
 import { MonacoEditors } from './components/editor/monacoeditor';
-import { isLightMode } from './isLightMode';
+import { isLightMode } from './utils/isLightMode';
+import { DiscussionList } from './pages/discussion/list';
+import { DiscussionPost } from './pages/discussion/post';
+import { DiscussionDetail } from './pages/discussion/detail';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -22,6 +25,9 @@ const routes = defineRoutes(route => [
 	route('/user/login', () => <Login key='userLogin' />),
 	route('/feed', () => <Feed key='feed' />),
 	route('/feed/:id{\\d+}', () => <Feed key='feed' />),
+	route('/discussion', () => <DiscussionList key='discussionList' />),
+	route('/discussion/post', () => <DiscussionPost key='discussionPost' />),
+	route('/discussion/:id{\\d+}', () => <DiscussionDetail key='discussionDetail' />),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {
@@ -79,7 +85,7 @@ const ErrorBoundary: FC<PropsWithChildren<{}>> = ({ children }) => {
 		return () => window.removeEventListener('error', handler);
 	}, []);
 	if (error && error !== 'ResizeObserver loop completed with undelivered notifications.') {
-		toast(error);
+		toast(error, 'error');
 	}
 	return <>{children}</>;
 };

@@ -1,12 +1,14 @@
 import "./register.css";
 import { Card } from "../../components/card";
 import { Form, FormInput } from "../../components/form";
-import { reloadCurrentUser, useCurrentUser } from "../../currentUser";
+import { reloadCurrentUser, useCurrentUser } from "../../utils/currentUser";
 import { t, tString } from "../../i18n";
-import { useTitle } from "../../useTitle";
+import { useTitle } from "../../utils/useTitle";
 import { AlreadyLoggedIn } from "../error";
 import { createAlert } from "../../components/dialog";
 import { navigate } from "@w3cj/ruta";
+import { toast } from "../../components/toast";
+import { A } from "../../components/a";
 
 export const Register = () => {
 	const currentUser = useCurrentUser();
@@ -31,16 +33,16 @@ export const Register = () => {
 			gap: '20px'
 		}}>
 			<Card style={{
-				'min-width': '400px',
+				'min-width': '300px',
 				display: 'flex',
 				'flex-direction': 'column',
 				'align-items': 'center',
 				position: 'relative'
 			}}>
 				<h1>{t('user.register')}</h1>
-				<Form action='/api/user/register' method='post' onSubmit={async () => {
+				<Form action='/api/user/register' method='post' alignInput='100px' onSubmit={() => {
 					if ((document.getElementById('password')! as HTMLInputElement).value !== (document.getElementById('confirmPassword')! as HTMLInputElement).value) {
-						await createAlert(tString('user.passwordNotMatch'));
+						toast(t('user.passwordNotMatch'), 'error');
 						return false;
 					}
 				}} onSuccess={() => {
@@ -84,7 +86,7 @@ export const Register = () => {
 					<FormInput id='confirmPassword' name='confirmPassword' label={tString('user.confirmPassword')} type='password' autocomplete='new-password' required />
 					<button type='submit'>{t('user.register')}</button>
 				</Form>
-				<p>{t('user.registerToLogin')}</p>
+				<p>{t('user.registerToLogin', { link: <A href='/user/login'>{t('user.registerToLoginLink')}</A> })}</p>
 			</Card>
 		</div>
 	</div>;

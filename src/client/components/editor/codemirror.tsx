@@ -1,5 +1,5 @@
 import { useEffect, useRef, type CSSProperties, type FC } from "hono/jsx";
-import { isLightMode } from "../../isLightMode";
+import { isLightMode } from "../../utils/isLightMode";
 import type { LanguageSupport } from "@codemirror/language";
 import type { EditorView, ViewUpdate } from "@codemirror/view";
 import type { Compartment } from "@codemirror/state";

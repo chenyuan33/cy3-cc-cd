@@ -153,7 +153,7 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 				{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <>
 					<button type='button' onclick={`document.getElementById('ticket-reply-edit-${id}').dataset.vis *= -1`}>{translations.edit}</button>
 					&nbsp;
-					<DeleteButton c={c} href='/api/ticket/reply/delete' arg={{ ticket_id: c.req.param('ticket_id'), reply_id: id }} redirect={`/ticket/${c.req.param('ticket_id')}`} />
+					<DeleteButton c={c} href='/api/ticket/reply/delete' arg={{ reply_id: id }} redirect={`/ticket/${c.req.param('ticket_id')}`} />
 				</> : <></>}
 			</div>
 			<div style={{ 'font-size': 'smaller', color: 'light-dark(gray, lightgray)' }} id={`ticket-reply${id}-description`}>
@@ -179,7 +179,6 @@ app.get('/:ticket_id{[1-9][0-9]*}', async c => {
 			</blockquote>)(x) : <blockquote>[{translations.deleted}]</blockquote>)(await env.db.prepare(parent_id ? 'SELECT uid, content, set_status, set_assignee, created_at FROM ticket_reply WHERE id = ?' : 'SELECT uid, content, created_at FROM ticket WHERE id = ?').bind(parent_id || ticket_id).first()) : <></>}
 			<div id={`ticket-reply${id}-content`}><MdRender markdown={content} c={c} /></div>
 			{currentUser && (currentUser.id === 1 || currentUser.id === uid) ? <Form id={'ticket-reply-edit-' + id} data-vis='-1' method='post' action='/api/ticket/reply/edit'>
-				<input type='hidden' name='ticket_id' value={c.req.param('ticket_id')} />
 				<input type='hidden' name='reply_id' value={id} />
 				<MdEditor c={c} id={'ticket-reply-edit-editor-' + id} name='content' required height='100px' locale={c.get('locale')} initialCode={content} />
 				<br />

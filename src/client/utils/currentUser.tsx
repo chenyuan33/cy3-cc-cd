@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useState, type FC, type PropsWithChildren } from "hono/jsx";
-import type { themeInfo, userInfo } from "../types";
-import { defaultTheme } from "../settings";
+import type { themeInfo, userInfo } from "../../types";
+import { defaultTheme } from "../../settings";
 import { useLocation } from "@w3cj/ruta";
 
 type CurrentUserContextType = { user: userInfo & { email: string } | null, usingTheme: themeInfo, reload: () => Promise<void> };

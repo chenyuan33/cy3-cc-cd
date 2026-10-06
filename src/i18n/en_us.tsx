@@ -62,8 +62,10 @@ export default {
 		registerUsernameLength: 'Username must be between 3 and 30 characters.',
 		registerUsernameExists: 'Username already exists.',
 		login: 'Login',
-		registerToLogin: 'Already have an account? <a href="/user/login">Log in here!</a>',
-		loginToRegister: 'No account? <a href="/user/register">Sign up here!</a>',
+		registerToLogin: 'Already have an account? {link}',
+		registerToLoginLink: 'Login here!',
+		loginToRegister: 'No account? {link}',
+		loginToRegisterLink: 'Register here!',
 		confirmPassword: 'Confirm password',
 		passwordNotMatch: 'Passwords do not match.',
 		settings: {
@@ -144,7 +146,7 @@ export default {
 			academic: 'Academic',
 		},
 		itemDescription: '{user} · {category} · {createdAt}',
-		replyItemDescription: '__USER__ · __CREATED_AT__'
+		replyItemDescription: '{user} · {createdAt}'
 	},
 	ticket: {
 		name: 'Tickets',
@@ -328,6 +330,7 @@ export default {
 	reply: 'Reply',
 	replyAfterLogin: '<a href="/user/login">Log in</a> to reply',
 	replyAfterEmailVerify: '<a href="/user/settings">Verify your email</a> to reply',
+	postSuccessfully: 'Post Successfully',
 	next: 'Next',
 	edit: 'Edit',
 	save: 'Save',
@@ -379,6 +382,7 @@ export default {
 	operations: 'Operations',
 	apply: 'Apply',
     setPin: 'Set pin value',
+	setPinSuccessfully: 'Successfully set the number of pinned posts',
     deleted: 'Deleted',
     selectConversation: 'Select a conversation',
     userNotFound: 'User "{username}" not found',
