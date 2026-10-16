@@ -1,3 +1,5 @@
+import type en_us_translations from "./en_us";
+
 export default {
 	browserNotification: {
 		title: {
@@ -48,7 +50,8 @@ export default {
 			afterLogin: `{login}后即可签到`,
 			alreadyCheckedIn: '你今天已经签到过了'
 		},
-		recentDiscussions: '最近讨论',
+		recentDiscussions: '近期讨论',
+		recentAnnouncements: '近期公告',
 	},
 	userInfo: {
 		username: '用户名',
@@ -389,4 +392,4 @@ export default {
 	tag: 'Tag',
 	upload: '上传',
 	userSpace: '用户 __USER__ 的个人空间'
-} as Record<string, any>;
+} as typeof en_us_translations;

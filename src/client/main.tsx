@@ -152,7 +152,7 @@ const Header: FC<{}> = () => {
 					connected: 'green',
 					failed: 'red'
 				}[serverConnectStatus]
-			}} title={tString('serverConnectStatus.' + serverConnectStatus)} id='serverConnectStatus'></i>
+			}} title={tString(`serverConnectStatus.${serverConnectStatus}`)} id='serverConnectStatus'></i>
 		</div>
 		<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
 			<i class='fa-solid fa-language' onClick={() => document.getElementById('langSwitch')!.style.display = document.getElementById('langSwitch')!.style.display === 'block' ? 'none' : 'block'}></i>

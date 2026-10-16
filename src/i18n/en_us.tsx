@@ -49,6 +49,7 @@ export default {
 			alreadyCheckedIn: 'You have already checked in today.'
 		},
 		recentDiscussions: 'Recent discussions',
+		recentAnnouncements: 'Recent announcements'
 	},
 	userInfo: {
 		username: 'Username',
@@ -388,4 +389,4 @@ export default {
     userNotFound: 'User "{username}" not found',
 	upload: 'Upload',
 	userSpace: 'User __USER__\'s Personal Space'
-} as Record<string, any>;
+};

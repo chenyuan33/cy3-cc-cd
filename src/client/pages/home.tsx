@@ -2,14 +2,13 @@ import { useEffect, useState, type FC, type PropsWithChildren } from "hono/jsx";
 import { Card } from "../components/card";
 import { Form } from "../components/form";
 import { Time } from "../components/time";
-import { User } from "../components/user";
 import { t, tString } from "../i18n";
-import type { discussionBasicInfo, discussionCategoriesType } from "../../routes/api/discussion";
+import type { discussionBasicInfo } from "../../routes/api/discussion";
 import { useTitle } from "../utils/useTitle";
 import { useCurrentUser } from "../utils/currentUser";
-import type { userInfo } from "../../types";
 import { A } from "../components/a";
 import { DiscussionItem } from "../components/discussionItem";
+import './home.css';
 
 const Good: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'red' }}>{children}</div>;
 const Bad: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'light-dark(black, white)' }}>{children}</div>;
@@ -22,6 +21,7 @@ export default () => {
 	const currentUser = useCurrentUser();
 	const [data, setData] = useState<{
 		discussions: discussionBasicInfo[],
+		announcements: discussionBasicInfo[],
 		notCheckedIn: boolean,
 		checkin_count: number,
 		checkin_today_status: -3 | -2 | -1 | 0 | 1 | 2 | 3,
@@ -38,12 +38,12 @@ export default () => {
 	if (!data) {
 		return <Card><h1>{t('home.name')}</h1><p>{t('loading')}</p></Card>
 	}
-	const { discussions } = data;
+	const { discussions, announcements } = data;
 	return <>
 		<Card>
 			<h1>{t('home.name')}</h1>
 		</Card>
-		<div style={{ display: 'grid', 'grid-template-columns': 'repeat(2, 1fr)', gap: '20px' }}>
+		<div class='grid'>
 			<Card style={{ display: 'flex', 'flex-direction': 'column', 'align-items': 'center' }}>
 				<h2>{t('home.checkIn.name')}</h2>
 				{currentUser
@@ -85,6 +85,10 @@ export default () => {
 						</>;
 					})()
 					: <p>{t('home.checkIn.afterLogin', { login: <A href='/user/login'>{t('user.login')}</A> })}</p>}
+			</Card>
+			<Card>
+				<h2>{t('home.recentAnnouncements')}</h2>
+				{announcements.length ? announcements.map(item => <DiscussionItem discussion={item} />) : <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{t('nothing')}</h2></Card>}
 			</Card>
 			<Card>
 				<h2>{t('home.recentDiscussions')}</h2>

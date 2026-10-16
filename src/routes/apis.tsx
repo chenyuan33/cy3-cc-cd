@@ -23,7 +23,7 @@ app.get('/notificationCount', async c => {
 });
 app.get('/home', async c => {
 	const env = c.env as any, locale = c.get('shortLocale'), currentUser = c.get('currentUser');
-	const { results: rawDiscussions } = await env.db.prepare(`
+	const discussions = (await env.db.prepare(`
 		SELECT
 			d.id, d.category, d.title, d.created_at, d.pin,
 			json_object (
@@ -31,12 +31,24 @@ app.get('/home', async c => {
 			) AS user
 		FROM discussion d
 		JOIN users u ON u.id = d.uid
+		WHERE d.pin = 0
 		ORDER BY d.pin DESC, d.created_at DESC
 		LIMIT 10
-	`).bind().all();
-	const discussions = rawDiscussions.map(({ user, ...data }: { user: string, id: number, category: discussionCategoriesType, title: string, created_at: string, pin: number }) => ({ ...data, user: JSON.parse(user) }));
+	`).bind().all()).results.map(({ user, ...data }: { user: string, id: number, category: discussionCategoriesType, title: string, created_at: string, pin: number }) => ({ ...data, user: JSON.parse(user) }));
+	const announcements = (await env.db.prepare(`
+		SELECT
+			d.id, d.category, d.title, d.created_at, d.pin,
+			json_object (
+				${userInfoDatas.map(data => `'${data}', u.${data}`).join()}
+			) AS user
+		FROM discussion d
+		JOIN users u ON u.id = d.uid
+		WHERE d.pin > 0
+		ORDER BY d.pin DESC, d.created_at DESC
+		LIMIT 10
+	`).bind().all()).results.map(({ user, ...data }: { user: string, id: number, category: discussionCategoriesType, title: string, created_at: string, pin: number }) => ({ ...data, user: JSON.parse(user) }));
 	if (!currentUser) {
-		return c.json({ discussions });
+		return c.json({ discussions, announcements });
 	}
 	const { checkin_date, checkin_count, checkin_today_status, checkin_today_good1, checkin_today_good2, checkin_today_bad1, checkin_today_bad2 } = await env.db.prepare('SELECT checkin_date, checkin_count, checkin_today_status, checkin_today_good1, checkin_today_good2, checkin_today_bad1, checkin_today_bad2 FROM users WHERE id = ?').bind(currentUser.id).first();
 	const checkin_date_object = new Date(checkin_date + 'Z');
@@ -46,10 +58,11 @@ app.get('/home', async c => {
 			|| checkin_date_object.getMonth() !== today.getMonth()
 			|| checkin_date_object.getDate() !== today.getDate();
 	if (notCheckedIn) {
-		return c.json({ discussions, notCheckedIn });
+		return c.json({ discussions, announcements, notCheckedIn });
 	}
 	return c.json({
 		discussions,
+		announcements,
 		notCheckedIn,
 		...(notCheckedIn ? {} : {
 			checkin_count,
