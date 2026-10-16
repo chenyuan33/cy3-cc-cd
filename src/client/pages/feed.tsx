@@ -3,7 +3,6 @@ import { Card } from "../components/card";
 import { Feed } from "../components/feed";
 import { User } from "../components/user";
 import { Time } from "../components/time";
-import { html } from "hono/html";
 import { Pages } from "../components/pages";
 import { Form, FormMdEditor } from "../components/form";
 import { DeleteButton, PostButton, ReplyButton } from "../components/button";
@@ -37,32 +36,32 @@ export default () => {
 			<p>{t('loading')}</p>
 		</Card>;
 	}
-	if (data === null || data.feed === null) {
+	if (data === null || feed_id && data.feed === null) {
 		return <NotFound />;
 	}
-	const { feed: { user, content, created_at, parent }, replies, total } = data;
+	const { feed, replies, total } = data;
 	const totalPage = Math.ceil(total / perPage);
 	return <>
 		<Card>
 			<h1>{t('feeds')}</h1>
-			{feed_id ? <Card>
-				{parent ? <Feed feed={parent} reload={() => navigate('/feed')} /> : <></>}
-				<User user={user} />
+			{feed_id && feed ? <Card>
+				{feed.parent ? <Feed feed={feed.parent} reload={() => navigate('/feed')} /> : <></>}
+				<User user={feed.user} />
 				&nbsp;
-				<Time time={created_at} />
+				<Time time={feed.created_at} />
 				&nbsp;
-				{currentUser && (currentUser.id === 1 || currentUser.id === user.id) ? <>
+				{currentUser && (currentUser.id === 1 || currentUser.id === feed.user.id) ? <>
 					<button type='button' onclick={`document.getElementById('feed-edit-${feed_id}').dataset.vis *= -1`}>{t('edit')}</button>
 					&nbsp;
 					<DeleteButton href='/api/feed/delete' arg={{ id: feed_id }} redirect='/feed' />
 				</> : <></>}
-				<div><MdRender markdown={content} /></div>
-				{currentUser && (currentUser.id === 1 || currentUser.id === user.id) ? <Form id={'feed-edit-' + feed_id} data-vis='-1' method='post' action='/api/feed/edit' onSuccess={() => {
+				<div><MdRender markdown={feed.content} /></div>
+				{currentUser && (currentUser.id === 1 || currentUser.id === feed.user.id) ? <Form id={'feed-edit-' + feed_id} data-vis='-1' method='post' action='/api/feed/edit' onSuccess={() => {
 					document.getElementById('feed-edit-' + feed_id)!.dataset.vis = '-1';
 					loadData();
 				}}>
 					<input type='hidden' name='id' value={feed_id} />
-					<FormMdEditor id={'feed-edit-editor-' + feed_id} name='content' required height='100px' initialCode={content} />
+					<FormMdEditor id={'feed-edit-editor-' + feed_id} name='content' required height='100px' initialCode={feed.content} />
 					<button type='submit'>{t('save')}</button>
 					<button type='button' onclick={() => document.getElementById('feed-edit-' + feed_id)!.dataset.vis = '-1'}>{t('cancel')}</button>
 				</Form> : <></>}

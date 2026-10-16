@@ -3,7 +3,7 @@ import type { AppEnv, ContextType, userInfo } from "../../types";
 import { accessDenied, contentRequired, emailVerifyRequired, loginRequired, muted, notFound } from "../errorPages";
 import { enableEmailVerify, permissionSpeak } from "../../settings";
 import { processAt } from "../../at";
-import { userQuery } from "./user";
+import { userInfoDatas } from "./user";
 
 export type feedInfo = {
 	id: number,
@@ -14,27 +14,104 @@ export type feedInfo = {
 	replies: feedInfo[]
 };
 const app = new Hono<AppEnv>();
-const feedQuery = async (c: ContextType, feed_id: number, queryParent = true, recursionDepth = 5): Promise<feedInfo | null> => {
-	const env = c.env as any;
-	const { id, parent_id, uid, content, created_at } = await env.db.prepare('SELECT id, parent_id, uid, content, created_at FROM feed WHERE id = ? AND deleted = 0').bind(feed_id).first();
-	if (id === null || id === undefined) {
-		return null;
+async function feedQuery(c: ContextType, id_: number, queryParent?: boolean, queryReply?: boolean): Promise<feedInfo | null>;
+async function feedQuery(c: ContextType, id_: number[], queryParent?: boolean, queryReply?: boolean): Promise<(feedInfo | null)[]>;
+async function feedQuery(c: ContextType, id_: number | number[], queryParent = true, queryReply = true): Promise<feedInfo | null | (feedInfo | null)[]> {
+	const env = c.env as any, ids = typeof id_ === 'number' ? [id_] : id_;
+	if (!ids.length) {
+		return [];
 	}
-	const parent = queryParent && parent_id ? await feedQuery(c, parent_id, false, 0) : null;
-	const user = await userQuery(uid, c);
-	if (!recursionDepth) {
-		return { id, parent, user, content, created_at, replies: [] };
+	const { results: rows }: { results: { id: number, parent_id: number | null }[] } = await env.db.prepare(`SELECT id, parent_id FROM feed WHERE id IN (${ids.map(() => '?')}) AND deleted = 0`).bind(...ids).all();
+	if (!rows.length) {
+		return typeof id_ === 'number' ? null : id_.map(() => null);
 	}
-	const { results }: { results: { id: number }[] } = await env.db.prepare('SELECT id FROM feed WHERE parent_id = ? AND deleted = 0 LIMIT 5').bind(feed_id).all();
-	return { id, parent, user, content, created_at, replies: await Promise.all(results.filter(({ id }) => id).map(({ id }) => feedQuery(c, id, false, recursionDepth - 1))) as feedInfo[] }
+	const parentMap = new Map<number, number | null>();
+	rows.forEach(({ id, parent_id }) => parentMap.set(id, parent_id));
+	const subFeeds = new Set<number>();
+	const doNotQueryReplyFeeds = new Set<number>();
+	rows.forEach(({ id }) => subFeeds.add(id));
+	if (!queryReply) {
+		rows.forEach(({ id }) => doNotQueryReplyFeeds.add(id));
+	}
+	if (queryParent) {
+		rows.forEach(({ parent_id }) => {
+			if (!parent_id) {
+				return;
+			}
+			subFeeds.add(parent_id);
+			doNotQueryReplyFeeds.add(parent_id);
+		});
+	}
+	const addReply = async (ids: number[]) => {
+		if (!ids.length) {
+			return [];
+		}
+		const { results }: { results: { id: number }[] } = await env.db.prepare(`
+			SELECT id FROM (
+				SELECT
+					id,
+					ROW_NUMBER() OVER (
+						PARTITION BY parent_id
+						ORDER BY created_at DESC
+					) AS rn
+				FROM feed
+				WHERE parent_id IN (${ids.map(() => '?')}) AND deleted = 0
+			) WHERE rn <= 10
+		`).bind(...ids).all();
+		results.forEach(({ id }) => subFeeds.add(id));
+		return results.map(({ id }) => id);
+	};
+	if (queryReply) {
+		await addReply(await addReply(await addReply(ids)));
+	}
+	const feedInfos = new Map<number, { [k in keyof feedInfo]: k extends 'replies' ? number[] : feedInfo[k] }>();
+	(await env.db.prepare(`
+		SELECT
+			f.id, f.content, f.created_at,
+			json_object (
+				${userInfoDatas.map(schema => `'${schema}', u.${schema}`)}
+			) AS user
+		FROM feed f
+		JOIN users u ON u.id = f.uid
+		WHERE f.id IN (${Array.from(subFeeds).map(() => '?')}) AND deleted = 0
+	`).bind(...subFeeds).all()).results.forEach(({ id, content, created_at, user }: { id: number, content: string, created_at: string, user: string }) => feedInfos.set(id, { id, user: JSON.parse(user), content, created_at, replies: [] }));
+	(await env.db.prepare(`SELECT id, parent_id FROM feed WHERE id IN (${Array.from(subFeeds).map(() => '?')}) AND deleted = 0 ORDER BY created_at DESC`).bind(...subFeeds).all()).results.forEach(({ id, parent_id }: { id: number, parent_id: number | null }) => {
+		if (parent_id && !doNotQueryReplyFeeds.has(parent_id)) {
+			feedInfos.get(parent_id)?.replies.push(id);
+		}
+	});
+	const makeFeed = (id: number): feedInfo | null => {
+		if (!feedInfos.has(id)) {
+			return null;
+		}
+		const info = feedInfos.get(id)!;
+		return { ...info, replies: info.replies.map(makeFeed).filter((info): info is feedInfo => !!info) };
+	};
+	const makeFeedWithParent = (id: number): feedInfo | null => {
+		const ret = makeFeed(id);
+		if (!ret) {
+			return null;
+		}
+		const parent_id = parentMap.get(id);
+		return { ...ret, parent: parent_id ? makeFeed(parent_id) : null };
+	};
+	return typeof id_ === 'number' ? makeFeedWithParent(id_) : ids.map(id => makeFeedWithParent(id));
 };
-app.get('/query/:feed_id{\\d+}', async c => c.json({
-	feed: await feedQuery(c, parseInt(c.req.param('feed_id')), true, 0),
-	replies: await Promise.all((await (c.env as any).db.prepare('SELECT id FROM feed WHERE parent_id = ? AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
-		.bind(parseInt(c.req.param('feed_id')), Math.min(parseInt(c.get('reqBody').perpage || '10'), 10), (parseInt(c.get('reqBody').page || '1') - 1) * parseInt(c.get('reqBody').perpage || '10')).all())
-		.results.map(async ({ id }: { id: number }) => await feedQuery(c, id, false))),
-	total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM feed WHERE parent_id = ? AND deleted = 0').bind(parseInt(c.req.param('feed_id'))).first()).total
-}));
+app.get('/query/:feed_id{\\d+}', async c => {
+	const feed_id = parseInt(c.req.param('feed_id'));
+	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '10') || 10, 1), 10);
+	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
+	if (feed_id !== feed_id || feed_id < 0) {
+		return c.json({ feed: null, replies: [], total: 0 });
+	}
+	return c.json({
+		feed: await feedQuery(c, feed_id, true, false),
+		replies: await feedQuery(c, [...(await (c.env as any).db.prepare('SELECT id FROM feed WHERE parent_id = ? AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
+			.bind(feed_id, perPage, (page - 1) * perPage).all())
+			.results.map(({ id }: { id: number }) => id)], false, true),
+		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM feed WHERE parent_id = ? AND deleted = 0').bind(feed_id).first()).total
+	});
+});
 app.post('/reply', async c => {
 	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), env = c.env as any;
 	if (!currentUser) {
