@@ -28,6 +28,10 @@ nav a:hover {
     text-decoration: underline;
 }
 
+img {
+	max-width: 100%;
+}
+
 hr {
     position: relative;
     margin: 20px 0;
