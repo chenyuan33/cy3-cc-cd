@@ -36,6 +36,13 @@ export const setValueCodeMirror = (id: string, value: string) => {
 	}
 	editor.dispatch({ changes: { from: 0, to: editor.state.doc.length, insert: value } });
 };
+export const replaceSelectionCodeMirror = (id: string, value: string) => {
+	const editor = CodeMirrorMap.get(id);
+	if (!editor) {
+		return;
+	}
+	editor.dispatch(editor.state.replaceSelection(value));
+};
 export const CodeMirrorEditor: FC<{
 	id: string,
 	className?: string,

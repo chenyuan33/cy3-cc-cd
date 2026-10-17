@@ -31,3 +31,4 @@ export const titleRequired = (c: ContextType) => errorJson(c, getI18n(c)('error.
 export const contentRequired = (c: ContextType) => errorJson(c, getI18n(c)('error.contentRequired'));
 export const categoryRequired = (c: ContextType) => errorJson(c, getI18n(c)('error.categoryRequired'));
 export const categoryNotFound = (c: ContextType) => errorJson(c, getI18n(c)('error.categoryNotFound'));
+export const statusNotFound = (c: ContextType) => errorJson(c, getI18n(c)('error.statusNotFound'));

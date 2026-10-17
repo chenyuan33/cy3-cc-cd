@@ -1,7 +1,7 @@
 import { defineRoutes, Router } from '@w3cj/ruta';
 import Home from './pages/home';
 import { render, useEffect, useState, type FC, type PropsWithChildren } from 'hono/jsx/dom';
-import { loadI18n, t, tString } from './i18n';
+import { t, tString } from './i18n';
 import { permissionAdmin } from '../settings';
 import { User } from './components/user';
 import { CurrentUserProvider, useCurrentUser } from './utils/currentUser';
@@ -19,6 +19,10 @@ import { DiscussionList } from './pages/discussion/list';
 import { DiscussionPost } from './pages/discussion/post';
 import { DiscussionDetail } from './pages/discussion/detail';
 import { DiscussionReplyRedirect } from './pages/discussion/replyRedirect';
+import { TicketList } from './pages/ticket/list';
+import { TicketPost } from './pages/ticket/post';
+import { TicketDetail } from './pages/ticket/detail';
+import { TicketReplyRedirect } from './pages/ticket/replyRedirect';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -30,6 +34,10 @@ const routes = defineRoutes(route => [
 	route('/discussion/post', () => <DiscussionPost key='discussionPost' />),
 	route('/discussion/:id{\\d+}', () => <DiscussionDetail key='discussionDetail' />),
 	route('/discussion/reply/:id{\\d+}', () => <DiscussionReplyRedirect key='discussionReplyRedirect' />),
+	route('/ticket', () => <TicketList key='ticketList' />),
+	route('/ticket/post', () => <TicketPost key='ticketPost' />),
+	route('/ticket/:id{\\d+}', () => <TicketDetail key='ticketDetail' />),
+	route('/ticket/reply/:id{\\d+}', () => <TicketReplyRedirect key='ticketReplyRedirect' />),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {
@@ -37,7 +45,6 @@ declare module "@w3cj/ruta" {
 		routes: typeof routes;
 	}
 }
-await loadI18n();
 const switchLight = () => {
 	switch (localStorage.lightMode) {
 		case 'dark':

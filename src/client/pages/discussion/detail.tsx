@@ -43,7 +43,7 @@ export const DiscussionDetail = () => {
 	const [replyingContent, setReplyingContent] = useState<string | null>(null);
 	const discussionDescriptionRef = useRef<HTMLElement>(null);
 	const discussionContentRef = useRef<HTMLElement>(null);
-	const discussionEditRef = useRef<HTMLElement>(null);
+	const discussionEditRef = useRef<HTMLFormElement>(null);
 	const repliesDescriptionRef = useRef(new Map<string, HTMLElement>());
 	const repliesContentRef = useRef(new Map<string, HTMLElement>());
 	const repliesEditRef = useRef(new Map<string, HTMLElement>());
@@ -55,7 +55,7 @@ export const DiscussionDetail = () => {
 	if (!data.exists) {
 		return <NotFound />;
 	}
-	useTitle(data.info.title + ' - ' + tString('discussion.categoryName.' + data.info.category) + ' - ' + tString('discussion.name'));
+	useTitle(data.info.title + ' - ' + tString(`discussion.categoryName.${data.info.category}`) + ' - ' + tString('discussion.name'));
 	return <>
 		<Card>
 			<div style={{ position: 'absolute', right: '10px', top: '10px', display: 'flex', gap: '10px' }}>
@@ -82,7 +82,7 @@ export const DiscussionDetail = () => {
 			<h1>{data.info.pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'gold' }}></i> : <></>}{data.info.title}</h1>
 			<p class='description' ref={discussionDescriptionRef}>{t('discussion.itemDescription', {
 				user: <User user={data.info.user} />,
-				category: <A href={'/discussion?category=' + data.info.category}>{t('discussion.categoryName.' + data.info.category)}</A>,
+				category: <A href={'/discussion?category=' + data.info.category}>{t(`discussion.categoryName.${data.info.category}`)}</A>,
 				createdAt: <Time time={data.info.created_at} />
 			})}</p>
 			<div ref={discussionContentRef}><MdRender markdown={data.info.content} /></div>
@@ -169,7 +169,7 @@ export const DiscussionDetail = () => {
 					repliesContentRef.current.delete(id.toString());
 				}
 			}}><MdRender markdown={content} /></div>
-			{currentUser && (currentUser.id === 1 || currentUser.id === user.id) && <Form data-vis='-1' action='/api/discussion/edit' method='post' onSuccess={loadData} ref={(el: HTMLDivElement | null) => {
+			{currentUser && (currentUser.id === 1 || currentUser.id === user.id) && <Form data-vis='-1' action='/api/discussion/reply/edit' method='post' onSuccess={loadData} ref={(el: HTMLFormElement | null) => {
 				if (!repliesEditRef.current) {
 					return;
 				}

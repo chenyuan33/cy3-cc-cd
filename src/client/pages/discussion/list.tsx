@@ -1,10 +1,10 @@
-import { useEffect, useState } from "hono/jsx";
+import { useEffect, useRef, useState } from "hono/jsx";
 import { PostButton } from "../../components/button";
 import { Card } from "../../components/card";
-import { Form, FormSelect } from "../../components/form";
+import { Form, FormSelect, type FormHandle } from "../../components/form";
 import { SidebarLayout } from "../../components/layout/sidebar";
 import { t, tString } from "../../i18n";
-import { discussionCategories, type discussionBasicInfo } from "../../../routes/api/discussion";
+import { discussionCategories, discussionCategoriesKey, type discussionBasicInfo, type discussionCategoriesType } from "../../../routes/api/discussion";
 import { CategoryNotFound } from "../error";
 import { useTitle } from "../../utils/useTitle";
 import { Pages } from "../../components/pages";
@@ -33,18 +33,19 @@ export const DiscussionList = () => {
 	if (category && !(category in discussionCategories)) {
 		return <CategoryNotFound />;
 	}
+	const filterFormRef = useRef<FormHandle>(null);
 	const sidebar = <Card>
 		<h1>{t('discussion.name')}</h1>
 		<PostButton href={'/discussion/post' + (category ? '?category=' + category : '')} />
-		<Form action='/discussion' method='get' alignInput='calc(100% - 125px)'>
+		<Form action='/discussion' method='get' alignInput='100px' ref={filterFormRef}>
 			<FormSelect key={'category-' + category} id='category' name='category' label={t('category')} options={[
 				{ value: '', label: t('allCategories'), selected: !category },
-				...(Object.keys(discussionCategories).map(key => ({ value: key, label: t('discussion.categoryName.' + key), selected: category === key })))
-			]} />
+				...(discussionCategoriesKey.map(key => ({ value: key, label: t(`discussion.categoryName.${key}`), selected: category === key })))
+			]} onChange={() => filterFormRef.current?.requestSubmit()} />
 			<button type='submit'>{t('filter')}</button>
 		</Form>
 	</Card>;
-	useTitle((category ? tString('discussion.categoryName.' + category) + ' - ' : '') + tString('discussion.name'));
+	useTitle((category ? tString(`discussion.categoryName.${category as discussionCategoriesType}`) + ' - ' : '') + tString('discussion.name'));
 	if (!data) {
 		return <SidebarLayout sidebar={sidebar}>
 			<Card>{t('loading')}</Card>

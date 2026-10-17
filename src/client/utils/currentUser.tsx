@@ -3,8 +3,8 @@ import type { themeInfo, userInfo } from "../../types";
 import { defaultTheme } from "../../settings";
 import { useLocation } from "@w3cj/ruta";
 
-type CurrentUserContextType = { user: userInfo & { email: string } | null, usingTheme: themeInfo, reload: () => Promise<void> };
-const CurrentUserContext = createContext<CurrentUserContextType>({ user: null, usingTheme: defaultTheme, reload: async () => {} });
+type CurrentUserContextType = { user: userInfo & { email: string | null } | null, usingTheme: themeInfo, reload: () => Promise<void> };
+const CurrentUserContext = createContext<CurrentUserContextType>({ user: typeof window === 'undefined' ? null : window.data.currentUser, usingTheme: typeof window === 'undefined' ? defaultTheme : window.data.usingTheme, reload: async () => {} });
 const _useCurrentUser = () => useContext(CurrentUserContext);
 export const useCurrentUser = () => {
 	const _currentUser = _useCurrentUser().user;

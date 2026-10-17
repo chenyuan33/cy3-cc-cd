@@ -33,3 +33,4 @@ export const TitleRequired = () => <ErrorPage msg={t(('error.titleRequired'))} /
 export const ContentRequired = () => <ErrorPage msg={t(('error.contentRequired'))} />;
 export const CategoryRequired = () => <ErrorPage msg={t(('error.categoryRequired'))} />;
 export const CategoryNotFound = () => <ErrorPage msg={t(('error.categoryNotFound'))} />;
+export const StatusNotFound = () => <ErrorPage msg={t(('error.statusNotFound'))} />;

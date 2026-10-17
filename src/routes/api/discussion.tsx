@@ -14,6 +14,7 @@ export type discussionCategoriesType = keyof typeof discussionCategories;
 export const inDiscussionCategory = (category: string): category is discussionCategoriesType => {
 	return category in discussionCategories;
 }
+export const discussionCategoriesKey = Object.keys(discussionCategories) as discussionCategoriesType[];
 export type discussionBasicInfo = {
 	id: number,
 	user: userInfo,
@@ -32,23 +33,28 @@ export type discussionReplyInfo = {
 };
 const app = new Hono<AppEnv>();
 app.get('/list', async c => {
-	const { category, page_, perpage } = c.get('reqBody'), env = c.env as any;
+	const { category, page: page_, perpage } = c.get('reqBody'), env = c.env as any;
 	if (category && !(category in discussionCategories)) {
 		return categoryNotFound(c);
 	}
 	const page = Math.max(parseInt(page_ || '1') || 1, 1);
 	const perPage = Math.max(1, Math.min(parseInt(perpage || '20') || 20, 20));
-	if (category) {
-		return c.json({
-			discussion: await Promise.all((await env.db.prepare('SELECT id, uid, category, title, created_at, pin FROM discussion WHERE category = ? ORDER BY pin DESC, created_at DESC LIMIT ? OFFSET ?').bind(category, perPage, perPage * (page - 1)).all()).results.map(async ({ uid, ...attr }: { uid: number, [attr: string]: any }) => ({ user: await userQuery(uid, c), ...attr }))),
-			total: (await env.db.prepare('SELECT COUNT(*) as total FROM discussion WHERE category = ?').bind(category).first()).total
-		});
-	} else {
-		return c.json({
-			discussion: await Promise.all((await env.db.prepare('SELECT id, uid, category, title, created_at, pin FROM discussion ORDER BY pin DESC, created_at DESC LIMIT ? OFFSET ?').bind(perPage, perPage * (page - 1)).all()).results.map(async ({ uid, ...attr }: { uid: number, [attr: string]: any }) => ({ user: await userQuery(uid, c), ...attr }))),
-			total: (await env.db.prepare('SELECT COUNT(*) as total FROM discussion').first()).total
-		});
-	}
+	return c.json({
+		discussion: (await env.db.prepare(`
+			SELECT
+				d.id, d.category, d.title, d.created_at, d.pin,
+				json_object (
+					${userInfoDatas.map(schema => `'${schema}', u.${schema}`)}
+				) AS user
+			FROM discussion d
+			JOIN users u ON d.uid = u.id
+			${category ? 'WHERE d.category = ?' : ''}
+			ORDER BY d.pin DESC, d.created_at DESC
+			LIMIT ?
+			OFFSET ?
+		`).bind(...(category ? [category] : []), perPage, perPage * (page - 1)).all()).results.map(({ user, ...attr }: { user: string, [attr: string]: any }) => ({ user: JSON.parse(user), ...attr })),
+		total: (await env.db.prepare(`SELECT COUNT(*) as total FROM discussion ${category ? 'WHERE category = ?' : ''}`).bind(...(category ? [category] : [])).first()).total
+	});
 });
 app.get('/detail/:id{\\d+}', async c => {
 	const env = c.env as any, id = parseInt(c.req.param('id')), { page: page_, perpage } = c.get('reqBody');
@@ -215,7 +221,7 @@ app.post('/reply', async c => {
             ? await env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(parent_id).first()
             : await env.db.prepare('SELECT uid FROM discussion WHERE id = ?').bind(discussion_id).first();
         if (parent_uid !== currentUser.id) {
-            await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "discussion-reply-replied", ?)').bind(parent_uid, JSON.stringify({ discussion_id, uid: currentUser.id, parent_id, id })).run();
+            await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'discussion-reply-replied\', ?)').bind(parent_uid, JSON.stringify({ discussion_id, uid: currentUser.id, parent_id, id })).run();
         }
     }
     return c.json({ success: true });

@@ -172,10 +172,10 @@ export default {
 			resolved: '已完成',
 			closed: '已关闭'
 		},
-		itemDescription: '__USER__ · __CATEGORY__ · __CREATED_AT__ · __STATUS__ · 处理者: __ASSIGNEE__',
-		replyItemDescription: '__USER__ · __CREATED_AT__',
-		setStatusTo: '工单状态已被设为 __STATUS__',
-		setAssigneeTo: '工单处理者已被设为 __ASSIGNEE__',
+		itemDescription: '{user} · {category} · {createdAt} · {status} · 处理者：{assignee}',
+		replyItemDescription: '{user} · {createdAt}',
+		setStatusTo: '工单状态已被设为 {status}',
+		setAssigneeTo: '工单处理者已被设为 {assignee}',
 		setStatus: '将工单状态设为',
 		setAssignee: '将工单处理者设为'
 	},
@@ -298,6 +298,7 @@ export default {
 		banned: '您已被封禁',
 		muted: '您已被禁言',
 		categoryNotFound: '板块未找到',
+		statusNotFound: '状态未找到',
 		accessDenied: '无权限。',
 		notFound: '页面未找到。',
 		usernameRequired: '用户名是必填的',

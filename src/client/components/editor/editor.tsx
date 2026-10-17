@@ -2,12 +2,12 @@
 import { useUsingTheme } from "../../utils/currentUser";
 import type { EditorView, ViewUpdate } from "@codemirror/view";
 import type { editor } from "monaco-editor";
-import { CodeMirrorEditor, setValueCodeMirror, wrapSelectionCodeMirror } from "./codemirror";
+import { CodeMirrorEditor, replaceSelectionCodeMirror, setValueCodeMirror, wrapSelectionCodeMirror } from "./codemirror";
 import { markdown } from '@codemirror/lang-markdown';
 import { python } from '@codemirror/lang-python';
 import { javascript } from '@codemirror/lang-javascript';
 import { cpp } from '@codemirror/lang-cpp';
-import { setValueMonacoEditor, wrapSelectionMonacoEditor } from "./monacoeditor";
+import { replaceSelectionMonacoEditor, setValueMonacoEditor, wrapSelectionMonacoEditor } from "./monacoeditor";
 
 const codeMirrorLanguages = {
 	md: markdown(),
@@ -28,6 +28,10 @@ export const setValue = (id: string, value: string) => {
 	setValueCodeMirror(id, value);
 	setValueMonacoEditor(id, value);
 }
+export const replaceSelection = (id: string, value: string) => {
+	replaceSelectionCodeMirror(id, value);
+	replaceSelectionMonacoEditor(id, value);
+};
 export const Editor: FC<{
 	id: string,
 	className?: string,

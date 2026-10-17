@@ -1,12 +1,13 @@
 import { type CSSProperties, type FC } from 'hono/jsx';
 import './editor.css';
-import { Editor, selectionWrapper, setValue } from '../editor/editor';
+import { Editor, replaceSelection, selectionWrapper, setValue } from '../editor/editor';
 import { MdRender } from './renderer';
 import { render } from 'hono/jsx/dom';
 import { tString } from '../../i18n';
 
 let mdeditorid = 0;
 export const setValueMdEditor = (id: string, value: string) => setValue('mdeditor-input-' + id, value);
+export const replaceSelectionMdEditor = (id: string, value: string) => replaceSelection('mdeditor-input-' + id, value);
 export const MdEditor: FC<{
     initialCode?: string,
     id?: string | undefined,

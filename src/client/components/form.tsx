@@ -1,4 +1,4 @@
-import type { FC, PropsWithChildren } from "hono/jsx";
+import { forwardRef, useImperativeHandle, useRef, type FC, type PropsWithChildren, type RefObject } from "hono/jsx";
 import { MdEditor } from "./md/editor";
 import type { JSX } from "hono/jsx/jsx-runtime";
 import { Select } from "./select";
@@ -11,49 +11,52 @@ export const Form: FC<PropsWithChildren<{
 	onSubmit?: (evt: Event, formData: FormData) => boolean | void | Promise<boolean | void>,
 	onSuccess?: (data: any, formData: FormData) => void,
 	onError?: (error: unknown, formData: FormData) => void,
-	alignInput?: string
-}>> = ({ children, onSubmit, onSuccess, onError, alignInput, ...props }) => <form style={{ '--align-input': alignInput ?? '200px' }} {...props} onSubmit={async evt => {
-	evt.preventDefault();
-	const form = evt.currentTarget as HTMLFormElement;
-	const button = form.querySelector('[type="submit"]') as HTMLButtonElement;
-	if (!button || button.dataset.submitted === 'true') {
-		return;
-	}
-	button.dataset.submitted = 'true';
-	button.disabled = true;
-	const formData = new FormData(form);
-	try {
-		if (onSubmit && false === await onSubmit(evt, formData)) {
-			button.disabled = false;
-			button.dataset.submitted = 'false';
+	alignInput?: string,
+	ref?: RefObject<HTMLFormElement> | ((x: HTMLFormElement | null) => void)
+}>> = ({ children, onSubmit, onSuccess, onError, alignInput, ref, ...props }) => {
+	return <form ref={ref} style={{ '--align-input': alignInput ?? '200px' }} {...props} onSubmit={async evt => {
+		evt.preventDefault();
+		const form = evt.currentTarget as HTMLFormElement;
+		const button = form.querySelector('[type="submit"]') as HTMLButtonElement;
+		if (!button || button.dataset.submitted === 'true') {
 			return;
 		}
-		button.disabled = false;
-		button.dataset.submitted = 'false';
-		if (!form.method || form.method === 'get') {
-			const url = new URL(form.action, location.href);
-			url.search = '';
-			formData.forEach((value, key) => {
-				if (typeof value === 'string') {
-					url.searchParams.append(key, value);
-				}
-			});
-			navigate(url.toString());
-			onSuccess?.(undefined, formData);
-		} else {
-			const fetchResult = await fetch(form.action, { method: form.method, body: formData });
-			if (!fetchResult.ok) {
-				throw new Error((await fetchResult.json()).message || tString('error.somethingWentWrong'));
+		button.dataset.submitted = 'true';
+		button.disabled = true;
+		const formData = new FormData(form);
+		try {
+			if (onSubmit && false === await onSubmit(evt, formData)) {
+				button.disabled = false;
+				button.dataset.submitted = 'false';
+				return;
 			}
-			onSuccess?.(await fetchResult.json(), formData);
+			button.disabled = false;
+			button.dataset.submitted = 'false';
+			if (!form.method || form.method === 'get') {
+				const url = new URL(form.action, location.href);
+				url.search = '';
+				formData.forEach((value, key) => {
+					if (typeof value === 'string') {
+						url.searchParams.append(key, value);
+					}
+				});
+				navigate(url.toString());
+				onSuccess?.(undefined, formData);
+			} else {
+				const fetchResult = await fetch(form.action, { method: form.method, body: formData });
+				if (!fetchResult.ok) {
+					throw new Error((await fetchResult.json()).message || tString('error.somethingWentWrong'));
+				}
+				onSuccess?.(await fetchResult.json(), formData);
+			}
+		} catch (_error) {
+			button.disabled = false;
+			button.dataset.submitted = 'false';
+			toast(_error instanceof Error ? _error.message : _error as string, 'error');
+			onError?.(_error, formData);
 		}
-	} catch (_error) {
-		button.disabled = false;
-		button.dataset.submitted = 'false';
-		toast(_error instanceof Error ? _error.message : _error as string, 'error');
-		onError?.(_error, formData);
-	}
-}}>{children}</form>;
+	}}>{children}</form>;
+};
 export const FormInput: FC<{
 	id?: string,
 	class?: string,

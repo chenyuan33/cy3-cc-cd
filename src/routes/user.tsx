@@ -7,7 +7,7 @@ import { Time } from "../client/components/time";
 import { Pages } from "../client/components/pages";
 import { Feed } from "../client/components/feed";
 import { renderTemplate } from "../components/renderTemplate";
-import { TicketStatus } from "../components/ticketStatus";
+import { TicketStatus } from "../client/components/ticketStatus";
 import { permissionAdmin, permissionCount, type allPermissions } from "../settings";
 import { messages } from "../i18n";
 import { userQuery } from "./api/user";

@@ -16,8 +16,8 @@ CREATE TABLE IF NOT EXISTS users (
     checkin_today_good2 INTEGER, 
     checkin_today_bad1 INTEGER, 
     checkin_today_bad2 INTEGER, 
-    name_color_light TEXT NOT NULL DEFAULT "0066cc", 
-    name_color_dark TEXT NOT NULL DEFAULT "66b2ff",
+    name_color_light TEXT NOT NULL DEFAULT '0066cc', 
+    name_color_dark TEXT NOT NULL DEFAULT '66b2ff',
 	tag TEXT,
 	using_theme INTEGER
 );
@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS ticket (
     uid INTEGER NOT NULL,
     assignee_uid INTEGER,
     category TEXT NOT NULL,
-    status TEXT NOT NULL DEFAULT "new",
+    status TEXT NOT NULL DEFAULT 'new',
     title TEXT NOT NULL,
     content TEXT NOT NULL,
     created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,

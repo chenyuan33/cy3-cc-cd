@@ -2,6 +2,7 @@ import { useEffect, useRef, type CSSProperties, type FC } from "hono/jsx";
 import type { editor } from "monaco-editor";
 import { isLightMode } from "../../utils/isLightMode";
 
+const Range = typeof window === 'undefined' ? undefined : (await import('monaco-editor')).Range;
 export const MonacoEditors: editor.IStandaloneCodeEditor[] = [];
 const MonacoEditorMap = new Map<string, editor.IStandaloneCodeEditor>();
 export const wrapSelectionMonacoEditor = async (editor: editor.IStandaloneCodeEditor, prefix: string, suffix: string) => {
@@ -28,6 +29,27 @@ export const setValueMonacoEditor = (id: string, value: string) => {
 		return;
 	}
 	editor.setValue(value);
+};
+export const replaceSelectionMonacoEditor = (id: string, value: string) => {
+	if (!Range) {
+		return;
+	}
+	const editor = MonacoEditorMap.get(id);
+	if (!editor) {
+		return;
+	}
+	const selection = editor.getSelection();
+	if (!selection) {
+		return;
+	}
+	editor.executeEdits('replace-selection', [{
+		range: new Range(
+			selection.startLineNumber, selection.startColumn,
+			selection.endLineNumber, selection.endColumn
+		),
+		text: value,
+		forceMoveMarkers: true
+	}]);
 };
 export const MonacoEditor: FC<{
 	id: string,

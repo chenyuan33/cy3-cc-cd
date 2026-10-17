@@ -90,10 +90,10 @@ app.post('/user/warn', async c => {
 		operator: c.get('currentUser')!.id
 	});
 	await env.db
-		.prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, "warn", "{}", NULL, ?, ?)')
+		.prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, \'warn\', \'{}\', NULL, ?, ?)')
 		.bind(uid, reqBody.comment?.trim() || null, c.get('currentUser')!.id).run();
 	await env.db
-		.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "warn", ?)')
+		.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'warn\', ?)')
 		.bind(uid, payload).run();
 	return c.redirect('/user/' + uid, 303);
 });
@@ -115,10 +115,10 @@ app.post('/user/name-violation', async c => {
         .prepare('UPDATE users SET username_violation = ? WHERE id = ?')
         .bind(newViolation, uid).run();
     await env.db
-        .prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, "name-violation", ?, NULL, ?, ?)')
+        .prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, \'name-violation\', ?, NULL, ?, ?)')
         .bind(uid, JSON.stringify({ oldViolation, newViolation }), reqBody.comment || '', c.get('currentUser')!.id).run();
     await env.db
-        .prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "name-violation", ?)')
+        .prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'name-violation\', ?)')
         .bind(uid, JSON.stringify({
 			comment: reqBody.comment?.trim() || null,
 			oldViolation,
@@ -148,9 +148,9 @@ app.post('/user/permission/set', async c => {
         }
     }
     await env.db.prepare('UPDATE users SET permission = ? WHERE id = ?').bind(newPermission, uid).run();
-    await env.db.prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, "permission-changed", ?, NULL, ?, ?)')
+    await env.db.prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, \'permission-changed\', ?, NULL, ?, ?)')
         .bind(uid, JSON.stringify({ oldPermission, newPermission }), reqBody.comment || null, c.get('currentUser')!.id ).run();
-    await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "permission-changed", ?)')
+    await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'permission-changed\', ?)')
         .bind(uid, JSON.stringify({ comment: reqBody.comment || null, oldPermission, newPermission })).run();
     return c.redirect('/user/' + uid, 303);
 });

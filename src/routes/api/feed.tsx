@@ -131,7 +131,7 @@ app.post('/reply', async c => {
 	await processAt(c, reqBody.content, '/feed/' + id);
 	const { uid: parent_uid } = await env.db.prepare('SELECT uid FROM feed WHERE id = ?').bind(parent_id).first();
 	if (parent_id && parent_uid !== currentUser.id) {
-		await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, "feed-reply", ?)').bind(parent_uid, JSON.stringify({
+		await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'feed-reply\', ?)').bind(parent_uid, JSON.stringify({
 			uid: currentUser.id,
 			parent_id: parent_id,
 			id: id
