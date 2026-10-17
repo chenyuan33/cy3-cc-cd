@@ -1,8 +1,16 @@
 import { useEffect, useRef, type CSSProperties, type FC } from "hono/jsx";
 import type { editor } from "monaco-editor";
 import { isLightMode } from "../../utils/isLightMode";
+import type { supportedLanguages } from "./editor";
 
-const Range = typeof window === 'undefined' ? undefined : (await import('monaco-editor')).Range;
+export const MonacoEditorLanguages = {
+	md: 'markdown',
+	py: 'python',
+	js: 'javascript',
+	cpp: 'cpp',
+	c: 'c'
+};
+const { Range, editor: monacoEditor } = typeof window === 'undefined' ? { Range: undefined } : (await import('monaco-editor'));
 export const MonacoEditors: editor.IStandaloneCodeEditor[] = [];
 const MonacoEditorMap = new Map<string, editor.IStandaloneCodeEditor>();
 export const wrapSelectionMonacoEditor = async (editor: editor.IStandaloneCodeEditor, prefix: string, suffix: string) => {
@@ -23,6 +31,13 @@ export const wrapSelectionMonacoEditor = async (editor: editor.IStandaloneCodeEd
 	);
 	editor.setSelection(newSelection);
 }
+export const getValueMonacoEditor = (id: string) => {
+	const editor = MonacoEditorMap.get(id);
+	if (!editor) {
+		return null;
+	}
+	return editor.getValue();
+};
 export const setValueMonacoEditor = (id: string, value: string) => {
 	const editor = MonacoEditorMap.get(id);
 	if (!editor) {
@@ -50,6 +65,17 @@ export const replaceSelectionMonacoEditor = (id: string, value: string) => {
 		text: value,
 		forceMoveMarkers: true
 	}]);
+};
+export const setLangMonacoEditor = (id: string, value: supportedLanguages) => {
+	const editor = MonacoEditorMap.get(id);
+	if (!editor) {
+		return;
+	}
+	const model = editor.getModel();
+	if (!model) {
+		return;
+	}
+	monacoEditor?.setModelLanguage(model, MonacoEditorLanguages[value]);
 };
 export const MonacoEditor: FC<{
 	id: string,

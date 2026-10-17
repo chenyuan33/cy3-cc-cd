@@ -13,7 +13,6 @@ import adminRoutes from './routes/admin';
 import judgementRoutes from './routes/judgement';
 import fileRoutes from './routes/file';
 import themeRoutes from './routes/theme';
-import ideRoutes from './routes/ide';
 import { renderer } from './renderer';
 import { i18nMiddleware, type supportedLanguagesShortCodeType } from './i18n';
 const app = new Hono<AppEnv>();
@@ -108,7 +107,6 @@ app.route('/chat', chatRoutes);
 app.route('/judgement', judgementRoutes);
 app.route('/file', fileRoutes);
 app.route('/theme', themeRoutes);
-app.route('/ide', ideRoutes);
 app.onError((err, c) => {
 	console.error(err);
 	return errorJson(c, err, 500);

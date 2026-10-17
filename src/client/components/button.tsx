@@ -16,9 +16,9 @@ const _SpeakButton: FC<{
 	if (currentUser && !(currentUser!.permission & permissionSpeak)) {
 		buttonContent = t('error.muted');
 	} else if (!currentUser) {
-		buttonContent = t(`${text}AfterLogin`);
+		buttonContent = t(`${text}AfterLogin`, { link: <A href='/user/login'>{t('afterLoginLink')}</A> });
 	} else if (currentUser && enableEmailVerify && !currentUserEmail) {
-		buttonContent = t(`${text}AfterEmailVerify`);
+		buttonContent = t(`${text}AfterEmailVerify`, { link: <A href='/user/settings'>{t('afterEmailVerifyLink')}</A> });
 	} else {
 		buttonContent = t(text);
 	}

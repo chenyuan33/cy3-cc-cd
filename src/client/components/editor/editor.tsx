@@ -2,21 +2,10 @@
 import { useUsingTheme } from "../../utils/currentUser";
 import type { EditorView, ViewUpdate } from "@codemirror/view";
 import type { editor } from "monaco-editor";
-import { CodeMirrorEditor, replaceSelectionCodeMirror, setValueCodeMirror, wrapSelectionCodeMirror } from "./codemirror";
-import { markdown } from '@codemirror/lang-markdown';
-import { python } from '@codemirror/lang-python';
-import { javascript } from '@codemirror/lang-javascript';
-import { cpp } from '@codemirror/lang-cpp';
-import { replaceSelectionMonacoEditor, setValueMonacoEditor, wrapSelectionMonacoEditor } from "./monacoeditor";
+import { CodeMirrorEditor, CodeMirrorLanguages, getValueCodeMirror, replaceSelectionCodeMirror, setLangCodeMirror, setValueCodeMirror, wrapSelectionCodeMirror } from "./codemirror";
+import { getValueMonacoEditor, MonacoEditorLanguages, replaceSelectionMonacoEditor, setLangMonacoEditor, setValueMonacoEditor, wrapSelectionMonacoEditor } from "./monacoeditor";
 
-const codeMirrorLanguages = {
-	md: markdown(),
-	py: python(),
-	js: javascript(),
-	cpp: cpp(),
-	c: cpp()
-};
-
+export type supportedLanguages = 'md' | 'py' | 'js' | 'cpp' | 'c';
 export const selectionWrapper = (prefix: string, suffix: string) => async (ed: editor.IStandaloneCodeEditor | EditorView) => {
 	if (ed instanceof (await import('@codemirror/view')).EditorView) {
 		return await wrapSelectionCodeMirror(ed, prefix, suffix);
@@ -24,13 +13,20 @@ export const selectionWrapper = (prefix: string, suffix: string) => async (ed: e
 		return await wrapSelectionMonacoEditor(ed, prefix, suffix);
 	}
 };
+export const getValue = (id: string) => {
+	return getValueCodeMirror(id) ?? getValueMonacoEditor(id);
+};
 export const setValue = (id: string, value: string) => {
 	setValueCodeMirror(id, value);
 	setValueMonacoEditor(id, value);
-}
+};
 export const replaceSelection = (id: string, value: string) => {
 	replaceSelectionCodeMirror(id, value);
 	replaceSelectionMonacoEditor(id, value);
+};
+export const setLang = (id: string, lang: supportedLanguages) => {
+	setLangCodeMirror(id, lang);
+	setLangMonacoEditor(id, lang);
 };
 export const Editor: FC<{
 	id: string,
@@ -39,7 +35,7 @@ export const Editor: FC<{
 	required?: boolean,
 	initialCode?: string,
 	height: number | string,
-	lang?: 'md' | 'py' | 'js' | 'cpp' | 'c',
+	lang?: supportedLanguages,
 	onChange?: (event: editor.IModelContentChangedEvent | ViewUpdate | undefined, content: string) => void,
 	extraKeys?: {
 		id: string,
@@ -79,17 +75,11 @@ export const Editor: FC<{
 	})()}, []);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	if (theme === 'CodeMirror') {
-		return <CodeMirrorEditor lang={lang ? codeMirrorLanguages[lang] : undefined} {...props} />;
+		return <CodeMirrorEditor lang={lang ? CodeMirrorLanguages[lang] : undefined} {...props} />;
 	}
 	if (theme === 'MonacoEditor') {
 		if (MonacoEditor) {
-			return <MonacoEditor lang={lang ? {
-				md: 'markdown',
-				py: 'python',
-				js: 'javascript',
-				cpp: 'cpp',
-				c: 'c'
-			}[lang] : 'plaintext'} {...props} />;
+			return <MonacoEditor lang={lang ? MonacoEditorLanguages[lang] : 'plaintext'} {...props} />;
 		}
 	}
 	return <textarea

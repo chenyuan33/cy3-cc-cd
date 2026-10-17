@@ -177,7 +177,10 @@ export default {
 		setStatus: 'Set ticket status to',
 		setAssignee: 'Set ticket assignee to'
 	},
-	ide: 'Online IDE',
+	ide: {
+		name: 'Online IDE',
+		noLanguageSupported: 'There aren\'t any programming languages available.'
+	},
 	onlineJudge: {
 		stdin: 'Standard Input',
 		stdout: 'Standard Output',
@@ -327,11 +330,13 @@ export default {
 	filter: 'Filter',
 	send: 'Send',
 	post: 'Post',
-	postAfterLogin: '<a href="/user/login">Log in</a> to post',
-	postAfterEmailVerify: '<a href="/user/settings">Verify your email</a> to post',
+	postAfterLogin: '{link} to post',
+	postAfterEmailVerify: '{link} to post',
 	reply: 'Reply',
-	replyAfterLogin: '<a href="/user/login">Log in</a> to reply',
-	replyAfterEmailVerify: '<a href="/user/settings">Verify your email</a> to reply',
+	replyAfterLogin: '{link} to reply',
+	replyAfterEmailVerify: '{link} to reply',
+	afterLoginLink: 'Login',
+	afterEmailVerifyLink: 'Verify your email',
 	postSuccessfully: 'Post Successfully',
 	next: 'Next',
 	edit: 'Edit',

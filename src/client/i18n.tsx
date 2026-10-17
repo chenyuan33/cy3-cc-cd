@@ -14,7 +14,7 @@ export const t = (key: i18nKey, params: Record<string, string | JSX.Element> = {
 	try {
 		return <>{(key.split('.').reduce((obj, k) => obj?.[k], messages[locale] as any) as string).split(/(\{\w+\})/g).map(match => rawContent(/^\{\w+\}$/.test(match) && match.substring(1, match.length - 1) in params ? params[match.substring(1, match.length - 1)] : match))}</>;
 	} catch {
-		return <>{key}</>
+		return <>{key}</>;
 	}
 };
 export const tString = (key: i18nKey, params: Record<string, string> = {}) => {

@@ -179,7 +179,10 @@ export default {
 		setStatus: '将工单状态设为',
 		setAssignee: '将工单处理者设为'
 	},
-	ide: '在线 IDE',
+	ide: {
+		name: '在线 IDE',
+		noLanguageSupported: '没有任何可用的编程语言。'
+	},
 	onlineJudge: {
 		stdin: '标准输入',
 		stdout: '标准输出',
@@ -329,12 +332,14 @@ export default {
 	filter: '筛选',
 	send: '发送',
 	post: '发布',
-	postAfterLogin: '<a href="/user/login">登录</a>后发布',
-	postAfterEmailVerify: '<a href="/user/settings">邮箱验证</a>后发布',
-	postSuccessfully: '发布成功',
+	postAfterLogin: '{link}后发布',
+	postAfterEmailVerify: '{link}后发布',
 	reply: '回复',
-	replyAfterLogin: '<a href="/user/login">登录</a>后回复',
-	replyAfterEmailVerify: '<a href="/user/settings">邮箱验证</a>后回复',
+	replyAfterLogin: '{link}后回复',
+	replyAfterEmailVerify: '{link}后回复',
+	afterLoginLink: '登录',
+	afterEmailVerifyLink: '邮箱验证',
+	postSuccessfully: '发布成功',
 	next: '下一步',
 	edit: '编辑',
 	save: '保存',

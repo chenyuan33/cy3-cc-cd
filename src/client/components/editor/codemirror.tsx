@@ -3,9 +3,22 @@ import { isLightMode } from "../../utils/isLightMode";
 import type { LanguageSupport } from "@codemirror/language";
 import type { EditorView, ViewUpdate } from "@codemirror/view";
 import type { Compartment } from "@codemirror/state";
+import { markdown } from '@codemirror/lang-markdown';
+import { python } from '@codemirror/lang-python';
+import { javascript } from '@codemirror/lang-javascript';
+import { cpp } from '@codemirror/lang-cpp';
+import type { supportedLanguages } from "./editor";
 
+export const CodeMirrorLanguages = {
+	md: markdown(),
+	py: python(),
+	js: javascript(),
+	cpp: cpp(),
+	c: cpp()
+};
 export const CodeMirrorEditors: { editor: EditorView, themeCompartment: Compartment }[] = [];
 const CodeMirrorMap = new Map<string, EditorView>();
+const langCompartmentMap = new Map<string, Compartment>();
 export const wrapSelectionCodeMirror = async (view: EditorView, prefix: string, suffix: string) => {
 	const { state } = view, { EditorSelection } = await import('@codemirror/state');
 	const changes = state.changeByRange((range) => {
@@ -29,6 +42,13 @@ export const wrapSelectionCodeMirror = async (view: EditorView, prefix: string, 
 		}),
 	);
 }
+export const getValueCodeMirror = (id: string) => {
+	const editor = CodeMirrorMap.get(id);
+	if (!editor) {
+		return null;
+	}
+	return editor.state.doc.toString();
+};
 export const setValueCodeMirror = (id: string, value: string) => {
 	const editor = CodeMirrorMap.get(id);
 	if (!editor) {
@@ -42,6 +62,13 @@ export const replaceSelectionCodeMirror = (id: string, value: string) => {
 		return;
 	}
 	editor.dispatch(editor.state.replaceSelection(value));
+};
+export const setLangCodeMirror = (id: string, lang: supportedLanguages) => {
+	const editor = CodeMirrorMap.get(id), langCompartment = langCompartmentMap.get(id);
+	if (!editor || !langCompartment) {
+		return;
+	}
+	editor.dispatch({ effects: langCompartment.reconfigure(CodeMirrorLanguages[lang]) });
 };
 export const CodeMirrorEditor: FC<{
 	id: string,
@@ -82,7 +109,8 @@ export const CodeMirrorEditor: FC<{
 			if (cancelled || !containerRef.current) {
 				return;
 			}
-			const themeCompartment = new Compartment();
+			const themeCompartment = new Compartment(), langCompartment = new Compartment();
+			langCompartmentMap.set(id, langCompartment);
 			editor = new EditorView({
 				doc: initialCode,
 				extensions: [
@@ -115,7 +143,7 @@ export const CodeMirrorEditor: FC<{
 							key, run: (ed: EditorView) => !(run(ed) === false)
 						})))
 					]),
-					...(lang ? [lang] : []),
+					...(lang ? [langCompartment.of(lang)] : []),
 					EditorState.readOnly.of(readOnly),
 					EditorView.updateListener.of(update => {
 						if (!update.docChanged) {

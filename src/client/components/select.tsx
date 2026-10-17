@@ -1,19 +1,21 @@
-import type { CSSProperties, FC } from "hono/jsx";
+import type { CSSProperties, FC, RefObject } from "hono/jsx";
 import { render, useEffect, useRef, useState } from "hono/jsx/dom";
 import type { JSX } from "hono/jsx/jsx-runtime";
 
 export const Select: FC<{
 	id?: string | undefined,
-	name: string | undefined,
-	style: CSSProperties | string | undefined,
-	onChange: () => void,
-	options: { value: string, label: string | JSX.Element, selected?: boolean | undefined, disabled?: boolean | undefined }[]
-}> = ({ id, name, style, onChange = () => {}, options }) => {
+	name?: string | undefined,
+	style?: CSSProperties | string | undefined,
+	onChange?: () => void,
+	options: { value: string, label: string | JSX.Element, selected?: boolean | undefined, disabled?: boolean | undefined }[],
+	ref?: RefObject<HTMLInputElement>
+}> = ({ id, name, style, onChange = () => {}, options, ref }) => {
 	if (!options.length) {
 		return <></>;
 	}
 	const [selected, setSelected_] = useState(options.filter(({ selected }) => selected)[0] || options[0]!);
-	const inputRef = useRef<HTMLInputElement>(null);
+	const _inputRef = useRef<HTMLInputElement>(null);
+	const inputRef = ref || _inputRef;
 	const setSelected = ({ value, label, selected, disabled }: {
 		value: string;
 		label: string | JSX.Element;
