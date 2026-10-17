@@ -4,7 +4,7 @@ import { Card } from "../../components/card";
 import { Form, FormInput, FormMdEditor, FormSelect } from "../../components/form";
 import { useCurrentUser, useCurrentUserEmail } from "../../utils/currentUser";
 import { t, tString } from "../../i18n";
-import { useTitle } from "../../utils/useTitle";
+import { setTitle } from "../../utils/setTitle";
 import { EmailVerifyRequired, LoginRequired, Muted } from "../error";
 import { discussionCategories, type discussionCategoriesType } from "../../../routes/api/discussion";
 
@@ -20,7 +20,7 @@ export const DiscussionPost = () => {
 		return <EmailVerifyRequired />;
 	}
 	const category = new URLSearchParams(location.search).get('category');
-	useTitle(tString('discussion.post'));
+	setTitle(tString('discussion.post'));
 	return <Card>
 		<h1>{t('discussion.post')}</h1>
 		<Form action='/api/discussion/post' method='post' onSuccess={data => navigate('/discussion/' + data.id)}>

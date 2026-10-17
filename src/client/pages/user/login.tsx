@@ -3,7 +3,7 @@ import { Card } from "../../components/card";
 import { Form, FormInput } from "../../components/form";
 import { reloadCurrentUser, useCurrentUser } from "../../utils/currentUser";
 import { t, tString } from "../../i18n";
-import { useTitle } from "../../utils/useTitle";
+import { setTitle } from "../../utils/setTitle";
 import { AlreadyLoggedIn } from "../error"
 import { A } from "../../components/a";
 
@@ -12,7 +12,7 @@ export const Login = () => {
 	if (currentUser) {
 		return <AlreadyLoggedIn />;
 	}
-	useTitle(tString('user.login'));
+	setTitle(tString('user.login'));
 	return <div style={{
 		display: 'grid',
 		'place-items': 'center',

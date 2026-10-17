@@ -2,10 +2,10 @@ import type { FC } from "hono/jsx";
 import { Card } from "../components/card";
 import { t, tString } from "../i18n";
 import type { JSX } from "hono/jsx/jsx-runtime";
-import { useTitle } from "../utils/useTitle";
+import { setTitle } from "../utils/setTitle";
 
 export const ErrorPage: FC<{ msg: string | JSX.Element }> = ({ msg }) => {
-	useTitle(tString('error.somethingWentWrong'));
+	setTitle(tString('error.somethingWentWrong'));
 	return <Card>
 		<h1>{t('error.somethingWentWrong')}</h1>
 		<p>{msg}</p>

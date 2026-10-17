@@ -4,7 +4,7 @@ import { Form } from "../components/form";
 import { Time } from "../components/time";
 import { t, tString } from "../i18n";
 import type { discussionBasicInfo } from "../../routes/api/discussion";
-import { useTitle } from "../utils/useTitle";
+import { setTitle } from "../utils/setTitle";
 import { useCurrentUser } from "../utils/currentUser";
 import { A } from "../components/a";
 import { DiscussionItem } from "../components/discussionItem";
@@ -34,7 +34,7 @@ export default () => {
 	useEffect(() => {(async () => {
 		setData(await (await fetch('/api/home')).json());
 	})()}, [refreshKey]);
-	useTitle(tString('home.name'));
+	setTitle(tString('home.name'));
 	if (!data) {
 		return <Card><h1>{t('home.name')}</h1><p>{t('loading')}</p></Card>
 	}

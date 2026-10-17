@@ -1,1 +1,0 @@
-export const useTitle = (title: string) => document.title = title + ' - cy3\'s site';

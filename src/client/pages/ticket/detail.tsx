@@ -2,7 +2,7 @@ import { useParams } from "@w3cj/ruta";
 import { Card } from "../../components/card";
 import { t, tString } from "../../i18n";
 import { useCurrentUser } from "../../utils/currentUser";
-import { useTitle } from "../../utils/useTitle";
+import { setTitle } from "../../utils/setTitle";
 import { useEffect, useRef, useState } from "hono/jsx";
 import { ticketStatus, type ticketInfo, type ticketReplyInfo } from "../../../routes/api/ticket";
 import { NotFound } from "../error";
@@ -52,13 +52,13 @@ export const TicketDetail = () => {
 	const repliesEditRef = useRef(new Map<string, HTMLElement>());
 	const replyFormParentIdRef = useRef<HTMLInputElement>(null);
 	if (!data) {
-		useTitle(tString('loading') + ' - ' + tString('ticket.name'));
+		setTitle(tString('loading') + ' - ' + tString('ticket.name'));
 		return <Card>{t('loading')}</Card>;
 	}
 	if (!data.exists) {
 		return <NotFound />;
 	}
-	useTitle(data.info.title + ' - ' + tString(`ticket.categoryName.${data.info.category}`) + ' - ' + tString('ticket.name'));
+	setTitle(data.info.title + ' - ' + tString(`ticket.categoryName.${data.info.category}`) + ' - ' + tString('ticket.name'));
 	return <>
 		<Card>
 			<div style={{ position: 'absolute', right: '10px', top: '10px', display: 'flex', gap: '10px' }}>

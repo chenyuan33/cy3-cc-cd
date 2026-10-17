@@ -2,7 +2,7 @@ import { useParams } from "@w3cj/ruta";
 import { Card } from "../../components/card";
 import { t, tString } from "../../i18n";
 import { useCurrentUser } from "../../utils/currentUser";
-import { useTitle } from "../../utils/useTitle";
+import { setTitle } from "../../utils/setTitle";
 import { useEffect, useRef, useState } from "hono/jsx";
 import type { discussionInfo, discussionReplyInfo } from "../../../routes/api/discussion";
 import { NotFound } from "../error";
@@ -49,13 +49,13 @@ export const DiscussionDetail = () => {
 	const repliesEditRef = useRef(new Map<string, HTMLElement>());
 	const replyFormParentIdRef = useRef<HTMLInputElement>(null);
 	if (!data) {
-		useTitle(tString('loading') + ' - ' + tString('discussion.name'));
+		setTitle(tString('loading') + ' - ' + tString('discussion.name'));
 		return <Card>{t('loading')}</Card>;
 	}
 	if (!data.exists) {
 		return <NotFound />;
 	}
-	useTitle(data.info.title + ' - ' + tString(`discussion.categoryName.${data.info.category}`) + ' - ' + tString('discussion.name'));
+	setTitle(data.info.title + ' - ' + tString(`discussion.categoryName.${data.info.category}`) + ' - ' + tString('discussion.name'));
 	return <>
 		<Card>
 			<div style={{ position: 'absolute', right: '10px', top: '10px', display: 'flex', gap: '10px' }}>

@@ -6,7 +6,7 @@ import { SidebarLayout } from "../../components/layout/sidebar";
 import { t, tString } from "../../i18n";
 import { discussionCategories, discussionCategoriesKey, type discussionBasicInfo, type discussionCategoriesType } from "../../../routes/api/discussion";
 import { CategoryNotFound } from "../error";
-import { useTitle } from "../../utils/useTitle";
+import { setTitle } from "../../utils/setTitle";
 import { Pages } from "../../components/pages";
 import { DiscussionItem } from "../../components/discussionItem";
 import { subscribeUrlChange } from "../../utils/urlSearch";
@@ -45,7 +45,7 @@ export const DiscussionList = () => {
 			<button type='submit'>{t('filter')}</button>
 		</Form>
 	</Card>;
-	useTitle((category ? tString(`discussion.categoryName.${category as discussionCategoriesType}`) + ' - ' : '') + tString('discussion.name'));
+	setTitle((category ? tString(`discussion.categoryName.${category as discussionCategoriesType}`) + ' - ' : '') + tString('discussion.name'));
 	if (!data) {
 		return <SidebarLayout sidebar={sidebar}>
 			<Card>{t('loading')}</Card>

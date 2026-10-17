@@ -6,7 +6,7 @@ import { SidebarLayout } from "../../components/layout/sidebar";
 import { t, tString } from "../../i18n";
 import { inTicketCategory, inTicketStatus, ticketCategories, ticketStatus, type ticketBasicInfo, type ticketCategoriesType, type ticketStatusType } from "../../../routes/api/ticket";
 import { CategoryNotFound, StatusNotFound } from "../error";
-import { useTitle } from "../../utils/useTitle";
+import { setTitle } from "../../utils/setTitle";
 import { Pages } from "../../components/pages";
 import { subscribeUrlChange } from "../../utils/urlSearch";
 import { A } from "../../components/a";
@@ -56,7 +56,7 @@ export const TicketList = () => {
 			<button type='submit'>{t('filter')}</button>
 		</Form>
 	</Card>;
-	useTitle((status ? tString(`ticket.statusName.${status as ticketStatusType}`) + ' - ' : '') + (category ? tString(`ticket.categoryName.${category as ticketCategoriesType}`) + ' - ' : '') + tString('ticket.name'));
+	setTitle((status ? tString(`ticket.statusName.${status as ticketStatusType}`) + ' - ' : '') + (category ? tString(`ticket.categoryName.${category as ticketCategoriesType}`) + ' - ' : '') + tString('ticket.name'));
 	if (!data) {
 		return <SidebarLayout sidebar={sidebar}>
 			<Card>{t('loading')}</Card>

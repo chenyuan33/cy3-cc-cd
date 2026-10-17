@@ -10,7 +10,7 @@ import { t, tString } from "../i18n";
 import { useCurrentUser } from "../utils/currentUser";
 import { NotFound } from "./error";
 import { navigate, useParams } from "@w3cj/ruta";
-import { useTitle } from "../utils/useTitle";
+import { setTitle } from "../utils/setTitle";
 import { useEffect, useState } from "hono/jsx";
 import type { feedInfo } from "../../routes/api/feed";
 import { setValueMdEditor } from "../components/md/editor";
@@ -20,7 +20,7 @@ export default () => {
 	const [search, setSearch] = useState(location.search);
 	useEffect(subscribeUrlChange(setSearch), []);
 	const feed_id = parseInt((useParams<'/feed/:id' | '/feed'>() as { id?: string }).id || '0'), currentUser = useCurrentUser();
-	useTitle(tString('feeds'));
+	setTitle(tString('feeds'));
 	const [data, setData] = useState<{
 		feed: feedInfo | null,
 		replies: feedInfo[],

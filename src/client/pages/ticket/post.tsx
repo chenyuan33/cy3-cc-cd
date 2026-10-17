@@ -4,7 +4,7 @@ import { Card } from "../../components/card";
 import { Form, FormInput, FormMdEditor, FormSelect } from "../../components/form";
 import { useCurrentUser, useCurrentUserEmail } from "../../utils/currentUser";
 import { t, tString } from "../../i18n";
-import { useTitle } from "../../utils/useTitle";
+import { setTitle } from "../../utils/setTitle";
 import { EmailVerifyRequired, LoginRequired, Muted } from "../error";
 import { ticketCategories, type ticketCategoriesType, type ticketStatusType } from "../../../routes/api/ticket";
 import { useRef } from "hono/jsx";
@@ -48,7 +48,7 @@ export const TicketPost = () => {
 			}
 		}, 300);
 	};
-	useTitle(tString('ticket.post.name'));
+	setTitle(tString('ticket.post.name'));
 	return <Card>
 		<h1>{t('ticket.post.name')}</h1>
 		<Form action='/api/ticket/post' method='post' onSuccess={data => navigate('/ticket/' + data.id)}>

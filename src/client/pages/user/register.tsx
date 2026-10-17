@@ -3,7 +3,7 @@ import { Card } from "../../components/card";
 import { Form, FormInput } from "../../components/form";
 import { reloadCurrentUser, useCurrentUser } from "../../utils/currentUser";
 import { t, tString } from "../../i18n";
-import { useTitle } from "../../utils/useTitle";
+import { setTitle } from "../../utils/setTitle";
 import { AlreadyLoggedIn } from "../error";
 import { createAlert } from "../../components/dialog";
 import { navigate } from "@w3cj/ruta";
@@ -15,7 +15,7 @@ export const Register = () => {
 	if (currentUser) {
 		return <AlreadyLoggedIn />;
 	}
-	useTitle(tString('user.register'));
+	setTitle(tString('user.register'));
 	let ckusedTimeout: NodeJS.Timeout;
 	const checks = {
 		length: (x: string) => x.length >= 3 && x.length <= 30,

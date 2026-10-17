@@ -4,7 +4,7 @@ import { Card } from "../components/card";
 import { Editor, getValue, setLang, setValue, type supportedLanguages } from "../components/editor/editor";
 import { Select } from "../components/select";
 import { t, tString } from "../i18n";
-import { useTitle } from "../utils/useTitle";
+import { setTitle } from "../utils/setTitle";
 import { render } from "hono/jsx/dom";
 
 export const IDE = () => {
@@ -24,20 +24,20 @@ export const IDE = () => {
 	};
 	useEffect(loadLang, [langs]);
 	if (!langs) {
-		useTitle(tString('loading') + ' - ' + tString('ide.name'));
+		setTitle(tString('loading') + ' - ' + tString('ide.name'));
 		return <Card>
 			<h1>{t('ide.name')}</h1>
 			<p>{t('loading')}</p>
 		</Card>;
 	}
 	if (!langs.length) {
-		useTitle(tString('error.somethingWentWrong') + ' - ' + tString('ide.name'));
+		setTitle(tString('error.somethingWentWrong') + ' - ' + tString('ide.name'));
 		return <Card>
 			<h1>{t('error.somethingWentWrong')} - {t('ide.name')}</h1>
 			<p>{t('ide.noLanguageSupported')}</p>
 		</Card>;
 	}
-	useTitle(tString('ide.name'));
+	setTitle(tString('ide.name'));
 	return <Card>
 		<h1>{t('ide.name')}</h1>
 		<div style={{ display: 'flex', gap: '20px' }}>
