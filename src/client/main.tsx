@@ -109,7 +109,7 @@ const Header: FC<{}> = () => {
 		const url = new URL('/ws', location.href);
 		url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
 		const ws = new WebSocket(url.toString());
-		let recentNotificationsAfter = new Date().toISOString().replace('T', ' ').replace(/\.\d\d\dZ/, ''), interval: NodeJS.Timeout;
+		let recentNotificationsAfter = new Date().toISOString().replace('T', ' ').replace(/\.\d\d\dZ/, ''), interval: ReturnType<typeof setInterval>;
 		ws.addEventListener('open', () => {
 			interval = setInterval(() => ws.send(JSON.stringify({ recentNotificationsAfter })), 20000);
 			setServerConnectStatus('connected');
@@ -295,7 +295,7 @@ const Nav: FC<{}> = () => {
 		</A></p>
 		<p><A href='/ide'>
 			<i class='fa-solid fa-code'></i>
-			<span class='sidebarTitle'>{t('ide')}</span>
+			<span class='sidebarTitle'>{t('ide.name')}</span>
 		</A></p>
 		<p><A href='/judgement'>
 			<i class='fa-solid fa-user-plus'></i>

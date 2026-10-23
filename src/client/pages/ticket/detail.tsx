@@ -12,7 +12,7 @@ import { User } from "../../components/user";
 import { A } from "../../components/a";
 import { Time } from "../../components/time";
 import { MdRender } from "../../components/md/renderer";
-import { Form, FormInput, FormMdEditor, FormSelect } from "../../components/form";
+import { Form, FormInput, FormMdEditor, FormSelect, FormUserSearch } from "../../components/form";
 import { permissionAdmin } from "../../../settings";
 import { toast } from "../../components/toast";
 import { Pages } from "../../components/pages";
@@ -226,7 +226,7 @@ export const TicketDetail = () => {
 						{ value: '', label: t('doNotModify'), selected: true },
 						...ticketStatus.map(status => ({ value: status, label: <TicketStatus status={status} /> }))
 					]} />
-					<FormInput name='set_assignee' label={t('ticket.setAssignee')} type='number' />
+					<FormUserSearch name='set_assignee' label={t('ticket.setAssignee')} />
 				</> : null}
 				<FormMdEditor id='content' name='content' required />
 				<ReplyButton />

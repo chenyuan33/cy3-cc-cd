@@ -5,6 +5,8 @@ import { Select } from "./select";
 import { tString } from "../i18n";
 import { toast } from "./toast";
 import { navigate } from "@w3cj/ruta";
+import { UserSearch } from "./userSearch";
+import type { userInfo } from "../../types";
 
 export const Form: FC<PropsWithChildren<{
 	[x: string]: any,
@@ -76,6 +78,18 @@ export const FormInput: FC<{
 }> = ({ id, class: className, name, label, required, type, placeholder, autocomplete, onInput = () => {}, value, min, max, minlength, maxlength, pattern }) => <div style={{ height: '50px' }} class={className}>
 	{label && <label for={id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
 	<input id={id} type={type} name={name} onInput={onInput} required={required} style={label ? { position: 'absolute', left: 'var(--align-input)' } : {}} autocomplete={autocomplete || 'off'} value={value} placeholder={placeholder} min={min} max={max} minlength={minlength} maxlength={maxlength} pattern={pattern} />
+</div>;
+export const FormUserSearch: FC<{
+	id?: string,
+	class?: string,
+	name?: string,
+	label?: string | JSX.Element,
+	required?: boolean,
+	onChange?: () => void,
+	value?: userInfo,
+}> = ({ id, class: className, name, label, required, onChange = () => {}, value }) => <div style={{ height: '50px' }} class={className}>
+	{label && <label for={id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
+	<UserSearch id={id} name={name} onChange={onChange} required={required} style={label ? { position: 'absolute', left: 'var(--align-input)' } : {}} value={value} />
 </div>;
 export const FormCheckbox: FC<{
 	id?: string,

@@ -380,6 +380,8 @@ export default {
     noReason: 'Reason not provided',
     copiedSuccessfully: 'Copied successfully',
     searchUsernameOrUid: 'Search username or UID',
+	userNotExists: 'User Not Exists',
+	currentChoice: 'Current Choice:',
     none: 'None',
     doNotModify: 'Do not modify',
     delete: 'Delete',

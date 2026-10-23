@@ -1,14 +1,13 @@
 import "./register.css";
 import { Card } from "../../components/card";
 import { Form, FormInput } from "../../components/form";
-import { reloadCurrentUser, useCurrentUser } from "../../utils/currentUser";
+import { useCurrentUser } from "../../utils/currentUser";
 import { t, tString } from "../../i18n";
 import { setTitle } from "../../utils/setTitle";
 import { AlreadyLoggedIn } from "../error";
-import { createAlert } from "../../components/dialog";
-import { navigate } from "@w3cj/ruta";
 import { toast } from "../../components/toast";
 import { A } from "../../components/a";
+import type { userInfo } from "../../../types";
 
 export const Register = () => {
 	const currentUser = useCurrentUser();
@@ -16,7 +15,7 @@ export const Register = () => {
 		return <AlreadyLoggedIn />;
 	}
 	setTitle(tString('user.register'));
-	let ckusedTimeout: NodeJS.Timeout;
+	let ckusedTimeout: ReturnType<typeof setTimeout>;
 	const checks = {
 		length: (x: string) => x.length >= 3 && x.length <= 30,
 		used: (x: string) => !checks.length(x) || null
@@ -69,7 +68,7 @@ export const Register = () => {
 									if (name === 'used') {
 										clearTimeout(ckusedTimeout);
 										ckusedTimeout = setTimeout(async () => {
-											if (((await (await fetch('/api/user/search?user=' + uname)).json()) as { exists: boolean }).exists) {
+											if (((await (await fetch('/api/user/search?user=' + uname)).json()) as userInfo[]).length) {
 												ele.className = 'fa-solid fa-xmark check-failed';
 												document.querySelector('button')!.disabled = true;
 											} else {

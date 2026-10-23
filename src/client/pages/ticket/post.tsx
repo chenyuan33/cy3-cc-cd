@@ -24,7 +24,7 @@ export const TicketPost = () => {
 		return <EmailVerifyRequired />;
 	}
 	const category = new URLSearchParams(location.search).get('category'), similarRef = useRef<HTMLDivElement>(null);
-	let simliarRefresherTimeout: NodeJS.Timeout | null = null;
+	let simliarRefresherTimeout: ReturnType<typeof setTimeout> | null = null;
 	const refreshSimilarTicket = () => {
 		if (!similarRef.current) {
 			return;

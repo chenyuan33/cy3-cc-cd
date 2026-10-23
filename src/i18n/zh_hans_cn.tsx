@@ -382,6 +382,8 @@ export default {
     noReason: '未填写理由',
     copiedSuccessfully: '复制成功',
     searchUsernameOrUid: '搜索用户名或用户编号',
+	userNotExists: '用户未找到',
+	currentChoice: '当前选择：',
     none: '无',
     doNotModify: '不修改',
     delete: '删除',

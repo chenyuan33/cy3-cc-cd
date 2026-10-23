@@ -234,21 +234,10 @@ app.post('/notification/read-all', async c => {
 	return c.redirect('/user/notification', 303);
 });
 app.get('/search', async c => {
-	const { user } = c.get('reqBody');
+	const { user } = c.get('reqBody'), env = c.env as any;
 	if (!user) {
 		return notFound(c);
 	}
-	const result = await (c.env as any).db.prepare('SELECT id, name, created_at, username_violation FROM users WHERE id = ? OR name = ?').bind(user, user).first();
-	if (result) {
-		return c.json({ exists: true, user: { ...result, name: getDisplayUsername(result, c) } });
-	}
-	return c.json({ exists: false });
-});
-app.get('/uidToHtml', async c => {
-	const { id } = c.get('reqBody');
-	if (!id) {
-		return notFound(c);
-	}
-	return c.html(<User c={c} user={parseInt(id)} />);
+	return c.json((await env.db.prepare(`SELECT ${userInfoDatas} FROM users WHERE id = ? OR name = ?`).bind(user, user).all()).results);
 });
 export default app;
