@@ -59,6 +59,7 @@ export default {
 		registeredAt: 'Registered at'
 	},
 	user: {
+		user: 'User',
 		register: 'Register',
 		registerUsernameLength: 'Username must be between 3 and 30 characters.',
 		registerUsernameExists: 'Username already exists.',
@@ -360,11 +361,11 @@ export default {
 		revokePermission: 'Revoke Permission',
 		grant: 'Grant',
 		revoke: 'Revoke',
-		1: 'Visit the site',
-		2: 'Speak freely',
-		4: 'Access admin panel',
-		8: 'Use Private Messages',
-		16: 'Use File Upload Feature'
+		'1': 'Visit the site',
+		'2': 'Speak freely',
+		'4': 'Access admin panel',
+		'8': 'Use Private Messages',
+		'16': 'Use File Upload Feature'
 	},
 	usernameViolation: {
 		set: 'Set as Violating Username',
@@ -396,5 +397,7 @@ export default {
     selectConversation: 'Select a conversation',
     userNotFound: 'User "{username}" not found',
 	upload: 'Upload',
-	userSpace: 'User __USER__\'s Personal Space'
+	userSpace: 'User __USER__\'s Personal Space',
+	action: 'Action',
+	comment: 'Comment'
 };

@@ -24,6 +24,7 @@ import { TicketPost } from './pages/ticket/post';
 import { TicketDetail } from './pages/ticket/detail';
 import { TicketReplyRedirect } from './pages/ticket/replyRedirect';
 import { IDE } from './pages/ide';
+import { Judgement } from './pages/judgement';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -40,6 +41,7 @@ const routes = defineRoutes(route => [
 	route('/ticket/:id{\\d+}', () => <TicketDetail key='ticketDetail' />),
 	route('/ticket/reply/:id{\\d+}', () => <TicketReplyRedirect key='ticketReplyRedirect' />),
 	route('/ide', () => <IDE key='ide' />),
+	route('/judgement', () => <Judgement key='judgement' />),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {

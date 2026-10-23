@@ -18,6 +18,7 @@ export type themeInfo = {
 	light_fgcolor: string, light_bgcolor: string, light_bgimage: string,
 	dark_fgcolor: string, dark_bgcolor: string, dark_bgimage: string
 };
+export type judementType = 'permission-changed' | 'name-violation' | 'warn';
 export type AppEnv = {
 	Variables: {
 		reqBody: Record<string, string>;

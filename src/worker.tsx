@@ -10,7 +10,6 @@ import webSocketRoutes from './routes/ws';
 import userRoutes from './routes/user';
 import chatRoutes from './routes/chat';
 import adminRoutes from './routes/admin';
-import judgementRoutes from './routes/judgement';
 import fileRoutes from './routes/file';
 import themeRoutes from './routes/theme';
 import { renderer } from './renderer';
@@ -104,7 +103,6 @@ app.route('/ws', webSocketRoutes);
 app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
 app.route('/chat', chatRoutes);
-app.route('/judgement', judgementRoutes);
 app.route('/file', fileRoutes);
 app.route('/theme', themeRoutes);
 app.onError((err, c) => {

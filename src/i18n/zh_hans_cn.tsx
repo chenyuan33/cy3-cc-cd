@@ -61,6 +61,7 @@ export default {
 		registeredAt: '注册时间',
 	},
 	user: {
+		user: '用户',
 		register: '注册',
 		registerUsernameLength: '用户名必须在 3 到 30 个字符之间。',
 		registerUsernameExists: '用户名不能已存在。',
@@ -362,11 +363,11 @@ export default {
 		revokePermission: '撤销权限',
 		grant: '授予',
 		revoke: '撤销',
-		1: '进入主站',
-		2: '自由发言',
-		4: '进入后台',
-		8: '使用私信',
-		16: '使用文件上传功能'
+		'1': '进入主站',
+		'2': '自由发言',
+		'4': '进入后台',
+		'8': '使用私信',
+		'16': '使用文件上传功能'
 	},
 	usernameViolation: {
 		set: '设为违规用户名',
@@ -399,5 +400,7 @@ export default {
     userNotFound: '未找到用户 “{username}”',
 	tag: 'Tag',
 	upload: '上传',
-	userSpace: '用户 __USER__ 的个人空间'
+	userSpace: '用户 __USER__ 的个人空间',
+	action: '操作',
+	comment: '理由'
 } as typeof en_us_translations;

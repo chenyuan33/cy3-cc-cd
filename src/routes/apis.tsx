@@ -6,7 +6,7 @@ import discussionRoutes, { type discussionCategoriesType } from './api/discussio
 import ticketRoutes from './api/ticket';
 import fileRoutes from './api/file';
 import themeRoutes from './api/theme';
-import type { AppEnv } from '../types';
+import type { AppEnv, judementType } from '../types';
 import { accessDenied, loginRequired, notFound } from './errorPages';
 import { permissionChat } from '../settings';
 import { getI18n, messages } from '../i18n';
@@ -79,6 +79,31 @@ app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
+app.get('/judgement', async c => c.json((await (c.env as any).db.prepare(`
+	SELECT
+		j.id,
+		j.type,
+		j.payload,
+		j.created_at,
+		j.batch_id,
+		j.comment,
+		json_object ( ${userInfoDatas.map(scheme => `'${scheme}', u.${scheme}`)} ) AS user,
+		json_object ( ${userInfoDatas.map(scheme => `'${scheme}', ou.${scheme}`)} ) AS operator
+	FROM judgement j
+	JOIN users u ON j.uid = u.id
+	JOIN users ou ON j.operator = ou.id
+	ORDER BY j.created_at DESC
+	LIMIT 100
+`).bind().all()).results.map(({ payload, user, operator, ...data }: {
+	id: number,
+	type: judementType,
+	payload: string,
+	created_at: string,
+	batch_id: string,
+	comment: string,
+	user: string,
+	operator: string
+}) => ({ payload: JSON.parse(payload), user: JSON.parse(user), operator: JSON.parse(operator), ...data }))));
 app.route('/file', fileRoutes);
 app.route('/theme', themeRoutes);
 app.get('/support-langs', async c => c.json(await ((await fetch('https://judge.cqiming.com/languages/')).json())));
