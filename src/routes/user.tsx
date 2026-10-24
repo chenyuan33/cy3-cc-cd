@@ -205,28 +205,4 @@ app.get('/notification', async c => {
         <Pages c={c} currentPage={currentPage} totalPage={totalPage} />
     </>, { title: translations.user.notification.name });
 });
-// currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <>
-// 	<Card>
-// 		<Form action='/admin/user/warn' method='post'>
-// 			<input name='uid' type='hidden' value={user.id.toString()} />
-// 			<FormInput name='comment' type='text' required />
-// 			<input type='submit' value={translations.warn} />
-// 		</Form>
-// 	</Card>
-// 	<Card style={{ marginTop: '10px' }}>
-// 		<Form action='/admin/user/name-violation' method='post'>
-// 			<input type='hidden' name='uid' value={user.id.toString()} />
-// 			<FormInput type='text' name='comment' required label={translations.reason} />
-// 			<input type='submit' value={translations.user.toggleUsernameViolation} />
-// 		</Form>
-// 	</Card>
-// 	<Card>
-//      <Form action='/admin/user/permission/set' method='post'>
-// 			<input type='hidden' name='uid' value={user.id.toString()} />
-// 			<FormInput type='text' name='comment' label={translations.reason} required />
-// 			{Array.from({ length: permissionCount }, (_, i) => i).map(x => 1 << x).filter(x => x !== permissionAdmin || currentUser.id === 1).map(permissionId => <FormCheckbox id={'permission-' + permissionId} name={'p' + permissionId} label={translations.permission[permissionId as allPermissions]} checked={!!(user.permission & permissionId)} />)}
-// 			<input type='submit' value={translations.save} />
-// 		</Form>
-//   </Card>
-// </> : <></>;
 export default app;

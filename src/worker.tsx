@@ -91,7 +91,6 @@ app.use(async (c, next) => {
 	}
 	await next();
 });
-app.get('/', c => c.render(<></>));
 app.get('/private-message', (c) => {
 	const query = c.req.query();
 	const searchParams = new URLSearchParams(query).toString();
