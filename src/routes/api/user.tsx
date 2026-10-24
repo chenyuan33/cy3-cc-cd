@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import type { AppEnv, ContextType, userInfo } from "../../types";
+import type { AppEnv, ContextType, judgementType, userInfo } from "../../types";
 import { accessDenied, alreadyLoggedIn, emailRequired, emailUsed, errorJson, invalidEmail, invalidPassword, loginRequired, noSuchUsername, notFound, passwordRequired, registerUsernameExists, registerUsernameLength, usernameRequired, verifyFailed } from "../errorPages";
 import { SignJWT } from "jose";
 import bcrypt from "bcryptjs";
@@ -9,6 +9,7 @@ import { raw } from "hono/html";
 import { Form } from "../../client/components/form";
 import { permissionAdmin } from "../../settings";
 import { rateLimit } from "@elithrar/workers-hono-rate-limit";
+import { feedQuery } from "./feed";
 
 const app = new Hono<AppEnv>();
 const validateUsername = (name: string, c: ContextType) => {
@@ -80,6 +81,89 @@ app.post('/login', async c => {
 app.get('/logout', c => {
 	c.header('Set-Cookie', 'session=; HttpOnly; Secure; SameSite=strict; Path=/; Max-Age=0');
 	return c.json({ success: true });
+});
+app.get('/detail/:id', async c => {
+	const id = parseInt(c.req.param('id') ?? ''), env = c.env as any;
+	if (!id) {
+		return c.json({ result: null });
+	}
+	return c.json({ result: await env.db.prepare(`SELECT ${userInfoDatas} FROM users WHERE id = ?`).bind(id).first() });
+});
+app.get('/detail/:id/feed', async c => {
+	const id = parseInt(c.req.param('id') ?? ''), env = c.env as any;
+	if (!id) {
+		return c.json({ result: null });
+	}
+	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '10') || 10, 1), 10);
+	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
+	return c.json({
+		results: await feedQuery(c, [...(await (c.env as any).db.prepare('SELECT id FROM feed WHERE uid = ? AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
+			.bind(id, perPage, (page - 1) * perPage).all())
+			.results.map(({ id }: { id: number }) => id)], true, true),
+		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM feed WHERE uid = ? AND deleted = 0').bind(id).first()).total
+	});
+});
+app.get('/detail/:id/judgement', async c => {
+	const id = parseInt(c.req.param('id') ?? ''), env = c.env as any;
+	if (!id) {
+		return c.json({ result: null });
+	}
+	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '100') || 100, 1), 100);
+	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
+	return c.json({
+		results: (await (c.env as any).db.prepare(`
+			SELECT
+				j.id,
+				j.type,
+				j.payload,
+				j.created_at,
+				j.batch_id,
+				j.comment,
+				json_object ( ${userInfoDatas.map(scheme => `'${scheme}', u.${scheme}`)} ) AS user,
+				json_object ( ${userInfoDatas.map(scheme => `'${scheme}', ou.${scheme}`)} ) AS operator
+			FROM judgement j
+			JOIN users u ON j.uid = u.id
+			JOIN users ou ON j.operator = ou.id
+			WHERE j.uid = ?
+			ORDER BY j.created_at DESC
+			LIMIT ?
+			OFFSET ?
+		`).bind(id, perPage, (page - 1) * perPage).all()).results.map(({ payload, user, operator, ...data }: {
+			id: number,
+			type: judgementType,
+			payload: string,
+			created_at: string,
+			batch_id: string,
+			comment: string,
+			user: string,
+			operator: string
+		}) => ({ payload: JSON.parse(payload), user: JSON.parse(user), operator: JSON.parse(operator), ...data })),
+		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM judgement WHERE uid = ?').bind(id).first()).total
+	});
+});
+app.get('/detail/:id/discussion', async c => {
+	const id = parseInt(c.req.param('id') ?? ''), env = c.env as any;
+	if (!id) {
+		return c.json({ result: null });
+	}
+	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '20') || 20, 1), 20);
+	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
+	return c.json({
+		results: (await (c.env as any).db.prepare(`
+			SELECT
+				d.id, d.category, d.title, d.created_at, d.pin,
+				json_object (
+					${userInfoDatas.map(schema => `'${schema}', u.${schema}`)}
+				) AS user
+			FROM discussion d
+			JOIN users u ON d.uid = u.id
+			WHERE d.uid = ?
+			ORDER BY d.pin DESC, d.created_at DESC
+			LIMIT ?
+			OFFSET ?
+		`).bind(id, perPage, (page - 1) * perPage).all()).results.map(({ user, ...attr }: { user: string, [attr: string]: any }) => ({ user: JSON.parse(user), ...attr })),
+		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM discussion WHERE uid = ?').bind(id).first()).total
+	});
 });
 app.post('/general-settings', async c => {
 	const currentUser = c.get('currentUser'), { nameColorLight, nameColorDark, tag } = c.get('reqBody'), env = c.env as any;

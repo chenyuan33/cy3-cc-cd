@@ -25,11 +25,23 @@ import { TicketDetail } from './pages/ticket/detail';
 import { TicketReplyRedirect } from './pages/ticket/replyRedirect';
 import { IDE } from './pages/ide';
 import { Judgement } from './pages/judgement';
+import { UserDetailLayout } from './pages/user/detail/layout';
+import { UserDetailHome } from './pages/user/detail/home';
+import { UserDetailFeed } from './pages/user/detail/feed';
+import { UserDetailDiscussion } from './pages/user/detail/discussion';
+import { UserDetailJudgement } from './pages/user/detail/judgement';
+import { UserDetailAdmin } from './pages/user/detail/admin';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
 	route('/user/register', () => <Register key='userRegister' />),
 	route('/user/login', () => <Login key='userLogin' />),
+	route('/user/:id', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
+	route('/user/:id/home', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
+	route('/user/:id/feed', () => <UserDetailLayout key='userDetail'><UserDetailFeed key='userDetailFeed' /></UserDetailLayout>),
+	route('/user/:id/discussion', () => <UserDetailLayout key='userDetail'><UserDetailDiscussion key='userDetailDiscussion' /></UserDetailLayout>),
+	route('/user/:id/judgement', () => <UserDetailLayout key='userDetail'><UserDetailJudgement key='userDetailJudgement' /></UserDetailLayout>),
+	route('/user/:id/admin', () => <UserDetailLayout key='userDetail'><UserDetailAdmin key='userDetailAdmin' /></UserDetailLayout>),
 	route('/feed', () => <Feed key='feed' />),
 	route('/feed/:id{\\d+}', () => <Feed key='feed' />),
 	route('/discussion', () => <DiscussionList key='discussionList' />),

@@ -6,7 +6,7 @@ import discussionRoutes, { type discussionCategoriesType } from './api/discussio
 import ticketRoutes from './api/ticket';
 import fileRoutes from './api/file';
 import themeRoutes from './api/theme';
-import type { AppEnv, judementType } from '../types';
+import type { AppEnv, judgementType } from '../types';
 import { accessDenied, loginRequired, notFound } from './errorPages';
 import { permissionChat } from '../settings';
 import { getI18n, messages } from '../i18n';
@@ -96,7 +96,7 @@ app.get('/judgement', async c => c.json((await (c.env as any).db.prepare(`
 	LIMIT 100
 `).bind().all()).results.map(({ payload, user, operator, ...data }: {
 	id: number,
-	type: judementType,
+	type: judgementType,
 	payload: string,
 	created_at: string,
 	batch_id: string,

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "hono/jsx";
 import { PostButton } from "../../components/button";
 import { Card } from "../../components/card";
-import { Form, FormSelect, type FormHandle } from "../../components/form";
+import { Form, FormSelect } from "../../components/form";
 import { SidebarLayout } from "../../components/layout/sidebar";
 import { t, tString } from "../../i18n";
 import { inTicketCategory, inTicketStatus, ticketCategories, ticketStatus, type ticketBasicInfo, type ticketCategoriesType, type ticketStatusType } from "../../../routes/api/ticket";
@@ -40,7 +40,7 @@ export const TicketList = () => {
 	if (status && !inTicketStatus(status)) {
 		return <StatusNotFound />;
 	}
-	const filterFormRef = useRef<FormHandle>(null);
+	const filterFormRef = useRef<HTMLFormElement>(null);
 	const sidebar = <Card>
 		<h1>{t('ticket.name')}</h1>
 		<PostButton href={'/ticket/post' + (category ? '?category=' + category : '')} />

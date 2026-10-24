@@ -14,9 +14,9 @@ export type feedInfo = {
 	replies: feedInfo[]
 };
 const app = new Hono<AppEnv>();
-async function feedQuery(c: ContextType, id_: number, queryParent?: boolean, queryReply?: boolean): Promise<feedInfo | null>;
-async function feedQuery(c: ContextType, id_: number[], queryParent?: boolean, queryReply?: boolean): Promise<(feedInfo | null)[]>;
-async function feedQuery(c: ContextType, id_: number | number[], queryParent = true, queryReply = true): Promise<feedInfo | null | (feedInfo | null)[]> {
+export async function feedQuery(c: ContextType, id_: number, queryParent?: boolean, queryReply?: boolean): Promise<feedInfo | null>;
+export async function feedQuery(c: ContextType, id_: number[], queryParent?: boolean, queryReply?: boolean): Promise<(feedInfo | null)[]>;
+export async function feedQuery(c: ContextType, id_: number | number[], queryParent = true, queryReply = true): Promise<feedInfo | null | (feedInfo | null)[]> {
 	const env = c.env as any, ids = typeof id_ === 'number' ? [id_] : id_;
 	if (!ids.length) {
 		return [];
@@ -39,7 +39,9 @@ async function feedQuery(c: ContextType, id_: number | number[], queryParent = t
 				return;
 			}
 			subFeeds.add(parent_id);
-			doNotQueryReplyFeeds.add(parent_id);
+			if (!ids.includes(parent_id)) {
+				doNotQueryReplyFeeds.add(parent_id);
+			}
 		});
 	}
 	const addReply = async (ids: number[]) => {
@@ -80,12 +82,12 @@ async function feedQuery(c: ContextType, id_: number | number[], queryParent = t
 			feedInfos.get(parent_id)?.replies.push(id);
 		}
 	});
-	const makeFeed = (id: number): feedInfo | null => {
+	const makeFeed = (id: number, makeReplies = true): feedInfo | null => {
 		if (!feedInfos.has(id)) {
 			return null;
 		}
 		const info = feedInfos.get(id)!;
-		return { ...info, replies: info.replies.map(makeFeed).filter((info): info is feedInfo => !!info) };
+		return { ...info, replies: makeReplies ? info.replies.map(id => makeFeed(id)).filter((info): info is feedInfo => !!info) : [] };
 	};
 	const makeFeedWithParent = (id: number): feedInfo | null => {
 		const ret = makeFeed(id);
@@ -93,7 +95,7 @@ async function feedQuery(c: ContextType, id_: number | number[], queryParent = t
 			return null;
 		}
 		const parent_id = parentMap.get(id);
-		return { ...ret, parent: parent_id ? makeFeed(parent_id) : null };
+		return { ...ret, parent: parent_id ? makeFeed(parent_id, false) : null };
 	};
 	return typeof id_ === 'number' ? makeFeedWithParent(id_) : ids.map(id => makeFeedWithParent(id));
 };

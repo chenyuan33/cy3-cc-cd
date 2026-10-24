@@ -126,8 +126,13 @@ export default {
 			nameViolationUnset: '取消',
 		},
 		profile: {
-			name: '__USERNAME__ 的个人主页',
-			feed: '__USERNAME__ 的动态'
+			title: '{username} 的个人主页',
+			home: '个人主页',
+			feed: '发布的动态',
+			discussion: '发布的讨论',
+			theme: '创建的主题',
+			judgement: '处罚记录',
+			admin: '管理'
 		},
 		tag: 'Tag',
 		tagAdmin: '管理员',
@@ -338,6 +343,7 @@ export default {
 	reply: '回复',
 	replyAfterLogin: '{link}后回复',
 	replyAfterEmailVerify: '{link}后回复',
+	replyTo: '回复于：',
 	afterLoginLink: '登录',
 	afterEmailVerifyLink: '邮箱验证',
 	postSuccessfully: '发布成功',
@@ -402,5 +408,6 @@ export default {
 	upload: '上传',
 	userSpace: '用户 __USER__ 的个人空间',
 	action: '操作',
-	comment: '理由'
+	comment: '理由',
+	operationSuccessful: '操作成功'
 } as typeof en_us_translations;

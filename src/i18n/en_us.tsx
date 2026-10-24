@@ -124,8 +124,13 @@ export default {
 			nameViolationUnset: 'unmarked',
 		},
 		profile: {
-			name: '__USERNAME__\'s profile',
-			feed: '__USERNAME__\'s feed',
+			title: '{username}\'s Profile',
+			home: 'Profile',
+			feed: 'Posted Feeds',
+			discussion: 'Posted Discussions',
+			theme: 'Created Themes',
+			judgement: 'Penalty Records',
+			admin: 'Manage'
 		},
 		tag: 'Tag',
 		tagAdmin: 'Admin',
@@ -336,6 +341,7 @@ export default {
 	reply: 'Reply',
 	replyAfterLogin: '{link} to reply',
 	replyAfterEmailVerify: '{link} to reply',
+	replyTo: 'Reply To:',
 	afterLoginLink: 'Login',
 	afterEmailVerifyLink: 'Verify your email',
 	postSuccessfully: 'Post Successfully',
@@ -399,5 +405,6 @@ export default {
 	upload: 'Upload',
 	userSpace: 'User __USER__\'s Personal Space',
 	action: 'Action',
-	comment: 'Comment'
+	comment: 'Comment',
+	operationSuccessful: 'Operation successful'
 };

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "hono/jsx";
 import { PostButton } from "../../components/button";
 import { Card } from "../../components/card";
-import { Form, FormSelect, type FormHandle } from "../../components/form";
+import { Form, FormSelect } from "../../components/form";
 import { SidebarLayout } from "../../components/layout/sidebar";
 import { t, tString } from "../../i18n";
 import { discussionCategories, discussionCategoriesKey, type discussionBasicInfo, type discussionCategoriesType } from "../../../routes/api/discussion";
@@ -33,7 +33,7 @@ export const DiscussionList = () => {
 	if (category && !(category in discussionCategories)) {
 		return <CategoryNotFound />;
 	}
-	const filterFormRef = useRef<FormHandle>(null);
+	const filterFormRef = useRef<HTMLFormElement>(null);
 	const sidebar = <Card>
 		<h1>{t('discussion.name')}</h1>
 		<PostButton href={'/discussion/post' + (category ? '?category=' + category : '')} />

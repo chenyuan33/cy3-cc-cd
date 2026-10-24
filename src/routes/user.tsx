@@ -205,71 +205,28 @@ app.get('/notification', async c => {
         <Pages c={c} currentPage={currentPage} totalPage={totalPage} />
     </>, { title: translations.user.notification.name });
 });
-app.get('/:uid{[1-9][0-9]*}', async c => {
-    const currentUser = c.get('currentUser'), user = await userQuery(parseInt(c.req.param('uid')), c), translations = c.get('translations');
-    if (user === null) {
-        return notFound(c);
-    }
-    const displayName = getDisplayUsername(user, c);
-    return c.render(
-        <>
-            <Card style={{ position: 'relative' }}>
-                <h1><User user={user} c={c} /></h1>
-                <table>
-                    <tbody>
-                        <tr><th>{translations.userInfo.uid}</th><td>{user.id}</td></tr>
-                        <tr><th>{translations.userInfo.registeredAt}</th><td>{user.created_at}</td></tr>
-                        <tr><th>{translations.feeds}</th><td><a href={`/user/${user.id}/feed`}>{translations.feeds}</a></td></tr>
-                    </tbody>
-                </table>
-            </Card>
-            {currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <>
-				<Card>
-					<Form action='/admin/user/warn' method='post'>
-						<input name='uid' type='hidden' value={user.id.toString()} />
-						<FormInput name='comment' type='text' required />
-						<input type='submit' value={translations.warn} />
-					</Form>
-				</Card>
-				<Card style={{ marginTop: '10px' }}>
-					<Form action='/admin/user/name-violation' method='post'>
-						<input type='hidden' name='uid' value={user.id.toString()} />
-						<FormInput type='text' name='comment' required label={translations.reason} />
-						<input type='submit' value={translations.user.toggleUsernameViolation} />
-					</Form>
-				</Card>
-				<Card>
-                    <Form action='/admin/user/permission/set' method='post'>
-						<input type='hidden' name='uid' value={user.id.toString()} />
-						<FormInput type='text' name='comment' label={translations.reason} required />
-						{Array.from({ length: permissionCount }, (_, i) => i).map(x => 1 << x).filter(x => x !== permissionAdmin || currentUser.id === 1).map(permissionId => <FormCheckbox id={'permission-' + permissionId} name={'p' + permissionId} label={translations.permission[permissionId as allPermissions]} checked={!!(user.permission & permissionId)} />)}
-						<input type='submit' value={translations.save} />
-					</Form>
-                </Card>
-			</> : <></>}
-        </>,
-        { title: translations.user.profile.name.replace('__USERNAME__', displayName) }
-    );
-});
-app.get('/:uid{[1-9][0-9]*}/feed', async c => {
-    const uid = parseInt(c.req.param('uid')), env = c.env as any, translations = c.get('translations');
-    const user = await userQuery(uid, c);
-    if (!user) {
-        return notFound(c);
-    }
-    const perPage = 10;
-    const currentPage = Math.max(1, parseInt(c.get('reqBody').page || '1') || 1);
-    const { total } = await env.db.prepare('SELECT COUNT(*) as total FROM feed WHERE uid = ? AND parent_id = 0 AND deleted = 0').bind(uid).first();
-    const totalPage = Math.ceil(total / perPage);
-    const { results } = (await env.db.prepare('SELECT id FROM feed WHERE uid = ? AND parent_id = 0 AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
-        .bind(uid, perPage, (currentPage - 1) * perPage).all());
-    return c.render(<>
-        <MdInit c={c} />
-        <Card>
-            <h1>{translations.user.profile.feed.replace('__USERNAME__', getDisplayUsername(user, c))}</h1>
-        </Card>
-        {await Promise.all((results || []).map(async ({ id }: { id: number }) => <Feed c={c} id={id} />))}
-        <Pages c={c} currentPage={currentPage} totalPage={totalPage} />
-    </>, { title: translations.user.profile.feed.replace('__USERNAME__', getDisplayUsername(user, c)) });
-});
+// currentUser && (currentUser.permission & permissionAdmin) && (!(user.permission & permissionAdmin) || currentUser.id === 1) ? <>
+// 	<Card>
+// 		<Form action='/admin/user/warn' method='post'>
+// 			<input name='uid' type='hidden' value={user.id.toString()} />
+// 			<FormInput name='comment' type='text' required />
+// 			<input type='submit' value={translations.warn} />
+// 		</Form>
+// 	</Card>
+// 	<Card style={{ marginTop: '10px' }}>
+// 		<Form action='/admin/user/name-violation' method='post'>
+// 			<input type='hidden' name='uid' value={user.id.toString()} />
+// 			<FormInput type='text' name='comment' required label={translations.reason} />
+// 			<input type='submit' value={translations.user.toggleUsernameViolation} />
+// 		</Form>
+// 	</Card>
+// 	<Card>
+//      <Form action='/admin/user/permission/set' method='post'>
+// 			<input type='hidden' name='uid' value={user.id.toString()} />
+// 			<FormInput type='text' name='comment' label={translations.reason} required />
+// 			{Array.from({ length: permissionCount }, (_, i) => i).map(x => 1 << x).filter(x => x !== permissionAdmin || currentUser.id === 1).map(permissionId => <FormCheckbox id={'permission-' + permissionId} name={'p' + permissionId} label={translations.permission[permissionId as allPermissions]} checked={!!(user.permission & permissionId)} />)}
+// 			<input type='submit' value={translations.save} />
+// 		</Form>
+//   </Card>
+// </> : <></>;
 export default app;

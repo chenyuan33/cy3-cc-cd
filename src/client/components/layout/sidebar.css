@@ -1,6 +1,6 @@
 .sidebar-layout-parent {
 	display: grid;
-	grid-template-columns: minmax(260px, 30%) minmax(0, 1fr);
+	grid-template-columns: clamp(200px, 30%, 250px) minmax(0, 1fr);
 	gap: 24px;
 }
 

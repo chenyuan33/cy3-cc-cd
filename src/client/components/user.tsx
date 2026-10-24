@@ -1,7 +1,7 @@
 import { useEffect, useState, type CSSProperties, type FC } from "hono/jsx";
 import type { userInfo } from "../../types";
 import { permissionAdmin, permissionVisit } from "../../settings";
-import { t } from "../i18n";
+import { t, tString } from "../i18n";
 import { A } from "./a";
 
 export const getDisplayUsername = (user: userInfo) => {
@@ -10,6 +10,15 @@ export const getDisplayUsername = (user: userInfo) => {
 	}
 	if (user.username_violation === 1) {
 		return t('user.usernameViolation', { uid: String(user.id) });
+	}
+	return user.name ?? '';
+};
+export const getDisplayUsernameString = (user: userInfo) => {
+	if (!user.id) {
+		return tString('user.unknown');
+	}
+	if (user.username_violation === 1) {
+		return tString('user.usernameViolation', { uid: String(user.id) });
 	}
 	return user.name ?? '';
 };

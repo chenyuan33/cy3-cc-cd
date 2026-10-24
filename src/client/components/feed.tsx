@@ -12,9 +12,9 @@ import { A } from "./a";
 import type { feedInfo } from "../../routes/api/feed";
 import { setValueMdEditor } from "./md/editor";
 
-export const Feed: FC<{ feed: feedInfo, reload: () => void | Promise<void> }> = ({ feed, reload }) => {
+export const Feed: FC<{ feed: feedInfo, reload: () => void | Promise<void>, showParent?: boolean }> = ({ feed, reload, showParent = false }) => {
 	const currentUser = useCurrentUser();
-	const { id, user, content, created_at, replies } = feed;
+	const { id, user, content, created_at, replies, parent } = feed;
 	return <Card>
 		<User user={user} />
 		&nbsp;
@@ -31,6 +31,10 @@ export const Feed: FC<{ feed: feedInfo, reload: () => void | Promise<void> }> = 
 				<DeleteButton href='/api/feed/delete' arg={{ id }} redirect='' onSuccess={reload} />
 			</> : <></>}
 		</div>
+		{showParent && parent ? <blockquote>
+			{t('replyTo')}
+			<Feed feed={parent} reload={reload} />
+		</blockquote> : null}
 		<div><MdRender markdown={content} /></div>
 		{currentUser && (currentUser.id === 1 || currentUser.id === user.id) ? <Form id={'feed-edit-' + id} data-vis='-1' method='post' action='/api/feed/edit' onSuccess={() => {
 			document.getElementById('feed-edit-' + id)!.dataset.vis = '-1';
