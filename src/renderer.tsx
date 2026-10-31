@@ -1,6 +1,5 @@
 import { jsxRenderer, useRequestContext } from "hono/jsx-renderer";
 import type { AppEnv } from "./types";
-import { ThemeLoader } from "./components/themeLoader";
 import { Script, ViteClient } from "vite-ssr-components/hono";
 import { getI18n } from "./i18n";
 
@@ -20,7 +19,6 @@ export const renderer = jsxRenderer(async () => {
 			}).replace(/</g, '\\u003c') }} />
 			<Script src='/src/client/main.tsx' />
 			<link rel='stylesheet' type='text/css' href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.3.0/css/all.min.css' />
-			<ThemeLoader theme={c.get('usingTheme')} root='body' />
 			<link rel='icon' type='image/x-icon' href='/favicon.ico' />
 			<title>{t('loading')} - cy3's site</title>
 		</head>

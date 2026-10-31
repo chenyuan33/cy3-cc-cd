@@ -5,6 +5,7 @@ import { useCurrentUser, useCurrentUserEmail } from "../utils/currentUser";
 import { createConfirm } from "./dialog";
 import { navigate } from "@w3cj/ruta";
 import { A } from "./a";
+import type { JSX } from "hono/jsx/jsx-runtime";
 
 const _SpeakButton: FC<{
 	type: 'button' | 'submit',
@@ -45,9 +46,11 @@ export const DeleteButton: FC<{ href: string, arg?: Object, redirect: string, on
 		onSuccess?.();
 	}
 }}>{t('delete')}</button>;
-export const FetchButton: FC<{ href: string, arg?: Object, redirect: string, text: string }> = ({ href, arg, redirect, text }) => <button onclick={() => fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } }).then(() => location.href = redirect)}>{text}</button>;
-export const FetchLink: FC<{ href: string, arg?: Object, redirect: string, text: string }> = ({ href, arg, redirect, text }) => <a href='javascript:void(0)' onclick={() => fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } }).then(() => location.href = redirect)}>{text}</a>;
-export const DeleteLink: FC<{ href: string, arg?: Object, redirect: string, onSuccess?: () => void }> = ({ href, arg, redirect, onSuccess }) => <a class='dangerousLink' href='javascript:void(0)' onclick={async () => {
+export const FetchButton: FC<{ href: string, arg?: Object, redirect: string, text: string | JSX.Element, onSuccess?: () => void }> = ({ href, arg, redirect, text, onSuccess }) => <button onClick={() => fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } }).then(() => { navigate(redirect); onSuccess?.(); })}>{text}</button>;
+export const FetchLink: FC<{ href: string, arg?: Object, redirect: string, text: string | JSX.Element, onSuccess?: () => void }> = ({ href, arg, redirect, text, onSuccess }) => <a href='javascript:void(0)' onClick={() => fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } }).then(() => { navigate(redirect); onSuccess?.(); })}>{text}</a>;
+export const FetchJsonButton: FC<{ href: string, arg?: Object, redirect: string, text: string | JSX.Element, onSuccess?: (data: any) => void }> = ({ href, arg, redirect, text, onSuccess }) => <button onClick={() => fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } }).then(x => x.json()).then(x => { navigate(redirect); onSuccess?.(x); })}>{text}</button>;
+export const FetchJsonLink: FC<{ href: string, arg?: Object, redirect: string, text: string | JSX.Element, onSuccess?: (data: any) => void }> = ({ href, arg, redirect, text, onSuccess }) => <a href='javascript:void(0)' onClick={() => fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } }).then(x => x.json()).then(x => { navigate(redirect); onSuccess?.(x); })}>{text}</a>;
+export const DeleteLink: FC<{ href: string, arg?: Object, redirect: string, onSuccess?: () => void }> = ({ href, arg, redirect, onSuccess }) => <a class='dangerousLink' href='javascript:void(0)' onClick={async () => {
 	if (await createConfirm(tString('deleteConfirm'))) {
 		fetch(href, { method: 'POST', body: arg ? JSON.stringify(arg) : '', headers: { 'Content-Type': 'application/json' } });
 		const url = new URL(redirect, location.href);

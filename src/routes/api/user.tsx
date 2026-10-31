@@ -97,10 +97,62 @@ app.get('/detail/:id/feed', async c => {
 	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '10') || 10, 1), 10);
 	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
 	return c.json({
-		results: await feedQuery(c, [...(await (c.env as any).db.prepare('SELECT id FROM feed WHERE uid = ? AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
+		results: await feedQuery(c, [...(await env.db.prepare('SELECT id FROM feed WHERE uid = ? AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
 			.bind(id, perPage, (page - 1) * perPage).all())
 			.results.map(({ id }: { id: number }) => id)], true, true),
-		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM feed WHERE uid = ? AND deleted = 0').bind(id).first()).total
+		total: (await env.db.prepare('SELECT COUNT(*) AS total FROM feed WHERE uid = ? AND deleted = 0').bind(id).first()).total
+	});
+});
+app.get('/detail/:id/discussion', async c => {
+	const id = parseInt(c.req.param('id') ?? ''), env = c.env as any;
+	if (!id) {
+		return c.json({ result: null });
+	}
+	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '20') || 20, 1), 20);
+	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
+	return c.json({
+		results: (await env.db.prepare(`
+			SELECT
+				d.id, d.category, d.title, d.created_at, d.pin,
+				json_object (
+					${userInfoDatas.map(schema => `'${schema}', u.${schema}`)}
+				) AS user
+			FROM discussion d
+			JOIN users u ON d.uid = u.id
+			WHERE d.uid = ?
+			ORDER BY d.pin DESC, d.created_at DESC
+			LIMIT ?
+			OFFSET ?
+		`).bind(id, perPage, (page - 1) * perPage).all()).results.map(({ user, ...attr }: { user: string, [attr: string]: any }) => ({ user: JSON.parse(user), ...attr })),
+		total: (await env.db.prepare('SELECT COUNT(*) AS total FROM discussion WHERE uid = ?').bind(id).first()).total
+	});
+});
+app.get('/detail/:id/theme', async c => {
+	const id = parseInt(c.req.param('id') ?? ''), env = c.env as any;
+	if (!id) {
+		return c.json({ result: null });
+	}
+	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '20') || 20, 1), 20);
+	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
+	return c.json({
+		results: (await env.db.prepare(`
+			SELECT
+				t.id, t.name, t.created_at, t.updated_at,
+				json_object ( ${userInfoDatas.map(scheme => `'${scheme}', u.${scheme}`)} ) AS user,
+				(SELECT COUNT(*) FROM users uu WHERE uu.using_theme = t.id) AS number_of_users,
+				t.usebgimage, t.useFrostedGlass, t.editor,
+				t.bgImageRepeatX, t.bgImageRepeatY,
+				t.bgImageSizeX, t.bgImageSizeXCustom, t.bgImageSizeXCustomUnit,
+				t.bgImageSizeY, t.bgImageSizeYCustom, t.bgImageSizeYCustomUnit,
+				t.light_fgcolor, t.light_bgcolor, t.light_bgimage,
+				t.dark_fgcolor, t.dark_bgcolor, t.dark_bgimage
+			FROM theme t
+			JOIN users u ON t.uid = u.id
+			WHERE t.uid = ?
+			LIMIT ?
+			OFFSET ?
+		`).bind(id, perPage, (page - 1) * perPage).all()).results.map(({ user, ...attr }: { user: string, [attr: string]: any }) => ({ user: JSON.parse(user), ...attr })),
+		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM discussion WHERE uid = ?').bind(id).first()).total
 	});
 });
 app.get('/detail/:id/judgement', async c => {
@@ -111,7 +163,7 @@ app.get('/detail/:id/judgement', async c => {
 	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '100') || 100, 1), 100);
 	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
 	return c.json({
-		results: (await (c.env as any).db.prepare(`
+		results: (await env.db.prepare(`
 			SELECT
 				j.id,
 				j.type,
@@ -138,31 +190,7 @@ app.get('/detail/:id/judgement', async c => {
 			user: string,
 			operator: string
 		}) => ({ payload: JSON.parse(payload), user: JSON.parse(user), operator: JSON.parse(operator), ...data })),
-		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM judgement WHERE uid = ?').bind(id).first()).total
-	});
-});
-app.get('/detail/:id/discussion', async c => {
-	const id = parseInt(c.req.param('id') ?? ''), env = c.env as any;
-	if (!id) {
-		return c.json({ result: null });
-	}
-	const perPage = Math.min(Math.max(parseInt(c.get('reqBody').perpage || '20') || 20, 1), 20);
-	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
-	return c.json({
-		results: (await (c.env as any).db.prepare(`
-			SELECT
-				d.id, d.category, d.title, d.created_at, d.pin,
-				json_object (
-					${userInfoDatas.map(schema => `'${schema}', u.${schema}`)}
-				) AS user
-			FROM discussion d
-			JOIN users u ON d.uid = u.id
-			WHERE d.uid = ?
-			ORDER BY d.pin DESC, d.created_at DESC
-			LIMIT ?
-			OFFSET ?
-		`).bind(id, perPage, (page - 1) * perPage).all()).results.map(({ user, ...attr }: { user: string, [attr: string]: any }) => ({ user: JSON.parse(user), ...attr })),
-		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM discussion WHERE uid = ?').bind(id).first()).total
+		total: (await env.db.prepare('SELECT COUNT(*) AS total FROM judgement WHERE uid = ?').bind(id).first()).total
 	});
 });
 app.post('/general-settings', async c => {

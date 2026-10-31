@@ -223,6 +223,7 @@ export default {
 	},
 	theme: {
 		name: '主题',
+		notFound: '主题未找到',
 		list: '主题商店',
 		themeColor: '主题颜色',
 		themeName: '主题名称',
@@ -404,10 +405,13 @@ export default {
     deleted: '已删除',
     selectConversation: '请选择对话或搜索用户',
     userNotFound: '未找到用户 “{username}”',
-	tag: 'Tag',
 	upload: '上传',
 	userSpace: '用户 __USER__ 的个人空间',
 	action: '操作',
 	comment: '理由',
-	operationSuccessful: '操作成功'
-} as typeof en_us_translations;
+	operationSuccessful: '操作成功',
+	deletedSuccessful: '删除成功',
+	appliedSuccessful: '应用成功',
+	createdSuccessful: '创建成功',
+	savedSuccessful: '保存成功'
+} satisfies typeof en_us_translations;

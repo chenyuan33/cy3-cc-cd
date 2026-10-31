@@ -11,7 +11,6 @@ import userRoutes from './routes/user';
 import chatRoutes from './routes/chat';
 import adminRoutes from './routes/admin';
 import fileRoutes from './routes/file';
-import themeRoutes from './routes/theme';
 import { renderer } from './renderer';
 import { i18nMiddleware, type supportedLanguagesShortCodeType } from './i18n';
 const app = new Hono<AppEnv>();
@@ -103,7 +102,6 @@ app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
 app.route('/chat', chatRoutes);
 app.route('/file', fileRoutes);
-app.route('/theme', themeRoutes);
 app.onError((err, c) => {
 	console.error(err);
 	return errorJson(c, err, 500);

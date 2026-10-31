@@ -1,10 +1,12 @@
-import { createContext, useContext, useEffect, useState, type FC, type PropsWithChildren } from "hono/jsx";
-import type { themeInfo, userInfo } from "../../types";
+import { createContext, useContext, type FC, type PropsWithChildren } from "hono/jsx";
+import type { themeBasicInfo, userInfo } from "../../types";
 import { defaultTheme } from "../../settings";
-import { useLocation } from "@w3cj/ruta";
 
-type CurrentUserContextType = { user: userInfo & { email: string | null } | null, usingTheme: themeInfo, reload: () => Promise<void> };
-const CurrentUserContext = createContext<CurrentUserContextType>({ user: typeof window === 'undefined' ? null : window.data.currentUser, usingTheme: typeof window === 'undefined' ? defaultTheme : window.data.usingTheme, reload: async () => {} });
+type CurrentUserContextType = { user: userInfo & { email: string | null } | null, usingTheme: themeBasicInfo };
+const CurrentUserContext = createContext<CurrentUserContextType>({
+	user: typeof window === 'undefined' ? null : window.data.currentUser,
+	usingTheme: typeof window === 'undefined' ? defaultTheme : window.data.usingTheme
+});
 const _useCurrentUser = () => useContext(CurrentUserContext);
 export const useCurrentUser = () => {
 	const _currentUser = _useCurrentUser().user;
@@ -25,10 +27,7 @@ export const useCurrentUserEmail = () => {
 	return _currentUser.email;
 };
 export const useUsingTheme = () => _useCurrentUser().usingTheme;
-export const reloadCurrentUser = () => _useCurrentUser().reload();
-export const CurrentUserProvider : FC<PropsWithChildren<{}>> = ({ children }) => {
-	const [data, setData] = useState<{ user: userInfo & { email: string } | null, usingTheme: themeInfo, reload: () => Promise<void> }>({ user: null, usingTheme: defaultTheme, reload: async () => {} });
-	const reload = async () => setData({reload, ...await (await fetch('/api/currentUser')).json()});
-	useEffect(() => {reload()}, [useLocation().location]);
-	return <CurrentUserContext.Provider value={data}>{children}</CurrentUserContext.Provider>;
-};
+export const CurrentUserProvider : FC<PropsWithChildren<{}>> = ({ children }) => <CurrentUserContext.Provider value={{
+	user: typeof window === 'undefined' ? null : window.data.currentUser,
+	usingTheme: typeof window === 'undefined' ? defaultTheme : window.data.usingTheme
+}}>{children}</CurrentUserContext.Provider>;

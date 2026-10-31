@@ -4,7 +4,7 @@ import { render, useEffect, useState, type FC, type PropsWithChildren } from 'ho
 import { t, tString } from './i18n';
 import { permissionAdmin } from '../settings';
 import { User } from './components/user';
-import { CurrentUserProvider, useCurrentUser } from './utils/currentUser';
+import { CurrentUserProvider, useCurrentUser, useUsingTheme } from './utils/currentUser';
 import { A } from './components/a';
 import { NotFound } from './pages/error';
 import { Register } from './pages/user/register';
@@ -31,6 +31,10 @@ import { UserDetailFeed } from './pages/user/detail/feed';
 import { UserDetailDiscussion } from './pages/user/detail/discussion';
 import { UserDetailJudgement } from './pages/user/detail/judgement';
 import { UserDetailAdmin } from './pages/user/detail/admin';
+import { ThemeList } from './pages/theme/list';
+import { ThemeCreate } from './pages/theme/create';
+import { ThemeLoader } from './components/themeLoader';
+import { UserDetailTheme } from './pages/user/detail/theme';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -40,6 +44,7 @@ const routes = defineRoutes(route => [
 	route('/user/:id/home', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
 	route('/user/:id/feed', () => <UserDetailLayout key='userDetail'><UserDetailFeed key='userDetailFeed' /></UserDetailLayout>),
 	route('/user/:id/discussion', () => <UserDetailLayout key='userDetail'><UserDetailDiscussion key='userDetailDiscussion' /></UserDetailLayout>),
+	route('/user/:id/theme', () => <UserDetailLayout key='userDetail'><UserDetailTheme key='userDetailTheme' /></UserDetailLayout>),
 	route('/user/:id/judgement', () => <UserDetailLayout key='userDetail'><UserDetailJudgement key='userDetailJudgement' /></UserDetailLayout>),
 	route('/user/:id/admin', () => <UserDetailLayout key='userDetail'><UserDetailAdmin key='userDetailAdmin' /></UserDetailLayout>),
 	route('/feed', () => <Feed key='feed' />),
@@ -54,6 +59,9 @@ const routes = defineRoutes(route => [
 	route('/ticket/reply/:id{\\d+}', () => <TicketReplyRedirect key='ticketReplyRedirect' />),
 	route('/ide', () => <IDE key='ide' />),
 	route('/judgement', () => <Judgement key='judgement' />),
+	route('/theme', () => <ThemeList key='themeList' />),
+	route('/theme/create', () => <ThemeCreate key='themeCreate' />),
+	route('/theme/:id{\\d+}', () => <ThemeCreate key='themeDetail' />),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {
@@ -329,12 +337,17 @@ const Nav: FC<{}> = () => {
 		</A></p>
 	</nav>;
 };
-render(<ErrorBoundary><CurrentUserProvider>
-	<Header />
-	<Nav />
-	<main style={{ paddingTop: '50px' }}><Router routes={routes} /></main>
-	<ToastContainer />
-</CurrentUserProvider></ErrorBoundary>, document.getElementById('app')!);
+const App: FC<{}> = () => {
+	const usingTheme = useUsingTheme();
+	return <>
+		<ThemeLoader theme={usingTheme} root='body' />
+		<Header />
+		<Nav />
+		<main style={{ paddingTop: '50px' }}><Router routes={routes} /></main>
+		<ToastContainer />
+	</>
+};
+render(<ErrorBoundary><CurrentUserProvider><App /></CurrentUserProvider></ErrorBoundary>, document.getElementById('app')!);
 if (document.readyState === 'loading') {
 	document.addEventListener('DOMContentLoaded', loadLight);
 } else {

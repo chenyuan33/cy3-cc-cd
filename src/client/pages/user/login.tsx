@@ -1,7 +1,6 @@
-import { navigate } from "@w3cj/ruta";
 import { Card } from "../../components/card";
 import { Form, FormInput } from "../../components/form";
-import { reloadCurrentUser, useCurrentUser } from "../../utils/currentUser";
+import { useCurrentUser } from "../../utils/currentUser";
 import { t, tString } from "../../i18n";
 import { setTitle } from "../../utils/setTitle";
 import { AlreadyLoggedIn } from "../error"

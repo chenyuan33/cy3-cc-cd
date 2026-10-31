@@ -221,6 +221,7 @@ export default {
 	},
 	theme: {
 		name: 'Theme',
+		notFound: 'Theme Not Found',
 		list: 'Theme Store',
 		themeColor: 'Theme Color',
 		themeName: 'Theme Name',
@@ -406,5 +407,9 @@ export default {
 	userSpace: 'User __USER__\'s Personal Space',
 	action: 'Action',
 	comment: 'Comment',
-	operationSuccessful: 'Operation successful'
+	operationSuccessful: 'Operation successful',
+	deletedSuccessful: 'Deleted successful',
+	appliedSuccessful: 'Applied successful',
+	createdSuccessful: 'Created successful',
+	savedSuccessful: 'Saved successful'
 };

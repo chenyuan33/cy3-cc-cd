@@ -1,16 +1,14 @@
 import { Hono } from "hono";
 import { type AppEnv, type ContextType } from "../types";
-import { loginRequired, notFound } from "./errorPages";
+import { loginRequired } from "./errorPages";
 import { Card } from "../client/components/card";
-import { Form, FormCheckbox, FormInput } from "../client/components/form";
+import { Form, FormInput } from "../client/components/form";
 import { Time } from "../client/components/time";
 import { Pages } from "../client/components/pages";
-import { Feed } from "../client/components/feed";
 import { renderTemplate } from "../components/renderTemplate";
 import { TicketStatus } from "../client/components/ticketStatus";
 import { permissionAdmin, permissionCount, type allPermissions } from "../settings";
 import { messages } from "../i18n";
-import { userQuery } from "./api/user";
 const translations = messages;
 const app = new Hono<AppEnv>();
 app.get('/settings', async c => {
