@@ -6,6 +6,7 @@ import discussionRoutes, { type discussionCategoriesType } from './api/discussio
 import ticketRoutes from './api/ticket';
 import fileRoutes from './api/file';
 import themeRoutes from './api/theme';
+import websocketRotues from './api/websocket';
 import type { AppEnv, judgementType } from '../types';
 import { accessDenied, loginRequired, notFound } from './errorPages';
 import { permissionChat } from '../settings';
@@ -74,6 +75,7 @@ app.get('/home', async c => {
 		}),
 	});
 });
+app.route('/websocket', websocketRotues);
 app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);

@@ -38,5 +38,5 @@ export const UserDetailLayout: FC<PropsWithChildren<{}>> = ({ children }) => {
 		{ label: t('user.profile.theme'), href: `/user/${id}/theme` },
 		{ label: t('user.profile.judgement'), href: `/user/${id}/judgement` },
 		{ label: t('user.profile.admin'), href: `/user/${id}/admin` }
-	]} title={<User user={data.result} />}>{children}</TabMenu></refreshUserDetailLayoutContext.Provider>;
+	]} title={<h1><User user={data.result} /></h1>}>{children}</TabMenu></refreshUserDetailLayoutContext.Provider>;
 };

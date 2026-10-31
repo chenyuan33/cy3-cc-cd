@@ -1,7 +1,8 @@
 import { Hono } from "hono";
-import { type AppEnv } from "../types";
+import { type AppEnv } from "../../types";
 import { upgradeWebSocket } from "hono/cloudflare-workers";
-import { memoryLimitMax, timeLimitMax } from "../settings";
+import { memoryLimitMax, timeLimitMax } from "../../settings";
+import { userInfoDatas } from "./user";
 
 const app = new Hono<AppEnv>();
 app.get('/', upgradeWebSocket(c => {
@@ -13,7 +14,16 @@ app.get('/', upgradeWebSocket(c => {
 					const { recentNotificationsAfter } = JSON.parse(evt.data);
 					ws.send(JSON.stringify(currentUser ? [
 						...((await env.db.prepare('SELECT created_at FROM notification WHERE uid = ? AND read = 0 AND created_at > ? ORDER BY created_at LIMIT 10').bind(currentUser.id, recentNotificationsAfter).all()).results.map(({ created_at }: { created_at: string }) => ({ type: 'notification', created_at }))),
-						...((await env.db.prepare('SELECT created_at FROM private_messages WHERE receiver = ? AND read = 0 AND created_at > ? ORDER BY created_at LIMIT 10').bind(currentUser.id, recentNotificationsAfter).all()).results.map(({ created_at }: { created_at: string }) => ({ type: 'privateMessage', created_at })))
+						...((await env.db.prepare(`
+							SELECT
+								c.content, c.created_at,
+								json_object( ${userInfoDatas.map(scheme => `'${scheme}', u.${scheme}`)} ) AS sender
+							FROM private_messages c
+							JOIN users u ON u.id = c.sender
+							WHERE c.receiver = ? AND c.read = 0 AND c.created_at > ?
+							ORDER BY c.created_at
+							LIMIT 10
+						`).bind(currentUser.id, recentNotificationsAfter).all()).results.map(({ content, created_at, sender }: { content: string, created_at: string, sender: string }) => ({ type: 'privateMessage', content, created_at, sender: JSON.parse(sender) })))
 					].sort(({ created_at: lhs }: { created_at: string }, { created_at: rhs }: { created_at: string }) => lhs < rhs ? 1 : -1) : []));
 				}
 			} catch (e) {

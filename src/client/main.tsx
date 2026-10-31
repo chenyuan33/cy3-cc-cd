@@ -3,7 +3,7 @@ import Home from './pages/home';
 import { render, useEffect, useState, type FC, type PropsWithChildren } from 'hono/jsx/dom';
 import { t, tString } from './i18n';
 import { permissionAdmin } from '../settings';
-import { User } from './components/user';
+import { getDisplayUsernameString, User } from './components/user';
 import { CurrentUserProvider, useCurrentUser, useUsingTheme } from './utils/currentUser';
 import { A } from './components/a';
 import { NotFound } from './pages/error';
@@ -35,11 +35,20 @@ import { ThemeList } from './pages/theme/list';
 import { ThemeCreate } from './pages/theme/create';
 import { ThemeLoader } from './components/themeLoader';
 import { UserDetailTheme } from './pages/user/detail/theme';
+import { UserSettingsLayout } from './pages/user/settings/layout';
+import { UserSettingsUsername } from './pages/user/settings/username';
+import { UserSettingsBrowserNotification } from './pages/user/settings/browserNotification';
+import type { userInfo } from '../types';
+import { UserSettingsSecurity } from './pages/user/settings/security';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
 	route('/user/register', () => <Register key='userRegister' />),
 	route('/user/login', () => <Login key='userLogin' />),
+	route('/user/settings', () => <UserSettingsLayout key='userSettings'><UserSettingsBrowserNotification key='userSettingsBrowserNotification' /></UserSettingsLayout>),
+	route('/user/settings/browserNotification', () => <UserSettingsLayout key='userSettings'><UserSettingsBrowserNotification key='userSettingsBrowserNotification' /></UserSettingsLayout>),
+	route('/user/settings/username', () => <UserSettingsLayout key='userSettings'><UserSettingsUsername key='userSettingsGeneral' /></UserSettingsLayout>),
+	route('/user/settings/security', () => <UserSettingsLayout key='userSettings'><UserSettingsSecurity key='userSettingsSecurity' /></UserSettingsLayout>),
 	route('/user/:id', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
 	route('/user/:id/home', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
 	route('/user/:id/feed', () => <UserDetailLayout key='userDetail'><UserDetailFeed key='userDetailFeed' /></UserDetailLayout>),
@@ -128,38 +137,72 @@ const Header: FC<{}> = () => {
 	useEffect(() => { (async () => setNotifCounts(await (await fetch('/api/notificationCount')).json()))() }, [currentUser?.id]);
 	const [serverConnectStatus, setServerConnectStatus] = useState<'connecting' | 'connected' | 'failed'>('connecting');
 	useEffect(() => {
-		const url = new URL('/ws', location.href);
-		url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
-		const ws = new WebSocket(url.toString());
-		let recentNotificationsAfter = new Date().toISOString().replace('T', ' ').replace(/\.\d\d\dZ/, ''), interval: ReturnType<typeof setInterval>;
-		ws.addEventListener('open', () => {
-			interval = setInterval(() => ws.send(JSON.stringify({ recentNotificationsAfter })), 20000);
-			setServerConnectStatus('connected');
+		navigator.locks.request('cy3-cc-cd-browser-notifictaion', { mode: 'exclusive' }, async lock => {
+			const url = new URL('/api/websocket', location.href);
+			url.protocol = location.protocol === 'https:' ? 'wss:' : 'ws:';
+			let ws: WebSocket;
+			let recentNotificationsAfter = new Date().toISOString().replace('T', ' ').replace(/\.\d\d\dZ/, ''), interval: ReturnType<typeof setInterval>;
+			const loadWs = () => {
+				ws = new WebSocket(url);
+				ws.addEventListener('open', () => {
+					interval = setInterval(() => ws.send(JSON.stringify({ recentNotificationsAfter })), 20000);
+					setServerConnectStatus('connected');
+				});
+				ws.addEventListener('message', evt => {
+					const recent: ({ type: 'notification', created_at: string } | { type: 'privateMessage', created_at: string, sender: userInfo, content: string })[] = JSON.parse(evt.data);
+					if (recent.length) {
+						recentNotificationsAfter = recent[0]!.created_at;
+					}
+					if ('Notification' in window) {
+						if (Notification.permission === 'granted') {
+							recent.forEach((row) => {
+								let title: string | undefined, body: string | undefined;
+								if (row.type === 'notification') {
+									if (localStorage.browserNotificationSettingsNotification === 'detail') {
+										title = tString('browserNotification.title.notification');
+										body = tString('browserNotification.body.notification');
+									}
+									if (localStorage.browserNotificationSettingsNotification === 'summary') {
+										title = tString('browserNotification.title.notification');
+										body = tString('browserNotification.body.notification');
+									}
+								} else {
+									if (localStorage.browserNotificationSettingsNotification === 'detail') {
+										title = tString('browserNotification.title.privateMessage.detail', { sender: getDisplayUsernameString(row.sender) });
+										body = row.content;
+									}
+									if (localStorage.browserNotificationSettingsNotification === 'senderOnly') {
+										title = tString('browserNotification.title.privateMessage.detail', { sender: getDisplayUsernameString(row.sender) });
+										body = tString('browserNotification.body.privateMessage.detail', { sender: getDisplayUsernameString(row.sender) });
+									}
+									if (localStorage.browserNotificationSettingsNotification === 'summary') {
+										title = tString('browserNotification.title.privateMessage.summary');
+										body = tString('browserNotification.body.privateMessage.summary');
+									}
+								}
+								if (title && body) {
+									new Notification(title, {
+										badge: '/favicon.ico',
+										icon: '/favicon.ico',
+										body
+									}).onclick = () => window.open({
+										notification: '/user/notification',
+										privateMessage: '/chat'
+									}[row.type]);
+								}
+							});
+						}
+					}
+				});
+				const wsCloseOrErrorCallback = () => {
+					clearInterval(interval);
+					setServerConnectStatus('connecting');
+					loadWs();
+				};
+				ws.addEventListener('close', wsCloseOrErrorCallback);
+				ws.addEventListener('error', wsCloseOrErrorCallback);
+			};
 		});
-		ws.addEventListener('message', evt => {
-			const recent = JSON.parse(evt.data);
-			if (recent.length) {
-				recentNotificationsAfter = recent[0].created_at;
-			}
-			if ('Notification' in window) {
-				if (Notification.permission === 'granted') {
-					recent.forEach(({ type }: { type: 'notification' | 'privateMessage' }) => new Notification(tString(`browserNotification.title.${type}`), {
-						badge: '/favicon.ico',
-						icon: '/favicon.ico',
-						body: tString(`browserNotification.body.${type}`)
-					}).onclick = () => window.open({
-						notification: '/user/notification',
-						privateMessage: '/private-message'
-					}[type]));
-				}
-			}
-		});
-		const wsCloseOrErrorCallback = () => {
-			clearInterval(interval);
-			setServerConnectStatus('failed');
-		};
-		ws.addEventListener('close', wsCloseOrErrorCallback);
-		ws.addEventListener('error', wsCloseOrErrorCallback);
 	}, []);
 	return <header style={{
 		position: 'fixed',

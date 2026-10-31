@@ -6,7 +6,6 @@ import { defaultTheme, permissionVisit } from './settings';
 import { userQuery } from './routes/api/user';
 import { banned, errorJson, notFound } from './routes/errorPages';
 import apisRoutes from './routes/apis';
-import webSocketRoutes from './routes/ws';
 import userRoutes from './routes/user';
 import chatRoutes from './routes/chat';
 import adminRoutes from './routes/admin';
@@ -97,7 +96,6 @@ app.get('/private-message', (c) => {
 	return c.redirect('/chat' + suffix, 301);
 });
 app.route('/api', apisRoutes);
-app.route('/ws', webSocketRoutes);
 app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
 app.route('/chat', chatRoutes);
@@ -107,7 +105,7 @@ app.onError((err, c) => {
 	return errorJson(c, err, 500);
 });
 app.notFound(c => {
-	if (c.req.path.startsWith('/api/') || c.req.path.startsWith('/ws')) {
+	if (c.req.path.startsWith('/api/')) {
 		return notFound(c);
 	}
 	return c.render(<></>);

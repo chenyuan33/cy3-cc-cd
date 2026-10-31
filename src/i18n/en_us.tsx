@@ -2,11 +2,17 @@ export default {
 	browserNotification: {
 		title: {
 			notification: 'New Notification',
-			privateMessage: 'New Private Message',
+			privateMessage: {
+				detail: 'New Private Message From {sender}',
+				summary: 'New Private Message'
+			}
 		},
 		body: {
 			notification: 'You have a new notification. Go check it out!',
-			privateMessage: 'You have a new private message. Go check it out!'
+			privateMessage: {
+				detail: 'You have a new private message from {sender}. Go check it out!',
+				summary: 'You have a new private message. Go check it out!'
+			}
 		},
 	},
 	serverConnectStatus: {
@@ -72,32 +78,49 @@ export default {
 		passwordNotMatch: 'Passwords do not match.',
 		settings: {
 			name: 'User settings',
-			general: {
-				name: 'General Settings',
-				enableBrowserNotification: 'Enable Browser Notifications',
-				ChangeNameColorLight: 'Username Color in Light Mode',
-				ChangeNameColorDark: 'Username Color in Dark Mode'
+			browserNotification: {
+				name: 'Browser Notification',
+				permissionDenied: 'This feature has been disabled and is currently unavailable. Please go to your browser settings to allow notifications from this site, then return here to configure the settings.',
+				permissionUngranted: 'This feature is not enabled and is currently unavailable. Please click this button and grant this website permission to send notifications:',
+				permissionRequest: 'Request Notification Permissions',
+				notification: {
+					label: 'Notification Center',
+					detail: 'Full Content',
+					summary: 'Show only new notification',
+					no: 'Don\'t notify'
+				},
+				privateMessage: {
+					label: 'Private Message',
+					detail: 'Full Content',
+					senderOnly: 'Show only sender',
+					summary: 'Show only new private message',
+					no: 'Don\'t notify'
+				}
 			},
-			changePassword: {
-				name: 'Change Password',
-				old: 'Old Password',
-				new: 'New Password',
-				confirm: 'Confirm Password',
-				doesNotMatch: 'New password doesn\'t match!',
-				changeConfirm: 'Sure to change password?',
-				changedSuccessfully: 'Password changed successfully'
+			username: {
+				name: 'Username Settings',
+				changeColorLight: 'Username Color in Light Mode',
+				changeColorDark: 'Username Color in Dark Mode'
 			},
-			changeUsername: {
-				name: 'Change username',
-				changedSuccessfully: 'Username changed successfully'
+			security: {
+				name: 'Security Settings',
+				changePassword: {
+					name: 'Change Password',
+					old: 'Old Password',
+					new: 'New Password',
+					confirm: 'Confirm Password',
+					doesNotMatch: 'New password doesn\'t match!',
+					changeConfirm: 'Sure to change password?',
+					changedSuccessfully: 'Password changed successfully'
+				},
+				changeEmail: {
+					name: 'Change email',
+					current: 'Your current email is {email}',
+					currentUnset: 'No email set yet',
+					verify: 'Within ten minutes, use email {email} to send an email to <a href="mailto:verify@cqiming.com">verify@cqiming.com</a> with any subject, and the body <strong>must</strong> be (no extra content) the number below. After sending, <strong>wait ten seconds for the cache to refresh</strong> then click verify.',
+					verifySuccessfully: 'Email successfully linked'
+				}
 			},
-			changeEmail: {
-				name: 'Change email',
-				current: 'Your current email is __EMAIL__',
-				currentUnset: 'No email set yet',
-				verify: 'Within ten minutes, use email __EMAIL__ to send an email to <a href="mailto:verify@cqiming.com">verify@cqiming.com</a> with any subject, and the body <strong>must</strong> be (no extra content) the number below. After sending, <strong>wait ten seconds for the cache to refresh</strong> then click verify.',
-				verifySuccessfully: 'Email successfully linked'
-			}
 		},
 		notification: {
 			name: 'Notification center',

@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { AppEnv, ContextType, judgementType, userInfo } from "../../types";
-import { accessDenied, alreadyLoggedIn, emailRequired, emailUsed, errorJson, invalidEmail, invalidPassword, loginRequired, noSuchUsername, notFound, passwordRequired, registerUsernameExists, registerUsernameLength, usernameRequired, verifyFailed } from "../errorPages";
+import { accessDenied, alreadyLoggedIn, emailRequired, emailUsed, errorJson, invalidEmail, invalidPassword, loginRequired, missingParams, noSuchUsername, notFound, passwordRequired, registerUsernameExists, registerUsernameLength, usernameRequired, verifyFailed } from "../errorPages";
 import { SignJWT } from "jose";
 import bcrypt from "bcryptjs";
 import validator from "validator";
@@ -193,52 +193,34 @@ app.get('/detail/:id/judgement', async c => {
 		total: (await env.db.prepare('SELECT COUNT(*) AS total FROM judgement WHERE uid = ?').bind(id).first()).total
 	});
 });
-app.post('/general-settings', async c => {
-	const currentUser = c.get('currentUser'), { nameColorLight, nameColorDark, tag } = c.get('reqBody'), env = c.env as any;
+app.post('/settings/username', async c => {
+	const currentUser = c.get('currentUser'), { username, nameColorLight, nameColorDark, tag } = c.get('reqBody'), env = c.env as any;
 	if (!currentUser) {
 		return loginRequired(c);
 	}
-	console.log(nameColorLight, nameColorDark);
-	if (!nameColorLight || !nameColorDark || !/^#[0-9a-f]{6}$/.test(nameColorLight) || !/^#[0-9a-f]{6}$/.test(nameColorDark)) {
-		return notFound(c);
+	if (!username || !nameColorLight || !nameColorDark || !/^#[0-9a-f]{6}$/.test(nameColorLight) || !/^#[0-9a-f]{6}$/.test(nameColorDark)) {
+		return missingParams(c);
 	}
-	if (!(currentUser.permission & permissionAdmin) && tag) {
-		return accessDenied(c);
-	}
-	await env.db.prepare('UPDATE users SET name_color_light = ?, name_color_dark = ? WHERE id = ?').bind(nameColorLight.substring(1), nameColorDark.substring(1), currentUser.id).run();
-	if (currentUser.permission & permissionAdmin) {
-		await env.db.prepare('UPDATE users SET tag = ? WHERE id = ?').bind(tag, currentUser.id).run();
-	}
-	return c.redirect('/user/settings');
-});
-app.post('/change-username', async c => {
-	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), translations = c.get('translations'), env = c.env as any;
-	if (!currentUser) {
-		return loginRequired(c);
-	}
-	if (!Object.hasOwn(reqBody, 'password') || typeof reqBody.password !== 'string' || !reqBody.password.trim()) {
-		return passwordRequired(c);
-	}
-	if (!Object.hasOwn(reqBody, 'name') || typeof reqBody.name !== 'string') {
-		return usernameRequired(c);
-	}
-	const usernameError = validateUsername(reqBody.name, c);
+	const usernameError = validateUsername(username, c);
 	if (usernameError) {
 		return usernameError;
 	}
-	if (!await bcrypt.compare(reqBody.password, (await env.db.prepare('SELECT password FROM users WHERE id = ?').bind(currentUser.id).first()).password)) {
-		return invalidPassword(c);
-	}
-	const trimmedName = reqBody.name.trim();
+	const trimmedName = username.trim();
 	const existingUser = await env.db.prepare('SELECT id FROM users WHERE name = ?').bind(trimmedName).first();
 	if (existingUser && existingUser.id !== currentUser.id) {
 		return registerUsernameExists(c);
 	}
-	await env.db.prepare('UPDATE users SET name = ? WHERE id = ?').bind(trimmedName, currentUser.id).run();
-	return c.render(<h1>{translations.user.settings.changeUsername.changedSuccessfully}</h1>, { title: translations.user.settings.changeUsername.name });
+	if (!(currentUser.permission & permissionAdmin) && tag) {
+		return accessDenied(c);
+	}
+	await env.db.prepare('UPDATE users SET name = ?, name_color_light = ?, name_color_dark = ? WHERE id = ?').bind(trimmedName, nameColorLight.substring(1), nameColorDark.substring(1), currentUser.id).run();
+	if (currentUser.permission & permissionAdmin) {
+		await env.db.prepare('UPDATE users SET tag = ? WHERE id = ?').bind(tag, currentUser.id).run();
+	}
+	return c.json({ success: true });
 });
-app.post('/change-password', async c => {
-	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), translations = c.get('translations'), env = c.env as any;
+app.post('/settings/change-password', async c => {
+	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), env = c.env as any;
 	if (!currentUser) {
 		return loginRequired(c);
 	}
@@ -249,10 +231,10 @@ app.post('/change-password', async c => {
 		return invalidPassword(c);
 	}
 	await env.db.prepare('UPDATE users SET password = ? WHERE id = ?').bind(await bcrypt.hash(reqBody.new, 12), currentUser.id).run();
-	return c.render(<h1>{translations.user.settings.changePassword.changedSuccessfully}</h1>, { title: translations.user.settings.changePassword.name });
+	return c.json({ success: true });
 });
-app.post('/change-email', async c => {
-	const reqBody = c.get('reqBody'), translations = c.get('translations'), currentUser = c.get('currentUser'), env = c.env as any;
+app.post('/settings/change-email', async c => {
+	const reqBody = c.get('reqBody'), currentUser = c.get('currentUser'), env = c.env as any;
 	if (!currentUser) {
 		return loginRequired(c);
 	}
@@ -273,29 +255,10 @@ app.post('/change-email', async c => {
 	}
 	const code = crypto.getRandomValues(new Uint32Array(1))[0]! % Math.pow(2, 31);
 	await env.db.prepare('UPDATE users SET email_verify_code = ?, email_verify_time = CURRENT_TIMESTAMP WHERE id = ?').bind(code, currentUser.id).run();
-	return c.render(<Form method='post' action='/api/user/change-email/verify'>
-		<Card style={{
-			display: 'flex',
-			'flex-direction': 'column',
-			'align-items': 'center',
-			gap: '10px'
-		}}>
-			<h1>{translations.user.settings.changeEmail.name}</h1>
-			<p>{raw(translations.user.settings.changeEmail.verify.replace('__EMAIL__', reqBody.email))}</p>
-			<code style={{
-				'font-size': 'xxx-large',
-				cursor: 'pointer'
-			}} onclick={`(() => {
-				navigator.clipboard.writeText(String(${code}));
-				createAlert('${translations.copiedSuccessfully}');
-			})()`}>{code}</code>
-			<input type='hidden' name='email' value={reqBody.email} />
-			<input type='submit' style={{ 'font-size': 'large' }} value={translations.verify} />
-		</Card>
-	</Form>, { title: translations.user.settings.changeEmail.name });
+	return c.json({ success: true, email: reqBody.email, code });
 });
-app.post('/change-email/verify', async c => {
-	const currentUser = c.get('currentUser'), env = c.env as any, reqBody = c.get('reqBody'), translations = c.get('translations');
+app.post('/settings/change-email/verify', async c => {
+	const currentUser = c.get('currentUser'), env = c.env as any, reqBody = c.get('reqBody');
 	if (!currentUser) {
 		return loginRequired(c);
 	}
@@ -312,7 +275,7 @@ app.post('/change-email/verify', async c => {
 	const { status } = await (await fetch(`https://api.verify.mail.cqiming.com/verify?sender=${encodeURIComponent(reqBody.email)}&code=${code}&token=${env.EMAIL_VERIFY_TOKEN}&tokenuser=${env.EMAIL_VERIFY_TOKEN_USER}`)).json() as { status: string };
 	if (status === 'PASS') {
 		await env.db.prepare('UPDATE users SET email = ? WHERE id = ?').bind(reqBody.email, currentUser.id).run();
-		return c.render(<Card><h1>{translations.user.settings.changeEmail.verifySuccessfully}</h1></Card>, { title: translations.user.settings.changeEmail.name });
+		return c.json({ success: true });
 	} else {
 		return verifyFailed(c);
 	}

@@ -4,11 +4,17 @@ export default {
 	browserNotification: {
 		title: {
 			notification: '新通知',
-			privateMessage: '新私信',
+			privateMessage: {
+				detail: '{sender} 向您发了一条新私信',
+				summary: '新私信'
+			}
 		},
 		body: {
 			notification: '你有一条新的通知，快去看看吧！',
-			privateMessage: '你有一条新的私信，快去看看吧！',
+			privateMessage: {
+				detail: '你有一条 {sender} 发送的新私信，快去看看吧！',
+				summary: '你有一条新的私信，快去看看吧！'
+			}
 		}
 	},
 	serverConnectStatus: {
@@ -74,31 +80,48 @@ export default {
 		passwordNotMatch: '密码不匹配。',
 		settings: {
 			name: '用户设置',
-			general: {
-				name: '常规设置',
-				enableBrowserNotification: '启用浏览器通知',
-				ChangeNameColorLight: '浅色模式下的用户名颜色',
-				ChangeNameColorDark: '深色模式下的用户名颜色'
+			browserNotification: {
+				name: '浏览器通知设置',
+				permissionDenied: '功能被关闭，当前无法使用此功能。请前往浏览器设置中允许此网站的通知权限再来这里设置。',
+				permissionUngranted: '功能未被允许，当前无法使用此功能。请按此按钮并允许此网站的通知权限：',
+				permissionRequest: '请求通知权限',
+				notification: {
+					label: '通知中心',
+					detail: '完整内容',
+					summary: '仅显示有新通知',
+					no: '不通知'
+				},
+				privateMessage: {
+					label: '私信',
+					detail: '完整内容',
+					senderOnly: '仅显示发送者',
+					summary: '仅显示有新私信',
+					no: '不通知'
+				}
 			},
-			changePassword: {
-				name: '更改密码',
-				old: '旧密码',
-				new: '新密码',
-				confirm: '确认新密码',
-				doesNotMatch: '新密码不匹配！',
-				changeConfirm: '确定修改密码吗？',
-				changedSuccessfully: '密码修改成功'
+			username: {
+				name: '用户名设置',
+				changeColorLight: '浅色模式下的用户名颜色',
+				changeColorDark: '深色模式下的用户名颜色'
 			},
-			changeUsername: {
-				name: '更改用户名',
-				changedSuccessfully: '用户名修改成功'
-			},
-			changeEmail: {
-				name: '更改邮箱',
-				current: '您当前的邮箱是 __EMAIL__',
-				currentUnset: '暂未设置邮箱',
-				verify: '在十分钟内使用邮箱 __EMAIL__ 发送一封邮件给 <a href="mailto:verify@cqiming.com">verify@cqiming.com</a>，主题任意，正文<strong>必须</strong>为（不能有多余信息）以下数字，发送完成后请<strong>先等待十秒使缓存刷新后</strong>点击验证。',
-				verifySuccessfully: '邮箱已成功绑定'
+			security: {
+				name: '安全设置',
+				changePassword: {
+					name: '更改密码',
+					old: '旧密码',
+					new: '新密码',
+					confirm: '确认新密码',
+					doesNotMatch: '新密码不匹配！',
+					changeConfirm: '确定修改密码吗？',
+					changedSuccessfully: '密码修改成功'
+				},
+				changeEmail: {
+					name: '更改邮箱',
+					current: '您当前的邮箱是 {email}',
+					currentUnset: '暂未设置邮箱',
+					verify: '在十分钟内使用邮箱 {email} 发送一封邮件给 <a href="mailto:verify@cqiming.com">verify@cqiming.com</a>，主题任意，正文<strong>必须</strong>为（不能有多余信息）以下数字，发送完成后请<strong>先等待十秒使缓存刷新后</strong>点击验证。',
+					verifySuccessfully: '邮箱已成功绑定'
+				}
 			}
 		},
 		notification: {

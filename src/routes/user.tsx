@@ -2,89 +2,15 @@ import { Hono } from "hono";
 import { type AppEnv, type ContextType } from "../types";
 import { loginRequired } from "./errorPages";
 import { Card } from "../client/components/card";
-import { Form, FormInput } from "../client/components/form";
+import { Form } from "../client/components/form";
 import { Time } from "../client/components/time";
 import { Pages } from "../client/components/pages";
 import { renderTemplate } from "../components/renderTemplate";
 import { TicketStatus } from "../client/components/ticketStatus";
-import { permissionAdmin, permissionCount, type allPermissions } from "../settings";
+import { permissionCount, type allPermissions } from "../settings";
 import { messages } from "../i18n";
 const translations = messages;
 const app = new Hono<AppEnv>();
-app.get('/settings', async c => {
-    const translations = c.get('translations'), currentUser = c.get('currentUser'), currentEmail = c.get('currentUserEmail');
-    if (!currentUser) {
-        return loginRequired(c);
-    }
-    return c.render(
-        <>
-            <Card style={{ display: 'flex', 'justify-content': 'center' }}><h1>{translations.user.settings.name}</h1></Card>
-            <div style={{ display: 'flex', gap: '10px', 'justify-content': 'center' }}>
-                <Card style={{
-                    display: 'inline-flex',
-                    'flex-direction': 'column',
-                    'align-items': 'center',
-                    width: '300px'
-                }}>
-                    <h2>{translations.user.settings.general.name}</h2>
-                    <button onclick='Notification.requestPermission()'>{translations.user.settings.general.enableBrowserNotification}</button>
-                    <Form action='/api/user/general-settings' method='post'>
-						<FormInput id='nameColorLight' name='nameColorLight' label={translations.user.settings.general.ChangeNameColorLight} type='color' value={'#' + currentUser.name_color_light} required />
-						<FormInput id='nameColorDark' name='nameColorDark' label={translations.user.settings.general.ChangeNameColorDark} type='color' value={'#' + currentUser.name_color_dark} required />
-						{((currentUser.permission & permissionAdmin) ? <FormInput id='tag' name='tag' label={translations.user.tag} type='text' value={currentUser.tag || ''} /> : null)}
-						<input type='submit' value={translations.save} />
-					</Form>
-                </Card>
-                <Card style={{
-                    display: 'inline-flex',
-                    'flex-direction': 'column',
-                    'align-items': 'center',
-                    width: '300px'
-                }}>
-                    <h2>{translations.user.settings.changePassword.name}</h2>
-                    <Form action='/api/user/change-password' method='post' id='changePassword'>
-						<FormInput id='oldPassword' name='old' label={translations.user.settings.changePassword.old} type='password' autocomplete='current-password' required />
-						<FormInput id='newPassword' name='new' label={translations.user.settings.changePassword.new} type='password' autocomplete='new-password' required />
-						<FormInput id='confirmPassword' name='confirm' label={translations.user.settings.changePassword.confirm} type='password' autocomplete='new-password' required />
-						<input type='submit' value={translations.user.settings.changePassword.name} />
-					</Form>
-                </Card>
-                <Card style={{
-                    display: 'inline-flex',
-                    'flex-direction': 'column',
-                    'align-items': 'center',
-                    width: '300px'
-                }}>
-                    <h2>{translations.user.settings.changeUsername.name}</h2>
-                    <Form action='/api/user/change-username' method='post'>
-						<FormInput id='password' name='password' label={translations.userInfo.password} type='password' autocomplete='current-password' required />
-						<FormInput id='name' name='name' label={translations.userInfo.username} type='text' autocomplete='username' required />
-						<input type='submit' value={translations.save} />
-					</Form>
-                </Card>
-                <Card style={{
-                    display: 'inline-flex',
-                    'flex-direction': 'column',
-                    'align-items': 'center',
-                    width: '300px'
-                }}>
-                    <h2>{translations.user.settings.changeEmail.name}</h2>
-                    <p>{currentEmail
-                        ? translations.user.settings.changeEmail.current.replace('__EMAIL__', currentEmail)
-                        : translations.user.settings.changeEmail.currentUnset
-                    }</p>
-                    <Form action='/api/user/change-email' method='post'>
-						<FormInput id='password' name='password' label={translations.userInfo.password} type='password' autocomplete='current-password' required />
-						<FormInput id='email' name='email' label={translations.userInfo.email} type='email' autocomplete='email' required />
-						<input type='submit' value={translations.next} />
-					</Form>
-                </Card>
-            </div>
-            <script src='/public/user/settings.js'></script>
-        </>,
-        { title: translations.user.settings.name }
-    );
-});
 const isANotificationType = (type: string): type is keyof typeof translations.en.user.notification.types => {
 	return type in translations.en.user.notification.types;
 }

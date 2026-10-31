@@ -23,8 +23,8 @@ export const Form: FC<PropsWithChildren<{
 		if (!button || button.dataset.submitted === 'true') {
 			return;
 		}
-		const action = button.formAction || form.action;
-		const method = button.formMethod || form.method;
+		const action = button.getAttribute('formaction') || form.action;
+		const method = button.getAttribute('formmethod') || form.method;
 		button.dataset.submitted = 'true';
 		button.disabled = true;
 		const formData = new FormData(form);
