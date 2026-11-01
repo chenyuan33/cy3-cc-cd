@@ -40,6 +40,7 @@ import { UserSettingsUsername } from './pages/user/settings/username';
 import { UserSettingsBrowserNotification } from './pages/user/settings/browserNotification';
 import type { userInfo } from '../types';
 import { UserSettingsSecurity } from './pages/user/settings/security';
+import { Chat } from './pages/chat';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -71,6 +72,7 @@ const routes = defineRoutes(route => [
 	route('/theme', () => <ThemeList key='themeList' />),
 	route('/theme/create', () => <ThemeCreate key='themeCreate' />),
 	route('/theme/:id{\\d+}', () => <ThemeCreate key='themeDetail' />),
+	route('/chat', () => <Chat key='chat' />),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {
@@ -133,8 +135,7 @@ const ErrorBoundary: FC<PropsWithChildren<{}>> = ({ children }) => {
 };
 const Header: FC<{}> = () => {
 	const currentUser = useCurrentUser();
-	const [{ notificationCount, privateMessageCount }, setNotifCounts] = useState({ notificationCount: 0, privateMessageCount: 0 });
-	useEffect(() => { (async () => setNotifCounts(await (await fetch('/api/notificationCount')).json()))() }, [currentUser?.id]);
+	const notificationCount = window?.data.notificationCount ?? 0, privateMessageCount = window?.data.privateMessageCount ?? 0;
 	const [serverConnectStatus, setServerConnectStatus] = useState<'connecting' | 'connected' | 'failed'>('connecting');
 	useEffect(() => {
 		navigator.locks.request('cy3-cc-cd-browser-notifictaion', { mode: 'exclusive' }, async lock => {

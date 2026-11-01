@@ -422,7 +422,7 @@ export default {
 	operations: 'Operations',
 	apply: 'Apply',
     setPin: 'Set pin value',
-	setPinSuccessfully: 'Successfully set the number of pinned posts',
+	setPinSuccessfully: 'Successfully set the pin value',
     deleted: 'Deleted',
     selectConversation: 'Select a conversation',
     userNotFound: 'User "{username}" not found',
@@ -434,5 +434,6 @@ export default {
 	deletedSuccessful: 'Deleted successful',
 	appliedSuccessful: 'Applied successful',
 	createdSuccessful: 'Created successful',
-	savedSuccessful: 'Saved successful'
+	savedSuccessful: 'Saved successful',
+	sendedSuccessful: 'Sended successful'
 };

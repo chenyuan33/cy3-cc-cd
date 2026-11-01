@@ -1,5 +1,5 @@
 {
-	"name": "site",
+	"name": "monaco-editor-feature-site",
 	"main": "src/worker.tsx",
 	"workers_dev": true,
 	"preview_urls": true,

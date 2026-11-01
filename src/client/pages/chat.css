@@ -1,0 +1,53 @@
+#chatSide {
+	display: flex;
+	flex-direction: column;
+	padding: 10px;
+	border-right: solid 1px lightgray;
+	position: relative;
+	flex-shrink: 0;
+}
+
+#chatMain {
+	flex: 1;
+	position: relative;
+	display: flex;
+	flex-direction: column;
+}
+
+#chatMainCloser {
+	position: absolute;
+	left: 10px;
+	bottom: 10px;
+}
+
+#chatMainCloser:hover {
+	cursor: pointer;
+}
+
+@media (min-width: 768px) {
+	#chatSide {
+		width: 30%;
+	}
+
+	#chatMain {
+		width: 70%;
+	}
+
+	.mobileOnly {
+		display: none;
+	}
+}
+
+@media (max-width: 768px) {
+	.hasMain #chatSide {
+		display: none;
+	}
+
+	#chatMain:not(.hasMain #chatMain) {
+		display: none;
+	}
+
+	.desktopOnly {
+		display: none;
+	}
+}

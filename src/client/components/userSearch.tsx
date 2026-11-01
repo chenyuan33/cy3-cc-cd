@@ -10,8 +10,9 @@ export const UserSearch: FC<{
 	onChange?: () => void,
 	required?: boolean | undefined,
 	style?: CSSProperties | string | undefined,
-	value?: userInfo | undefined
-}> = ({ id, name, onChange, required, style, value }) => {
+	value?: userInfo | undefined,
+	doNotDisplayCurrentChoice?: boolean
+}> = ({ id, name, onChange, required, style, value, doNotDisplayCurrentChoice = false }) => {
 	const hiddenInputRef = useRef<HTMLInputElement>(null);
 	const selectorDivRef = useRef<HTMLDivElement>(null);
 	const usernameOrUidInputRef = useRef<HTMLInputElement>(null);
@@ -62,10 +63,12 @@ export const UserSearch: FC<{
 			}, 300);
 		}} placeholder={tString('searchUsernameOrUid')} ref={usernameOrUidInputRef} />
 		&nbsp;
-		{t('currentChoice')}
-		<span ref={currentChoiceRef}>{value ? <User user={value} /> : t('none')}</span>
+		<div style={doNotDisplayCurrentChoice ? { display: 'none' } : {}}>
+			{t('currentChoice')}
+			<span ref={currentChoiceRef}>{value ? <User user={value} /> : t('none')}</span>
+		</div>
 		<div ref={selectorDivRef} style={{
-			position: 'relative',
+			position: 'absolute',
 			zIndex: 6,
 			padding: '10px',
 			backgroundColor: 'gray',

@@ -7,7 +7,6 @@ import { userQuery } from './routes/api/user';
 import { banned, errorJson, notFound } from './routes/errorPages';
 import apisRoutes from './routes/apis';
 import userRoutes from './routes/user';
-import chatRoutes from './routes/chat';
 import adminRoutes from './routes/admin';
 import fileRoutes from './routes/file';
 import { renderer } from './renderer';
@@ -98,7 +97,6 @@ app.get('/private-message', (c) => {
 app.route('/api', apisRoutes);
 app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
-app.route('/chat', chatRoutes);
 app.route('/file', fileRoutes);
 app.onError((err, c) => {
 	console.error(err);

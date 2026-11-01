@@ -9,7 +9,9 @@ declare global {
 			enableAvatar: boolean,
 			locale: keyof typeof messages,
 			currentUser: userInfo & { email: string | null } | null,
-			usingTheme: themeBasicInfo
+			usingTheme: themeBasicInfo,
+			notificationCount: number,
+			privateMessageCount: number
 		}
 	}
 }

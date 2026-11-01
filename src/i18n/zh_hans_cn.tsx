@@ -436,5 +436,6 @@ export default {
 	deletedSuccessful: '删除成功',
 	appliedSuccessful: '应用成功',
 	createdSuccessful: '创建成功',
-	savedSuccessful: '保存成功'
+	savedSuccessful: '保存成功',
+	sendedSuccessful: '发送成功'
 } satisfies typeof en_us_translations;

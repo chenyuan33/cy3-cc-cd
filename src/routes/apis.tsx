@@ -6,22 +6,13 @@ import discussionRoutes, { type discussionCategoriesType } from './api/discussio
 import ticketRoutes from './api/ticket';
 import fileRoutes from './api/file';
 import themeRoutes from './api/theme';
+import chatRoutes from './api/chat';
 import websocketRotues from './api/websocket';
 import type { AppEnv, judgementType } from '../types';
-import { accessDenied, loginRequired, notFound } from './errorPages';
-import { permissionChat } from '../settings';
-import { getI18n, messages } from '../i18n';
-const app = new Hono<AppEnv>();
+import { loginRequired } from './errorPages';
+import { getI18n } from '../i18n';
 
-app.get('/i18n', c => c.json(messages[c.get('language') as keyof typeof messages]));
-app.get('/currentUser', c => c.json({ user: { ...c.get('currentUser'), email: c.get('currentUserEmail') }, usingTheme: c.get('usingTheme') }));
-app.get('/notificationCount', async c => {
-	const env = c.env as any, currentUser = c.get('currentUser');
-	return c.json({
-		notificationCount: currentUser ? (await env.db.prepare('SELECT COUNT(*) AS total FROM notification WHERE uid = ? AND read = 0').bind(currentUser.id).first()).total : 0,
-		privateMessageCount: currentUser ? (await env.db.prepare('SELECT COUNT(*) AS total FROM private_messages WHERE receiver = ? AND read = 0').bind(currentUser.id).first()).total : 0
-	});
-});
+const app = new Hono<AppEnv>();
 app.get('/home', async c => {
 	const env = c.env as any, locale = c.get('shortLocale'), currentUser = c.get('currentUser');
 	const discussions = (await env.db.prepare(`
@@ -81,6 +72,7 @@ app.route('/user', userRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
+app.route('/chat', chatRoutes);
 app.get('/judgement', async c => c.json((await (c.env as any).db.prepare(`
 	SELECT
 		j.id,
@@ -128,23 +120,5 @@ app.post('/check-in', async c => {
     await env.db.prepare('UPDATE users SET checkin_date = CURRENT_TIMESTAMP, checkin_count = ?, checkin_today_status = ?, checkin_today_good1 = ?, checkin_today_good2 = ?, checkin_today_bad1 = ?, checkin_today_bad2 = ? WHERE id = ?')
         .bind(lastCheckInCount ? Math.max(lastCheckInCount - Math.floor(Math.pow(2, dateDistance - 2)) + 1, 1) : 1, checkin_today_status, checkin_today_goods[0].id, checkin_today_goods[1].id, checkin_today_bads[0].id, checkin_today_bads[1].id, currentUser.id).run();
     return c.json({ success: true });
-});
-app.post('/chat/send', async c => {
-    const env = c.env as any, currentUser = c.get('currentUser');
-	if (!currentUser) {
-		return loginRequired(c);
-	}
-	if (!(currentUser.permission & permissionChat)) {
-		return accessDenied(c);
-	}
-    if (!currentUser) {
-        return loginRequired(c);
-    }
-    const { uid, content } = c.get('reqBody');
-    if (!uid || !content) {
-        return notFound(c);
-    }
-    await env.db.prepare('INSERT INTO private_messages (sender, receiver, content) VALUES (?, ?, ?)').bind(currentUser.id, uid, content).run();
-    return c.redirect('/chat?user=' + uid);
 });
 export default app;
