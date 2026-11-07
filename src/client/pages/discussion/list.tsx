@@ -24,7 +24,10 @@ export const DiscussionList = () => {
 	const perPage = 20;
 	let cancelled = false;
 	const reload = async () => {
-		const data = await (await fetch(`/api/discussion/list?perpage=${perPage}&page=${page}` + (category ? '&category=' + category : ''))).json();
+		const data = await (await fetch(`/api/discussion/list?perpage=${perPage}&page=${page}` + (category ? '&category=' + category : ''))).json<{
+			discussion: discussionBasicInfo[],
+			total: number
+		}>();
 		if (!cancelled) {
 			setData(data);
 		}

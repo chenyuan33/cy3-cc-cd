@@ -41,7 +41,7 @@ export const TicketPost = () => {
 			if (similarRef.current) {
 				render(<div>
 					<p><strong>{t('ticket.post.similar')}</strong></p>
-					<ul>{(await (await fetch(`/api/ticket/similar?title=${encodeURIComponent(title)}&category=${encodeURIComponent((document.getElementById('category')! as HTMLInputElement).value)}`)).json()).map(({ id, status, title }: { id: number, status: ticketStatusType, title: string }) => <li>
+					<ul>{(await (await fetch(`/api/ticket/similar?title=${encodeURIComponent(title)}&category=${encodeURIComponent((document.getElementById('category')! as HTMLInputElement).value)}`)).json<{ id: number, status: ticketStatusType, title: string }[]>()).map(({ id, status, title }) => <li>
 						<A href={'/ticket/' + id}><TicketStatus status={status} />&nbsp;{title}</A>
 					</li>)}</ul>
 				</div>, similarRef.current);

@@ -11,7 +11,7 @@ export const IDE = () => {
 	const [langs, setLangs] = useState<{ value: string, label: string }[] | null>(null);
 	const [running, setRunning] = useState(false);
 	useEffect(() => {
-		(async () => setLangs((await (await fetch('/api/support-langs')).json()).languages))();
+		(async () => setLangs((await (await fetch('/api/support-langs')).json<{ languages: { value: string, label: string }[] }>()).languages))();
 	}, []);
 	const langSelectorRef = useRef<HTMLInputElement>(null);
 	const timeLimitRef = useRef<HTMLInputElement>(null);

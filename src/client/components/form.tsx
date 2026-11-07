@@ -51,7 +51,7 @@ export const Form: FC<PropsWithChildren<{
 				button.disabled = false;
 				button.dataset.submitted = 'false';
 				if (!fetchResult.ok) {
-					throw new Error((await fetchResult.json()).message || tString('error.somethingWentWrong'));
+					throw new Error((await fetchResult.json<{ message?: string }>()).message || tString('error.somethingWentWrong'));
 				}
 				onSuccess?.(await fetchResult.json(), formData, button);
 			}

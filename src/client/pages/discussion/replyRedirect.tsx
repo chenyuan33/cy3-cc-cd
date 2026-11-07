@@ -8,7 +8,7 @@ export const DiscussionReplyRedirect = () => {
 	const [data, setData] = useState<{ discussion_id: null } | { discussion_id: number, page: number } | null>(null), replyId = parseInt(useParams<'/discussion/:id'>().id);
 	let cancelled = false;
 	const loadData = async () => {
-		const data = await (await fetch('/api/discussion/reply/redirect?id=' + replyId)).json();
+		const data = await (await fetch('/api/discussion/reply/redirect?id=' + replyId)).json<{ discussion_id: null } | { discussion_id: number, page: number }>();
 		if (!cancelled) {
 			setData(data);
 		}

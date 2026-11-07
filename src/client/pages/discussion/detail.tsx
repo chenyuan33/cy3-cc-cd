@@ -29,7 +29,12 @@ export const DiscussionDetail = () => {
 	} | null>(null);
 	let cancelled = false;
 	const loadData = async () => {
-		const data = await (await fetch(`/api/discussion/detail/${id}?page=${page}&perpage=${perPage}`)).json();
+		const data = await (await fetch(`/api/discussion/detail/${id}?page=${page}&perpage=${perPage}`)).json<{ exists: false } | {
+			exists: true,
+			info: discussionInfo,
+			replyCount: number,
+			replies: discussionReplyInfo[]
+		}>();
 		if (!cancelled) {
 			setData(data);
 		}

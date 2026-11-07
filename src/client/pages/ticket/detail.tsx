@@ -32,7 +32,13 @@ export const TicketDetail = () => {
 	} | null>(null);
 	let cancelled = false;
 	const loadData = async () => {
-		const data = await (await fetch(`/api/ticket/detail/${id}?page=${page}&perpage=${perPage}`)).json();
+		const data = await (await fetch(`/api/ticket/detail/${id}?page=${page}&perpage=${perPage}`)).json<{ exists: false } | {
+			exists: true,
+			info: ticketInfo,
+			replyCount: number,
+			replies: ticketReplyInfo[],
+			quickReplies: { title: string, content: string }[]
+		}>();
 		if (!cancelled) {
 			setData(data);
 		}

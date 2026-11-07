@@ -8,7 +8,7 @@ export const TicketReplyRedirect = () => {
 	const [data, setData] = useState<{ ticket_id: null } | { ticket_id: number, page: number } | null>(null), replyId = parseInt(useParams<'/ticket/:id'>().id);
 	let cancelled = false;
 	const loadData = async () => {
-		const data = await (await fetch('/api/ticket/reply/redirect?id=' + replyId)).json();
+		const data = await (await fetch('/api/ticket/reply/redirect?id=' + replyId)).json<{ ticket_id: null } | { ticket_id: number, page: number }>();
 		if (!cancelled) {
 			setData(data);
 		}

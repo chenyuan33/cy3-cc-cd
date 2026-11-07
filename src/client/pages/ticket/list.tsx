@@ -28,7 +28,10 @@ export const TicketList = () => {
 	const perPage = 20;
 	let cancelled = false;
 	const reload = async () => {
-		const data = await (await fetch(`/api/ticket/list?perpage=${perPage}&page=${page}` + (category ? '&category=' + category : '') + (status ? '&status=' + status : ''))).json();
+		const data = await (await fetch(`/api/ticket/list?perpage=${perPage}&page=${page}` + (category ? '&category=' + category : '') + (status ? '&status=' + status : ''))).json<{
+			ticket: ticketBasicInfo[],
+			total: number
+		}>();
 		if (!cancelled) {
 			setData(data);
 		}

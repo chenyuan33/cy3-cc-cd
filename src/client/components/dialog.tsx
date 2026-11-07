@@ -1,45 +1,23 @@
 import type { JSX } from "hono/jsx/jsx-runtime";
 import { t } from "../i18n";
+import { render } from "hono/jsx/dom";
 
-let dialogId = 0;
-export const createDialog = (content: string, buttons: { text?: JSX.Element, close?: boolean, callback?: () => unknown }[]) => {
-	dialogId++;
-	const dialog = document.createElement('div'), dialogMain = document.createElement('div'), closeBtn = document.createElement('i'), dialogBtns = document.createElement('div');
-	let resolver: (value?: unknown) => void;
-	const ret = new Promise(resolve => resolver = resolve);
-	dialogBtns.classList.add('dialog-buttons');
-	buttons.forEach(info => {
-		info.text ??= <></>;
-		info.close ??= true;
-		info.callback ??= () => {};
-		const btn = document.createElement('button');
-		btn.innerHTML = info.text.toString();
-		btn.addEventListener('click', info.close ? () => {
-			if (info.callback) {
-				resolver(info.callback());
-			}
-			dialog.remove();
-		} : info.callback);
-		dialogBtns.append(btn);
-	});
-	closeBtn.classList.add('dialog-close-btn', 'fa-solid', 'fa-xmark');
-	dialogMain.classList.add('dialog-main');
-	dialogMain.innerHTML = `<div>${content}</div>`;
-	dialogMain.append(closeBtn, dialogBtns);
-	dialog.id = `dialog-${dialogId}`;
-	dialog.classList.add('dialog');
-	dialog.innerHTML = '<div class="dialog-bg"></div>';
-	closeBtn.addEventListener('click', () => {
-		dialog.remove();
-		resolver();
-	});
-	dialog.getElementsByClassName('dialog-bg')[0]!.addEventListener('click', () => {
-		dialog.remove();
-		resolver();
-	});
-	dialog.append(dialogMain);
-	document.body.append(dialog);
-	return ret;
-}
+export const createDialog = (content: string | JSX.Element, buttons: { text?: string | JSX.Element, close?: boolean, callback?: () => unknown }[]) => new Promise(resolve => {
+	const container = document.createElement('div');
+	const close = (result?: unknown) => {
+		render(null, container);
+		container.remove();
+		resolve(result);
+	};
+	document.body.appendChild(container);
+	render(<div class='dialog'>
+		<div class='dialog-bg' onClick={() => close()}></div>
+		<div class='dialog-main'>
+			{content}
+			<i class='dialog-close-btn fa-solid fa-xmark' onClick={() => close()}></i>
+			<div class='dialog-buttons'>{buttons.map((info, key) => <button key={'dialog-' + key} onClick={info.close ?? true ? () => close(info.callback?.()) : info.callback ?? (() => {})}>{info.text}</button>)}</div>
+		</div>
+	</div>, container);
+});
 export const createAlert = (content: string) => createDialog(content, [{ text: t('ok') }]);
 export const createConfirm = (content: string) => createDialog(content, [{ text: t('cancel'), callback: () => false }, { text: t('ok'), callback: () => true }]);
