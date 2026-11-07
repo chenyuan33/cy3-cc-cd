@@ -3,7 +3,7 @@ import { useUsingTheme } from "../../utils/currentUser";
 import type { EditorView, ViewUpdate } from "@codemirror/view";
 import type { editor } from "monaco-editor";
 import { CodeMirrorEditor, CodeMirrorLanguages, getValueCodeMirror, replaceSelectionCodeMirror, setLangCodeMirror, setValueCodeMirror, wrapSelectionCodeMirror } from "./codemirror";
-import { getValueMonacoEditor, MonacoEditorLanguages, replaceSelectionMonacoEditor, setLangMonacoEditor, setValueMonacoEditor, wrapSelectionMonacoEditor } from "./monacoeditor";
+import { getValueMonacoEditor, MonacoEditorLanguages, replaceSelectionMonacoEditor, setLangMonacoEditor, setValueMonacoEditor, wrapSelectionMonacoEditor } from "./monacoEditorUtils";
 
 export type supportedLanguages = 'md' | 'py' | 'js' | 'cpp' | 'c';
 export const selectionWrapper = (prefix: string, suffix: string) => async (ed: editor.IStandaloneCodeEditor | EditorView) => {
@@ -69,10 +69,15 @@ export const Editor: FC<{
 		style?: CSSProperties,
 		readOnly?: boolean
 	}> | undefined>();
-	useEffect(() => {(async () => {
-		const { MonacoEditor } = await import('./monacoeditor');
-		setMonacoEditor(() => MonacoEditor);
-	})()}, []);
+	useEffect(() => {
+		if (theme !== 'MonacoEditor') {
+			return;
+		}
+		(async () => {
+			const { MonacoEditor } = await import('./monacoeditor');
+			setMonacoEditor(() => MonacoEditor);
+		})();
+	}, [theme]);
 	const textareaRef = useRef<HTMLTextAreaElement>(null);
 	if (theme === 'CodeMirror') {
 		return <CodeMirrorEditor lang={lang ? CodeMirrorLanguages[lang] : undefined} {...props} />;

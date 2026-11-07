@@ -1,4 +1,3 @@
-import katex from "katex";
 import { User } from "../user";
 import { useEffect, useRef, useState, type FC } from "hono/jsx";
 import { tString } from "../../i18n";
@@ -57,7 +56,7 @@ const inlineMdToHtml = (md: string) => {
         .replaceAll(/\x00CODE_(\d+)\x00/g, (_, idx) => `<code>${codes[parseInt(idx)]}</code>`)
         .replaceAll(/\x00MATH_(\d+)\x00/g, (_, idx) => {
             const { math, displayMode } = maths[parseInt(idx)]!;
-            return katex.renderToString(math, { throwOnError: false, displayMode });
+            return `<span data-md-math="${encodeURIComponent(math)}" data-md-math-display="${displayMode}"></span>`;
         })
         .replaceAll(/\x00SIGN_(\d+)\x00/g, (_, idx) => signs[idx]!);
     return html;
@@ -320,6 +319,27 @@ export const MdRender: FC<{ markdown: string }> = ({ markdown }) => {
 			(ele as HTMLElement).innerHTML = '';
 			render(<User user={parseInt(ele.getAttribute('data-md-uid') || '0')} />, ele as HTMLElement);
 		});
+		const mathElements = containerRef.current.querySelectorAll<HTMLElement>('[data-md-math]');
+		if (!mathElements.length) {
+			return;
+		}
+		let cancelled = false;
+		Promise.all([
+			import('katex'),
+			import('katex/dist/katex.min.css')
+		]).then(([{ default: katex }]) => {
+			if (cancelled) {
+				return;
+			}
+			mathElements.forEach(element => {
+				const math = decodeURIComponent(element.dataset.mdMath ?? '');
+				element.innerHTML = katex.renderToString(math, {
+					throwOnError: false,
+					displayMode: element.dataset.mdMathDisplay === 'true'
+				});
+			});
+		});
+		return () => { cancelled = true; };
 	}, [html]);
 	return <span data-markdown={markdown} dangerouslySetInnerHTML={{ __html: html }} ref={containerRef} />;
 };

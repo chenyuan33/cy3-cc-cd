@@ -1,82 +1,7 @@
 import { useEffect, useRef, type CSSProperties, type FC } from "hono/jsx";
 import type { editor } from "monaco-editor";
 import { isLightMode } from "../../utils/isLightMode";
-import type { supportedLanguages } from "./editor";
-
-export const MonacoEditorLanguages = {
-	md: 'markdown',
-	py: 'python',
-	js: 'javascript',
-	cpp: 'cpp',
-	c: 'c'
-};
-const { Range, editor: monacoEditor } = typeof window === 'undefined' ? { Range: undefined } : (await import('monaco-editor'));
-export const MonacoEditors: editor.IStandaloneCodeEditor[] = [];
-const MonacoEditorMap = new Map<string, editor.IStandaloneCodeEditor>();
-export const wrapSelectionMonacoEditor = async (editor: editor.IStandaloneCodeEditor, prefix: string, suffix: string) => {
-	const selection = editor.getSelection(), { Selection } = await import('monaco-editor');
-	const model = editor.getModel();
-	if (!selection || !model) return;
-	const selectedText = model.getValueInRange(selection);
-	editor.executeEdits('wrap', [{
-		range: selection,
-		text: `${prefix}${selectedText}${suffix}`,
-		forceMoveMarkers: true,
-	}]);
-	const newSelection = new Selection(
-		selection.startLineNumber,
-		selection.startColumn + prefix.length,
-		selection.endLineNumber,
-		selection.endColumn + prefix.length,
-	);
-	editor.setSelection(newSelection);
-}
-export const getValueMonacoEditor = (id: string) => {
-	const editor = MonacoEditorMap.get(id);
-	if (!editor) {
-		return null;
-	}
-	return editor.getValue();
-};
-export const setValueMonacoEditor = (id: string, value: string) => {
-	const editor = MonacoEditorMap.get(id);
-	if (!editor) {
-		return;
-	}
-	editor.setValue(value);
-};
-export const replaceSelectionMonacoEditor = (id: string, value: string) => {
-	if (!Range) {
-		return;
-	}
-	const editor = MonacoEditorMap.get(id);
-	if (!editor) {
-		return;
-	}
-	const selection = editor.getSelection();
-	if (!selection) {
-		return;
-	}
-	editor.executeEdits('replace-selection', [{
-		range: new Range(
-			selection.startLineNumber, selection.startColumn,
-			selection.endLineNumber, selection.endColumn
-		),
-		text: value,
-		forceMoveMarkers: true
-	}]);
-};
-export const setLangMonacoEditor = (id: string, value: supportedLanguages) => {
-	const editor = MonacoEditorMap.get(id);
-	if (!editor) {
-		return;
-	}
-	const model = editor.getModel();
-	if (!model) {
-		return;
-	}
-	monacoEditor?.setModelLanguage(model, MonacoEditorLanguages[value]);
-};
+import { registerMonacoEditor, setMonacoEditorApi, unregisterMonacoEditor } from "./monacoEditorUtils";
 export const MonacoEditor: FC<{
 	id: string,
 	className?: string,
@@ -241,8 +166,8 @@ export const MonacoEditor: FC<{
 				theme: lightMode ? 'vs-light' : 'vs-dark'
 			});
 			editorRef.current = currentEditor;
-			MonacoEditors.push(currentEditor);
-			MonacoEditorMap.set(id, currentEditor);
+			setMonacoEditorApi(monaco);
+			registerMonacoEditor(id, currentEditor);
 			currentEditor.onDidChangeModelContent(evt => {
 				if (!inputRef.current) {
 					return;
@@ -261,7 +186,10 @@ export const MonacoEditor: FC<{
 		}, 100);
 		return () => {
 			cancelled = true;
-			editorRef.current?.dispose();
+			if (editorRef.current) {
+				unregisterMonacoEditor(id, editorRef.current);
+				editorRef.current.dispose();
+			}
 			editorRef.current = null;
 			clearTimeout(timeout);
 		};

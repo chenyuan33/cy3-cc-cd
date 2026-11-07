@@ -13,7 +13,7 @@ import Feed from './pages/feed';
 import './style.css';
 import { toast, ToastContainer } from './components/toast';
 import { CodeMirrorEditors } from './components/editor/codemirror';
-import { MonacoEditors } from './components/editor/monacoeditor';
+import { MonacoEditors } from './components/editor/monacoEditorUtils';
 import { isLightMode } from './utils/isLightMode';
 import { DiscussionList } from './pages/discussion/list';
 import { DiscussionPost } from './pages/discussion/post';
