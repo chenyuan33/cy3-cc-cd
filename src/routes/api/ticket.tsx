@@ -36,7 +36,7 @@ export type ticketReplyInfo = {
 };
 const app = new Hono<AppEnv>();
 app.get('/list', async c => {
-	const { category, status, page: page_, perpage } = c.get('reqBody'), env = c.env as any;
+	const { category, status, page: page_, perpage } = c.get('reqBody');
 	if (category && !inTicketCategory(category)) {
 		return categoryNotFound(c);
 	}
@@ -46,7 +46,7 @@ app.get('/list', async c => {
 	const page = Math.max(parseInt(page_ || '1') || 1, 1);
 	const perPage = Math.max(1, Math.min(parseInt(perpage || '20') || 20, 20));
 	return c.json({
-		ticket: (await env.db.prepare(`
+		ticket: (await c.env.db.prepare(`
 			SELECT
 				t.id, t.category, t.status, t.title, t.created_at,
 				json_object (
@@ -68,15 +68,15 @@ app.get('/list', async c => {
 			ORDER BY t.created_at DESC
 			LIMIT ?
 			OFFSET ?
-		`).bind(...(category ? [category] : []), ...(status ? [status] : []), perPage, perPage * (page - 1)).all()).results.map(({ user, assignee, ...attr }: { user: string, assignee: string | null, [attr: string]: any }) => ({ user: JSON.parse(user), assignee: assignee ? JSON.parse(assignee) : null, ...attr })),
-		total: (await env.db.prepare(`SELECT COUNT(*) as total FROM ticket ${category || status ? 'WHERE' : ''} ${category ? 'category = ?' : ''} ${category && status ? 'AND' : ''} ${status ? 'status = ?' : ''}`).bind(...(category ? [category] : []), ...(status ? [status] : [])).first()).total
+		`).bind(...(category ? [category] : []), ...(status ? [status] : []), perPage, perPage * (page - 1)).all<{ user: string, assignee: string | null, [attr: string]: unknown }>()).results.map(({ user, assignee, ...attr }) => ({ user: JSON.parse(user), assignee: assignee ? JSON.parse(assignee) : null, ...attr })),
+		total: (await c.env.db.prepare(`SELECT COUNT(*) as total FROM ticket ${category || status ? 'WHERE' : ''} ${category ? 'category = ?' : ''} ${category && status ? 'AND' : ''} ${status ? 'status = ?' : ''}`).bind(...(category ? [category] : []), ...(status ? [status] : [])).first())?.total
 	});
 });
 app.get('/detail/:id{\\d+}', async c => {
-	const env = c.env as any, id = parseInt(c.req.param('id')), { page: page_, perpage } = c.get('reqBody'), currentUser = c.get('currentUser');
+	const id = parseInt(c.req.param('id')), { page: page_, perpage } = c.get('reqBody'), currentUser = c.get('currentUser');
 	const page = Math.max(parseInt(page_ || '1') || 1, 1);
 	const perPage = Math.max(1, Math.min(parseInt(perpage || '20') || 20, 20));
-	const info = await env.db.prepare(`
+	const info = await c.env.db.prepare(`
 		SELECT
 			t.id, t.category, t.status, t.title, t.content, t.created_at,
 			json_object (
@@ -91,15 +91,15 @@ app.get('/detail/:id{\\d+}', async c => {
 		FROM ticket t
 		JOIN users u ON t.uid = u.id
 		LEFT JOIN users au ON t.assignee_uid = au.id
-		WHERE t.id = ?`).bind(id).first();
+		WHERE t.id = ?`).bind(id).first<{ id: number, category: string, status: string, title: string, content: string, created_at: string, user: string, assignee: string }>();
 	if (!info) {
 		return c.json({ exists: false });
 	}
 	return c.json({
 		exists: true,
 		info: { ...info, user: JSON.parse(info.user), assignee: JSON.parse(info.assignee) },
-		replyCount: (await env.db.prepare('SELECT COUNT(*) as total FROM ticket_reply WHERE ticket_id = ?').bind(id).first()).total,
-		replies: (await env.db.prepare(`
+		replyCount: (await c.env.db.prepare('SELECT COUNT(*) as total FROM ticket_reply WHERE ticket_id = ?').bind(id).first())?.total,
+		replies: (await c.env.db.prepare(`
 			SELECT
 				t.id, t.content, t.set_status, t.created_at,
 				CASE
@@ -158,27 +158,27 @@ app.get('/detail/:id{\\d+}', async c => {
 			ORDER BY t.created_at
 			LIMIT ?
 			OFFSET ?
-		`).bind(id, perPage, (page - 1) * perPage).all()).results.map(({ user, set_assignee, parent, ...attr }: { id: number, content: string, created_at: string, user: string, set_assignee: string | null, parent: string }) => ({
+		`).bind(id, perPage, (page - 1) * perPage).all<{ id: number, content: string, created_at: string, user: string, set_assignee: string | null, parent: string }>()).results.map(({ user, set_assignee, parent, ...attr }) => ({
 			user: JSON.parse(user),
 			set_assignee: set_assignee ? JSON.parse(set_assignee) : '',
 			parent: parent === null ? null : JSON.parse(parent),
 			...attr
 		})),
-		quickReplies: currentUser && ((currentUser.permission & permissionAdmin) || info.assignee && JSON.parse(info.assignee).id === currentUser.id) ? (await env.db.prepare('SELECT title, content FROM ticket_quick_reply').all()).results : []
+		quickReplies: currentUser && ((currentUser.permission & permissionAdmin) || info.assignee && JSON.parse(info.assignee).id === currentUser.id) ? (await c.env.db.prepare('SELECT title, content FROM ticket_quick_reply').all()).results : []
 	});
 });
 app.get('/similar', async c => {
-	const locale = c.get('shortLocale'), { title, category } = c.get('reqBody'), env = c.env as any;
+	const locale = c.get('shortLocale'), { title, category } = c.get('reqBody');
     if (!title) {
         return titleRequired(c);
     }
     if (!category) {
         return categoryRequired(c);
     }
-	return c.json((await env.db.prepare('SELECT rowid, status, title FROM ticket_fts WHERE category = ? AND ticket_fts MATCH ? LIMIT 10').bind(category, `segmented_title:"${segmenter(locale, title).replaceAll('"', '""')}"`).all()).results.map(({ rowid, status, title }: { rowid: number, status: ticketStatusType, title: string }) => ({ id: rowid, status, title })));
+	return c.json((await c.env.db.prepare('SELECT rowid, status, title FROM ticket_fts WHERE category = ? AND ticket_fts MATCH ? LIMIT 10').bind(category, `segmented_title:"${segmenter(locale, title).replaceAll('"', '""')}"`).all<{ rowid: number, status: ticketStatusType, title: string }>()).results.map(({ rowid, status, title }) => ({ id: rowid, status, title })));
 });
 app.post('/post', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('language'), { category, title, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), locale = c.get('language'), { category, title, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
@@ -201,33 +201,33 @@ app.post('/post', async c => {
     if (!(ticketCategories as readonly string[]).includes(category)) {
         return categoryNotFound(c);
     }
-    const { id } = await env.db.prepare('INSERT INTO ticket (uid, category, title, content) VALUES (?, ?, ?, ?) RETURNING id')
-        .bind(currentUser.id, category, title, content).first();
-	await env.db.prepare('INSERT INTO ticket_fts (rowid, category, status, title, segmented_title) VALUES (?, ?, \'new\', ?, ?)').bind(id, category, title, segmenter(locale, title)).run();
+    const { id } = await c.env.db.prepare('INSERT INTO ticket (uid, category, title, content) VALUES (?, ?, ?, ?) RETURNING id')
+        .bind(currentUser.id, category, title, content).first<{ id: number }>() ?? { id: null };
+	await c.env.db.prepare('INSERT INTO ticket_fts (rowid, category, status, title, segmented_title) VALUES (?, ?, \'new\', ?, ?)').bind(id, category, title, segmenter(locale, title)).run();
     await processAt(c, content, '/ticket/' + id);
     return c.json({ success: true, id });
 });
 app.post('/edit', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, locale = c.get('language'), { ticket_id, title, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), locale = c.get('language'), { ticket_id, title, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!ticket_id || !title || !content) {
         return contentRequired(c);
     }
-    const ticket = await env.db.prepare('SELECT uid FROM ticket WHERE id = ?').bind(ticket_id).first();
+    const ticket = await c.env.db.prepare('SELECT uid FROM ticket WHERE id = ?').bind(ticket_id).first();
     if (!ticket) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== ticket.uid) {
         return accessDenied(c);
     }
-	await env.db.prepare('UPDATE ticket SET title = ?, content = ? WHERE id = ?').bind(title, content, ticket_id).run();
-	await env.db.prepare('UPDATE ticket_fts SET title = ?, segmented_title = ? WHERE rowid = ?').bind(title, segmenter(locale, title), ticket_id).run();
+	await c.env.db.prepare('UPDATE ticket SET title = ?, content = ? WHERE id = ?').bind(title, content, ticket_id).run();
+	await c.env.db.prepare('UPDATE ticket_fts SET title = ?, segmented_title = ? WHERE rowid = ?').bind(title, segmenter(locale, title), ticket_id).run();
     return c.json({ success: true });
 });
 app.post('/reply', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { ticket_id, parent_id: parent_id_got, content, set_status, set_assignee } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { ticket_id, parent_id: parent_id_got, content, set_status, set_assignee } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
@@ -243,60 +243,61 @@ app.post('/reply', async c => {
     if (!content && !set_status && !set_assignee) {
         return contentRequired(c);
     }
-    const ticket = await env.db.prepare('SELECT id, uid FROM ticket WHERE id = ?').bind(ticket_id).first();
+    const ticket = await c.env.db.prepare('SELECT id, uid FROM ticket WHERE id = ?').bind(ticket_id).first();
     if (!ticket) {
         return notFound(c);
     }
     const parent_id_ = parseInt(parent_id_got ?? '');
     const parent_id = Number.isNaN(parent_id_) ? null : parent_id_;
     if (set_status || set_assignee) {
-        const { assignee_uid } = await env.db.prepare('SELECT assignee_uid FROM ticket WHERE id = ?').bind(ticket_id).first();
+        const { assignee_uid } = await c.env.db.prepare('SELECT assignee_uid FROM ticket WHERE id = ?').bind(ticket_id).first() ?? { assignee_uid: null };
         if (!(currentUser.permission & permissionAdmin) && (!assignee_uid || assignee_uid !== currentUser.id)) {
             return accessDenied(c);
         }
     }
-    const { id } = await env.db.prepare('INSERT INTO ticket_reply (ticket_id, parent_id, uid, content, set_status, set_assignee) VALUES (?, ?, ?, ?, ?, ?) RETURNING id').bind(ticket_id, parent_id, currentUser.id, content, set_status ?? null, set_assignee ?? null).first();
+    const { id } = await c.env.db.prepare('INSERT INTO ticket_reply (ticket_id, parent_id, uid, content, set_status, set_assignee) VALUES (?, ?, ?, ?, ?, ?) RETURNING id').bind(ticket_id, parent_id, currentUser.id, content, set_status ?? null, set_assignee ?? null).first() ?? { id: null };
     if (content) {
         await processAt(c, content, '/ticket/reply/' + id);
     }
     if (set_status) {
-        await env.db.prepare('UPDATE ticket SET status = ? WHERE id = ?').bind(set_status, ticket_id).run();
-		await env.db.prepare('UPDATE ticket_fts SET status = ? WHERE rowid = ?').bind(set_status, ticket_id).run();
-        await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'ticket-status-changed\', ?)').bind(ticket.uid, JSON.stringify({ ticket_id, status: set_status })).run();
+        await c.env.db.prepare('UPDATE ticket SET status = ? WHERE id = ?').bind(set_status, ticket_id).run();
+		await c.env.db.prepare('UPDATE ticket_fts SET status = ? WHERE rowid = ?').bind(set_status, ticket_id).run();
+        await c.env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'ticket-status-changed\', ?)').bind(ticket.uid, JSON.stringify({ ticket_id, status: set_status })).run();
     }
     if (set_assignee) {
-        await env.db.prepare('UPDATE ticket SET assignee_uid = ? WHERE id = ?').bind(set_assignee, ticket_id).run();
+        await c.env.db.prepare('UPDATE ticket SET assignee_uid = ? WHERE id = ?').bind(set_assignee, ticket_id).run();
     }
     if (parent_id !== null) {
-        const { uid: parent_uid } = parent_id
-            ? await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(parent_id).first()
-            : await env.db.prepare('SELECT uid FROM ticket WHERE id = ?').bind(ticket_id).first();
+        const { uid: parent_uid } = (parent_id
+            ? await c.env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(parent_id).first()
+            : await c.env.db.prepare('SELECT uid FROM ticket WHERE id = ?').bind(ticket_id).first()
+			) ?? { uid: null };
         if (parent_uid !== currentUser.id) {
-            await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'ticket-reply-replied\', ?)').bind(parent_uid, JSON.stringify({ ticket_id, uid: currentUser.id, parent_id, id })).run();
+            await c.env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'ticket-reply-replied\', ?)').bind(parent_uid, JSON.stringify({ ticket_id, uid: currentUser.id, parent_id, id })).run();
         }
     }
     return c.json({ success: true });
 });
 app.post('/reply/edit', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { reply_id, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { reply_id, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!reply_id || !content) {
         return contentRequired(c);
     }
-    const reply = await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(reply_id).first();
+    const reply = await c.env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(reply_id).first();
     if (!reply) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== reply.uid) {
         return accessDenied(c);
     }
-    await env.db.prepare('UPDATE ticket_reply SET content = ? WHERE id = ?').bind(content, reply_id).run();
+    await c.env.db.prepare('UPDATE ticket_reply SET content = ? WHERE id = ?').bind(content, reply_id).run();
     return c.json({ success: true });
 });
 app.post('/reply/delete', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { reply_id } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { reply_id } = c.get('reqBody');
     console.log(c.get('reqBody'));
     if (!currentUser) {
         return loginRequired(c);
@@ -304,26 +305,26 @@ app.post('/reply/delete', async c => {
     if (!reply_id) {
         return notFound(c);
     }
-    const reply = await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(reply_id).first();
+    const reply = await c.env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(reply_id).first();
     if (!reply) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== reply.uid) {
         return accessDenied(c);
     }
-    await env.db.prepare('DELETE FROM ticket_reply WHERE id = ?').bind(reply_id).run();
+    await c.env.db.prepare('DELETE FROM ticket_reply WHERE id = ?').bind(reply_id).run();
     return c.json({ success: true });
 });
 app.get('/reply/redirect', async c => {
-	const env = c.env as any, { id } = c.get('reqBody');
+	const { id } = c.get('reqBody');
 	if (!id) {
 		return missingParams(c);
 	}
-	const reply = await env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(id).first();
+	const reply = await c.env.db.prepare('SELECT uid FROM ticket_reply WHERE id = ?').bind(id).first();
 	if (!reply) {
 		return c.json({ ticket_id: null });
 	}
-	const { ticket_id } = await env.db.prepare('SELECT ticket_id FROM ticket_reply WHERE id = ?').bind(id).first();
-	return c.json({ ticket_id, page: Math.floor((await env.db.prepare('SELECT COUNT(*) as total FROM ticket_reply WHERE ticket_id = ? AND id < ?').bind(ticket_id, id).first()).total / 10) + 1 });
+	const { ticket_id } = await c.env.db.prepare('SELECT ticket_id FROM ticket_reply WHERE id = ?').bind(id).first() ?? { ticket_id: null };
+	return c.json({ ticket_id, page: Math.floor(((await c.env.db.prepare('SELECT COUNT(*) as total FROM ticket_reply WHERE ticket_id = ? AND id < ?').bind(ticket_id, id).first<{ total: number }>())?.total ?? 0) / 10) + 1 });
 });
 export default app;

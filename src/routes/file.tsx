@@ -22,20 +22,20 @@ app.use('/*', async (c, next) => {
 	await next();
 });
 app.get('/:path{.*}', async c => {
-	const currentUser = c.get('currentUser')!, path = decodeURIComponent(c.req.param('path')), translations = c.get('translations'), env = c.env as any, currentPage = parseInt(c.get('reqBody').page || '1') || 1;
+	const currentUser = c.get('currentUser')!, path = decodeURIComponent(c.req.param('path')), translations = c.get('translations'), currentPage = parseInt(c.get('reqBody').page || '1') || 1;
 	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
 		return accessDenied(c);
 	}
 	const aws = new AwsClient({
-		accessKeyId: env.B2_APPLICATION_KEY_ID,
-		secretAccessKey: env.B2_SECRET_ACCESS_KEY,
+		accessKeyId: c.env.B2_APPLICATION_KEY_ID,
+		secretAccessKey: c.env.B2_SECRET_ACCESS_KEY,
 		service: 's3',
-		region: env.B2_REGION
+		region: c.env.B2_REGION
 	});
 	if (path && !path.endsWith('/')) {
 		c.header('Cache-Control', 'public, max-age=3600, must-revalidate');
 		try {
-			const response = await aws.fetch(new URL(`https://${env.B2_BUCKET_NAME}.${env.B2_ENDPOINT}/${path}`).toString());
+			const response = await aws.fetch(new URL(`https://${c.env.B2_BUCKET_NAME}.${c.env.B2_ENDPOINT}/${path}`).toString());
 			c.header('Content-Length', response.headers.get('Content-Length')?.toString() || '');
 			if (['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/bmp', 'video/mp4', 'audio/mpeg'].includes(response.ContentType || '')) {
 				c.header('Content-Type', response.headers.get('Content-Type') ?? undefined);

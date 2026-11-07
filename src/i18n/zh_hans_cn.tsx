@@ -127,26 +127,23 @@ export default {
 		notification: {
 			name: '通知中心',
 			types: {
-				'feed-reply': '__USER__ 的__FEED__回复了__TARGET__。',
-				'discussion-reply-replied': '__USER__ 在__DISCUSSION__中的__REPLY__回复了__PARENT_REPLY__。',
-				'discussion-reply-deleted-by-discussion-owner': '__USER__ 删除了你在__DISCUSSION__中于 __REPLY_CREATED_AT__ 创建的回复：__REPLY_CONTENT__。',
-				'ticket-reply-replied': '__USER__ 在__TICKET__中的__REPLY__回复了__PARENT_REPLY__。',
-				'ticket-reply-deleted-by-ticket-owner': '__USER__ 删除了你在__TICKET__中于 __REPLY_CREATED_AT__ 创建的回复：__REPLY_CONTENT__。',
-				'ticket-status-changed': '__TICKET__的状态被设为了__STATUS__。',
-				'permission-changed': '您的权限已因以下理由被 __OPERATOR__ 变更：<blockquote>__COMMENT__</blockquote><ul>__CHANGE_LIST__</ul>',
-				'name-violation': '您的用户名已因以下理由被 __OPERATOR__ __SET__为违规用户名：<blockquote>__COMMENT__</blockquote>',
-				'warn': '__OPERATOR__ 已因以下理由警告了你：<blockquote>__COMMENT__</blockquote>',
-				at: '__USER__ 在 __LINK__ 提到了你。'
+				'feed-reply': '{user} 的{feed}回复了{target}。',
+				'discussion-reply-replied': '{user} 在{discussion}中的{reply}回复了{parentReply}。',
+				'ticket-reply-replied': '{user} 在{ticket}中的{reply}回复了{parentReply}。',
+				'ticket-status-changed': '{ticket}的状态被设为了{status}。',
+				'permission-changed': '您的权限已因以下理由被 {operator} 变更：{comment}{changeList}',
+				'name-violation': '您的用户名已因以下理由被 {operator} {set}：{comment}',
+				'warn': '{operator} 已因以下理由警告了你：{comment}',
+				'at': '{user} 在 {link} 提到了你。',
+				'unknown': '未知通知类型'
 			},
 			atHere: '这里',
 			yourFeed: '你的动态',
 			yourDiscussion: '你的讨论',
 			yourTicket: '你的工单',
 			yourReply: '你的回复',
-			unknownType: '未知通知类型',
 			nothing: '暂时没有通知。',
-			nameViolationSet: '标记',
-			nameViolationUnset: '取消',
+			autoReadAll: '自动将所有消息设为已读'
 		},
 		profile: {
 			title: '{username} 的个人主页',

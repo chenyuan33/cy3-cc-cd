@@ -17,11 +17,11 @@ const app = new Hono<AppEnv>();
 export async function feedQuery(c: ContextType, id_: number, queryParent?: boolean, queryReply?: boolean): Promise<feedInfo | null>;
 export async function feedQuery(c: ContextType, id_: number[], queryParent?: boolean, queryReply?: boolean): Promise<(feedInfo | null)[]>;
 export async function feedQuery(c: ContextType, id_: number | number[], queryParent = true, queryReply = true): Promise<feedInfo | null | (feedInfo | null)[]> {
-	const env = c.env as any, ids = typeof id_ === 'number' ? [id_] : id_;
+	const ids = typeof id_ === 'number' ? [id_] : id_;
 	if (!ids.length) {
 		return [];
 	}
-	const { results: rows }: { results: { id: number, parent_id: number | null }[] } = await env.db.prepare(`SELECT id, parent_id FROM feed WHERE id IN (${ids.map(() => '?')}) AND deleted = 0`).bind(...ids).all();
+	const { results: rows } = await c.env.db.prepare(`SELECT id, parent_id FROM feed WHERE id IN (${ids.map(() => '?')}) AND deleted = 0`).bind(...ids).all<{ id: number, parent_id: number | null }>();
 	if (!rows.length) {
 		return typeof id_ === 'number' ? null : id_.map(() => null);
 	}
@@ -48,7 +48,7 @@ export async function feedQuery(c: ContextType, id_: number | number[], queryPar
 		if (!ids.length) {
 			return [];
 		}
-		const { results }: { results: { id: number }[] } = await env.db.prepare(`
+		const { results } = await c.env.db.prepare(`
 			SELECT id FROM (
 				SELECT
 					id,
@@ -59,7 +59,7 @@ export async function feedQuery(c: ContextType, id_: number | number[], queryPar
 				FROM feed
 				WHERE parent_id IN (${ids.map(() => '?')}) AND deleted = 0
 			) WHERE rn <= 10
-		`).bind(...ids).all();
+		`).bind(...ids).all<{ id: number }>();
 		results.forEach(({ id }) => subFeeds.add(id));
 		return results.map(({ id }) => id);
 	};
@@ -67,7 +67,7 @@ export async function feedQuery(c: ContextType, id_: number | number[], queryPar
 		await addReply(await addReply(await addReply(ids)));
 	}
 	const feedInfos = new Map<number, { [k in keyof feedInfo]: k extends 'replies' ? number[] : feedInfo[k] }>();
-	(await env.db.prepare(`
+	(await c.env.db.prepare(`
 		SELECT
 			f.id, f.content, f.created_at,
 			json_object (
@@ -76,8 +76,8 @@ export async function feedQuery(c: ContextType, id_: number | number[], queryPar
 		FROM feed f
 		JOIN users u ON u.id = f.uid
 		WHERE f.id IN (${Array.from(subFeeds).map(() => '?')}) AND deleted = 0
-	`).bind(...subFeeds).all()).results.forEach(({ id, content, created_at, user }: { id: number, content: string, created_at: string, user: string }) => feedInfos.set(id, { id, user: JSON.parse(user), content, created_at, replies: [] }));
-	(await env.db.prepare(`SELECT id, parent_id FROM feed WHERE id IN (${Array.from(subFeeds).map(() => '?')}) AND deleted = 0 ORDER BY created_at DESC`).bind(...subFeeds).all()).results.forEach(({ id, parent_id }: { id: number, parent_id: number | null }) => {
+	`).bind(...subFeeds).all<{ id: number, content: string, created_at: string, user: string }>()).results.forEach(({ id, content, created_at, user }) => feedInfos.set(id, { id, user: JSON.parse(user), content, created_at, replies: [] }));
+	(await c.env.db.prepare(`SELECT id, parent_id FROM feed WHERE id IN (${Array.from(subFeeds).map(() => '?')}) AND deleted = 0 ORDER BY created_at DESC`).bind(...subFeeds).all<{ id: number, parent_id: number | null }>()).results.forEach(({ id, parent_id }) => {
 		if (parent_id && !doNotQueryReplyFeeds.has(parent_id)) {
 			feedInfos.get(parent_id)?.replies.push(id);
 		}
@@ -108,14 +108,14 @@ app.get('/query/:feed_id{\\d+}', async c => {
 	}
 	return c.json({
 		feed: await feedQuery(c, feed_id, true, false),
-		replies: await feedQuery(c, [...(await (c.env as any).db.prepare('SELECT id FROM feed WHERE parent_id = ? AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
-			.bind(feed_id, perPage, (page - 1) * perPage).all())
-			.results.map(({ id }: { id: number }) => id)], false, true),
-		total: (await (c.env as any).db.prepare('SELECT COUNT(*) AS total FROM feed WHERE parent_id = ? AND deleted = 0').bind(feed_id).first()).total
+		replies: await feedQuery(c, [...(await c.env.db.prepare('SELECT id FROM feed WHERE parent_id = ? AND deleted = 0 ORDER BY created_at DESC LIMIT ? OFFSET ?')
+			.bind(feed_id, perPage, (page - 1) * perPage).all<{ id: number }>())
+			.results.map(({ id }) => id)], false, true),
+		total: (await c.env.db.prepare('SELECT COUNT(*) AS total FROM feed WHERE parent_id = ? AND deleted = 0').bind(feed_id).first<{ total: number }>())?.total
 	});
 });
 app.post('/reply', async c => {
-	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), env = c.env as any;
+	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody');
 	if (!currentUser) {
 		return loginRequired(c);
 	}
@@ -129,11 +129,11 @@ app.post('/reply', async c => {
 		return contentRequired(c);
 	}
 	const parent_id = parseInt(reqBody.parent_id || '0') || 0;
-	const { id } = await env.db.prepare('INSERT INTO feed (parent_id, uid, content) VALUES (?, ?, ?) RETURNING id').bind(parent_id, currentUser.id, reqBody.content).first();
+	const { id } = await c.env.db.prepare('INSERT INTO feed (parent_id, uid, content) VALUES (?, ?, ?) RETURNING id').bind(parent_id, currentUser.id, reqBody.content).first<{ id: number }>() ?? { id: null };
 	await processAt(c, reqBody.content, '/feed/' + id);
-	const { uid: parent_uid } = await env.db.prepare('SELECT uid FROM feed WHERE id = ?').bind(parent_id).first();
+	const { uid: parent_uid } = await c.env.db.prepare('SELECT uid FROM feed WHERE id = ?').bind(parent_id).first<{ uid: number }>() ?? { uid: null };
 	if (parent_id && parent_uid !== currentUser.id) {
-		await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'feed-reply\', ?)').bind(parent_uid, JSON.stringify({
+		await c.env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'feed-reply\', ?)').bind(parent_uid, JSON.stringify({
 			uid: currentUser.id,
 			parent_id: parent_id,
 			id: id
@@ -153,18 +153,18 @@ app.post('/delete', async c => {
 	if (Number.isNaN(id)) {
 		return notFound(c);
 	}
-	const res = await (c.env as any).db.prepare('SELECT uid, deleted FROM feed WHERE id = ?').bind(id).first();
+	const res = await c.env.db.prepare('SELECT uid, deleted FROM feed WHERE id = ?').bind(id).first<{ uid: number, deleted: number }>();
 	if (!res || res.deleted) {
 		return notFound(c);
 	}
 	if (currentUser.id !== 1 && currentUser.id !== res.uid) {
 		return accessDenied(c);
 	}
-	await (c.env as any).db.prepare('UPDATE feed SET deleted = 1 WHERE id = ?').bind(id).run();
+	await c.env.db.prepare('UPDATE feed SET deleted = 1 WHERE id = ?').bind(id).run();
 	return c.json({ success: true });
 });
 app.post('/edit', async c => {
-	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody'), env = c.env as any;
+	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody');
 	if (!currentUser) {
 		return loginRequired(c);
 	}
@@ -178,14 +178,14 @@ app.post('/edit', async c => {
 	if (typeof reqBody.content !== 'string' || !reqBody.content.trim()) {
 		return contentRequired(c);
 	}
-	const res = await env.db.prepare('SELECT uid, deleted FROM feed WHERE id = ?').bind(id).first();
+	const res = await c.env.db.prepare('SELECT uid, deleted FROM feed WHERE id = ?').bind(id).first<{ uid: number, deleted: number }>();
 	if (!res || res.deleted) {
 		return notFound(c);
 	}
 	if (currentUser.id !== 1 && currentUser.id !== res.uid) {
 		return accessDenied(c);
 	}
-	await env.db.prepare('UPDATE feed SET content = ? WHERE id = ?').bind(reqBody.content, id).run();
+	await c.env.db.prepare('UPDATE feed SET content = ? WHERE id = ?').bind(reqBody.content, id).run();
 	return c.json({ success: true });
 });
 export default app;

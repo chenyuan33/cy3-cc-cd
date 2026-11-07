@@ -6,11 +6,11 @@ import { permissionChat } from "../../settings";
 
 const app = new Hono<AppEnv>();
 app.get('/', async c => {
-	const env = c.env as any, { uid } = c.get('reqBody'), currentUser = c.get('currentUser');
+	const { uid } = c.get('reqBody'), currentUser = c.get('currentUser');
 	if (!currentUser) {
 		return loginRequired(c);
 	}
-	const recent = (await env.db.prepare(`
+	const recent = (await c.env.db.prepare(`
 		SELECT
 			json_object ( ${userInfoDatas.map(scheme => `'${scheme}', u1.${scheme}`)} ) AS sender,
 			json_object ( ${userInfoDatas.map(scheme => `'${scheme}', u2.${scheme}`)} ) AS receiver,
@@ -33,14 +33,14 @@ app.get('/', async c => {
 		) p2 ON p1.id = p2.latest_id
 		ORDER BY p1.created_at DESC
 		LIMIT 50
-	`).bind(currentUser.id, currentUser.id, currentUser.id).all()).results.map(({ sender, receiver, content, created_at, unread_count }: { sender: string, receiver: string, content: string, created_at: string, unread_count: number }) => ({ sender: JSON.parse(sender), receiver: JSON.parse(receiver), content, created_at, unread_count }));
+	`).bind(currentUser.id, currentUser.id, currentUser.id).all<{ sender: string, receiver: string, content: string, created_at: string, unread_count: number }>()).results.map(({ sender, receiver, content, created_at, unread_count }) => ({ sender: JSON.parse(sender), receiver: JSON.parse(receiver), content, created_at, unread_count }));
 	const user = uid ? await userQuery(parseInt(uid), c) : null;
 	if (user) {
-		await env.db.prepare('UPDATE private_messages SET read = 1 WHERE sender = ? AND receiver = ?').bind(uid, currentUser.id).run();
+		await c.env.db.prepare('UPDATE private_messages SET read = 1 WHERE sender = ? AND receiver = ?').bind(uid, currentUser.id).run();
 		return c.json({
 			user,
 			recent,
-			messages: (await env.db.prepare(`
+			messages: (await c.env.db.prepare(`
 				SELECT
 					json_object ( ${userInfoDatas.map(scheme => `'${scheme}', u.${scheme}`)} ) AS sender,
 					p.content, p.read, p.created_at
@@ -49,14 +49,14 @@ app.get('/', async c => {
 				WHERE (p.sender = ? AND p.receiver = ?) OR (p.sender = ? AND p.receiver = ?)
 				ORDER BY p.created_at DESC
 				LIMIT 100
-			`).bind(currentUser.id, user.id, user.id, currentUser.id).all()).results.map(({ sender, content, read, created_at }: { sender: string, content: string, read: number, created_at: string }) => ({ sender: JSON.parse(sender), content, read, created_at }))
+			`).bind(currentUser.id, user.id, user.id, currentUser.id).all<{ sender: string, content: string, read: number, created_at: string }>()).results.map(({ sender, content, read, created_at }) => ({ sender: JSON.parse(sender), content, read, created_at }))
 		});
 	} else {
 		return c.json({ user, recent, messages: [] });
 	}
 });
 app.post('/send', async c => {
-    const env = c.env as any, currentUser = c.get('currentUser');
+    const currentUser = c.get('currentUser');
 	if (!currentUser) {
 		return loginRequired(c);
 	}
@@ -70,7 +70,7 @@ app.post('/send', async c => {
     if (!uid || !content) {
         return notFound(c);
     }
-    await env.db.prepare('INSERT INTO private_messages (sender, receiver, content) VALUES (?, ?, ?)').bind(currentUser.id, uid, content).run();
+    await c.env.db.prepare('INSERT INTO private_messages (sender, receiver, content) VALUES (?, ?, ?)').bind(currentUser.id, uid, content).run();
     return c.json({ success: true });
 });
 export default app;

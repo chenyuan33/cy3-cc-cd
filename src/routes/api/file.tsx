@@ -16,7 +16,7 @@ app.use('/*', async (c, next) => {
 	await next();
 });
 app.post('/upload', async c => {
-	const env = c.env as any, currentUser = c.get('currentUser')!;
+	const currentUser = c.get('currentUser')!;
 	const aws = new AwsClient({
 		accessKeyId: env.B2_APPLICATION_KEY_ID,
 		secretAccessKey: env.B2_SECRET_ACCESS_KEY,
@@ -44,7 +44,7 @@ app.post('/upload', async c => {
 	return c.redirect('/file/' + path);
 });
 app.post('/delete/:key{.+}', async c => {
-	const env = c.env as any, key = c.req.param('key');
+	const key = c.req.param('key');
 	const aws = new AwsClient({
 		accessKeyId: env.B2_APPLICATION_KEY_ID,
 		secretAccessKey: env.B2_SECRET_ACCESS_KEY,

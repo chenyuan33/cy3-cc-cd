@@ -65,11 +65,11 @@ app.get('/domain/cy3.cc.cd/renew', async c => {
             <pre><code>{JSON.stringify(await (await fetch('https://api005.dnshe.com/index.php?m=domain_hub&endpoint=subdomains&action=renew', {
                 method: 'POST',
                 headers: {
-                    'X-API-Key': (c.env as any).DNSHE_API_KEY,
-                    'X-API-Secret': (c.env as any).DNSHE_API_SECRET,
+                    'X-API-Key': c.env.DNSHE_API_KEY,
+                    'X-API-Secret': c.env.DNSHE_API_SECRET,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ subdomain_id: (c.env as any).DNSHE_SUBDOMAIN_ID })
+                body: JSON.stringify({ subdomain_id: c.env.DNSHE_SUBDOMAIN_ID })
             })).json(), null, '\t')}</code></pre>
         </Card>,
         { title: 'Domain cy3.cc.cd Renew - Admin' }
@@ -77,8 +77,8 @@ app.get('/domain/cy3.cc.cd/renew', async c => {
 });
 
 app.post('/add-a-check-in-type', async c => {
-    const env = c.env as any, { title_en, good_en, bad_en, title_zh, good_zh, bad_zh } = c.get('reqBody');
-    await env.db.prepare(`INSERT INTO checkin_texts (title_en, good_en, bad_en, title_zh, good_zh, bad_zh) VALUES (?, ?, ?, ?, ?, ?)`).bind(title_en, good_en, bad_en, title_zh, good_zh, bad_zh).run();
+    const { title_en, good_en, bad_en, title_zh, good_zh, bad_zh } = c.get('reqBody');
+    await c.env.db.prepare(`INSERT INTO checkin_texts (title_en, good_en, bad_en, title_zh, good_zh, bad_zh) VALUES (?, ?, ?, ?, ?, ?)`).bind(title_en, good_en, bad_en, title_zh, good_zh, bad_zh).run();
     return c.redirect('/');
 });
 

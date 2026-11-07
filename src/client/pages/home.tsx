@@ -12,8 +12,8 @@ import './home.css';
 
 const Good: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'red' }}>{children}</div>;
 const Bad: FC<PropsWithChildren<{}>> = ({ children }) => <div style={{ color: 'light-dark(black, white)' }}>{children}</div>;
-const GoodContent: FC<{ title_en: string, good_en: string, title_zh: string, good_zh: string }> = ({ title_en, good_en, title_zh, good_zh }) => <div style={{ padding: '10px' }}><strong>{t('home.checkIn.good')}{title_en ?? title_zh}</strong><br />{good_en ?? good_zh}</div>;
-const BadContent: FC<{ title_en: string, bad_en: string, title_zh: string, bad_zh: string }> = ({ title_en, bad_en, title_zh, bad_zh }) => <div style={{ padding: '10px' }}><strong>{t('home.checkIn.bad')}{title_en ?? title_zh}</strong><br />{bad_en ?? bad_zh}</div>;
+const GoodContent: FC<{ title: string, good: string }> = ({ title, good }) => <div style={{ padding: '10px' }}><strong>{t('home.checkIn.good')}{title}</strong><br />{good}</div>;
+const BadContent: FC<{ title: string, bad: string }> = ({ title, bad }) => <div style={{ padding: '10px' }}><strong>{t('home.checkIn.bad')}{title}</strong><br />{bad}</div>;
 export default () => {
 	const nextDay = new Date();
 	nextDay.setDate(nextDay.getDate() + 1);
@@ -25,10 +25,10 @@ export default () => {
 		notCheckedIn: boolean,
 		checkin_count: number,
 		checkin_today_status: -3 | -2 | -1 | 0 | 1 | 2 | 3,
-		checkin_today_good1: { title_en: string, good_en: string, title_zh: string, good_zh: string } | null,
-		checkin_today_good2: { title_en: string, good_en: string, title_zh: string, good_zh: string } | null,
-		checkin_today_bad1: { title_en: string, bad_en: string, title_zh: string, bad_zh: string } | null,
-		checkin_today_bad2: { title_en: string, bad_en: string, title_zh: string, bad_zh: string } | null
+		checkin_today_good1: { title: string, good: string } | null,
+		checkin_today_good2: { title: string, good: string } | null,
+		checkin_today_bad1: { title: string, bad: string } | null,
+		checkin_today_bad2: { title: string, bad: string } | null
 	} | null>(null);
 	const [refreshKey, setRefreshKey] = useState(0);
 	useEffect(() => {(async () => {

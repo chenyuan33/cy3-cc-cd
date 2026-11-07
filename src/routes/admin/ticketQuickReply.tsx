@@ -6,7 +6,7 @@ import { contentRequired, titleRequired } from "../errorPages";
 
 const app = new Hono<AppEnv>();
 app.get('/', async c => {
-	const translations = c.get('translations'), env = c.env as any;
+	const translations = c.get('translations');
 	return c.render(<Card>
 		<h1>{translations.admin.ticketQuickReply.name}</h1>
 		<table>
@@ -39,7 +39,7 @@ app.get('/', async c => {
 	</Card>, { title: translations.admin.ticketQuickReply.name });
 });
 app.post('/new', async c => {
-	const { title, content } = c.get('reqBody'), env = c.env as any;
+	const { title, content } = c.get('reqBody');
 	if (!title) {
 		return titleRequired(c);
 	}

@@ -1,12 +1,11 @@
 import { Hono } from 'hono';
 import { jwtVerify } from 'jose';
 import { languageDetector } from 'hono/language';
-import type { AppEnv } from './types';
+import type { themeBasicInfo, AppEnv } from './types';
 import { defaultTheme, permissionVisit } from './settings';
 import { userQuery } from './routes/api/user';
 import { banned, errorJson, notFound } from './routes/errorPages';
 import apisRoutes from './routes/apis';
-import userRoutes from './routes/user';
 import adminRoutes from './routes/admin';
 import fileRoutes from './routes/file';
 import { renderer } from './renderer';
@@ -25,7 +24,7 @@ app.use(languageDetector({
 }));
 app.use(i18nMiddleware);
 app.use(async (c, next) => {
-	const clonedReq = c.req.raw.clone(), env = c.env as any;
+	const clonedReq = c.req.raw.clone();
 	if (c.req.method === 'POST' || c.req.method === 'PUT') {
 		const contentType = c.req.header('Content-Type')?.split(';')[0];
 		if (contentType === 'application/json') {
@@ -50,16 +49,16 @@ app.use(async (c, next) => {
 	});
 	let uid: number | null = null;
 	if (cookies.session) {
-		const { payload } = await jwtVerify(cookies.session, new TextEncoder().encode(env.JWT_SECRET)).catch(() => ({ payload: null }));
+		const { payload } = await jwtVerify(cookies.session, new TextEncoder().encode(c.env.JWT_SECRET)).catch(() => ({ payload: null }));
 		if (payload) {
 			uid = parseInt(payload.uid as string);
 		}
 	}
 	const currentUser = uid ? await userQuery(uid, c) : null;
 	c.set('currentUser', currentUser);
-	const { email } = currentUser ? await env.db.prepare('SELECT email FROM users WHERE id = ?').bind(currentUser.id).first() : {};
+	const { email } = currentUser ? await c.env.db.prepare('SELECT email FROM users WHERE id = ?').bind(currentUser.id).first<{ email: string | null }>() ?? { email: null } : { email: null };
 	c.set('currentUserEmail', email ?? null);
-	c.set('usingTheme', (currentUser ? await env.db.prepare(`
+	c.set('usingTheme', (currentUser ? await c.env.db.prepare(`
 		SELECT
 			theme.usebgimage, theme.useFrostedGlass, theme.editor,
 			theme.bgImageRepeatX, theme.bgImageRepeatY,
@@ -70,7 +69,7 @@ app.use(async (c, next) => {
 		FROM users
 		JOIN theme ON users.using_theme = theme.id
 		WHERE users.id = ?
-	`).bind(currentUser.id).first() : null) || defaultTheme);
+	`).bind(currentUser.id).first<themeBasicInfo>() : null) || defaultTheme);
 	c.set('shortLocale', c.get('language').split(/[_\-]/)[0] as supportedLanguagesShortCodeType);
 	console.log({
 		customLog: {
@@ -96,7 +95,6 @@ app.get('/private-message', (c) => {
 });
 app.route('/api', apisRoutes);
 app.route('/admin', adminRoutes);
-app.route('/user', userRoutes);
 app.route('/file', fileRoutes);
 app.onError((err, c) => {
 	console.error(err);

@@ -51,6 +51,7 @@
 	``` bash
 	cp .env.example .env
 	node -e "const fs=require('fs'),crypto=require('crypto');const secret=crypto.randomBytes(32).toString('hex');let env=fs.readFileSync('.env','utf8');env=env.replace(/^SECRET=.*$/m, `SECRET=${secret}`);fs.writeFileSync('.env',env);"
+	npm run cf-typegen
 	```
 4. 初始化数据库（若只是更新，可以只运行更新部分的 sql 文件内容）
 	``` bash

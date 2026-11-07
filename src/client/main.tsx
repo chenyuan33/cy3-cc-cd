@@ -41,6 +41,7 @@ import { UserSettingsBrowserNotification } from './pages/user/settings/browserNo
 import type { userInfo } from '../types';
 import { UserSettingsSecurity } from './pages/user/settings/security';
 import { Chat } from './pages/chat';
+import { UserNotification } from './pages/user/notification';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -50,13 +51,14 @@ const routes = defineRoutes(route => [
 	route('/user/settings/browserNotification', () => <UserSettingsLayout key='userSettings'><UserSettingsBrowserNotification key='userSettingsBrowserNotification' /></UserSettingsLayout>),
 	route('/user/settings/username', () => <UserSettingsLayout key='userSettings'><UserSettingsUsername key='userSettingsGeneral' /></UserSettingsLayout>),
 	route('/user/settings/security', () => <UserSettingsLayout key='userSettings'><UserSettingsSecurity key='userSettingsSecurity' /></UserSettingsLayout>),
-	route('/user/:id', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
-	route('/user/:id/home', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
-	route('/user/:id/feed', () => <UserDetailLayout key='userDetail'><UserDetailFeed key='userDetailFeed' /></UserDetailLayout>),
-	route('/user/:id/discussion', () => <UserDetailLayout key='userDetail'><UserDetailDiscussion key='userDetailDiscussion' /></UserDetailLayout>),
-	route('/user/:id/theme', () => <UserDetailLayout key='userDetail'><UserDetailTheme key='userDetailTheme' /></UserDetailLayout>),
-	route('/user/:id/judgement', () => <UserDetailLayout key='userDetail'><UserDetailJudgement key='userDetailJudgement' /></UserDetailLayout>),
-	route('/user/:id/admin', () => <UserDetailLayout key='userDetail'><UserDetailAdmin key='userDetailAdmin' /></UserDetailLayout>),
+	route('/user/notification', () => <UserNotification key='userNotification' />),
+	route('/user/:id{\\d+}', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
+	route('/user/:id{\\d+}/home', () => <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>),
+	route('/user/:id{\\d+}/feed', () => <UserDetailLayout key='userDetail'><UserDetailFeed key='userDetailFeed' /></UserDetailLayout>),
+	route('/user/:id{\\d+}/discussion', () => <UserDetailLayout key='userDetail'><UserDetailDiscussion key='userDetailDiscussion' /></UserDetailLayout>),
+	route('/user/:id{\\d+}/theme', () => <UserDetailLayout key='userDetail'><UserDetailTheme key='userDetailTheme' /></UserDetailLayout>),
+	route('/user/:id{\\d+}/judgement', () => <UserDetailLayout key='userDetail'><UserDetailJudgement key='userDetailJudgement' /></UserDetailLayout>),
+	route('/user/:id{\\d+}/admin', () => <UserDetailLayout key='userDetail'><UserDetailAdmin key='userDetailAdmin' /></UserDetailLayout>),
 	route('/feed', () => <Feed key='feed' />),
 	route('/feed/:id{\\d+}', () => <Feed key='feed' />),
 	route('/discussion', () => <DiscussionList key='discussionList' />),

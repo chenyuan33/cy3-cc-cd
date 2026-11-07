@@ -33,14 +33,14 @@ export type discussionReplyInfo = {
 };
 const app = new Hono<AppEnv>();
 app.get('/list', async c => {
-	const { category, page: page_, perpage } = c.get('reqBody'), env = c.env as any;
+	const { category, page: page_, perpage } = c.get('reqBody');
 	if (category && !(category in discussionCategories)) {
 		return categoryNotFound(c);
 	}
 	const page = Math.max(parseInt(page_ || '1') || 1, 1);
 	const perPage = Math.max(1, Math.min(parseInt(perpage || '20') || 20, 20));
 	return c.json({
-		discussion: (await env.db.prepare(`
+		discussion: ((await c.env.db.prepare(`
 			SELECT
 				d.id, d.category, d.title, d.created_at, d.pin,
 				json_object (
@@ -52,15 +52,15 @@ app.get('/list', async c => {
 			ORDER BY d.pin DESC, d.created_at DESC
 			LIMIT ?
 			OFFSET ?
-		`).bind(...(category ? [category] : []), perPage, perPage * (page - 1)).all()).results.map(({ user, ...attr }: { user: string, [attr: string]: any }) => ({ user: JSON.parse(user), ...attr })),
-		total: (await env.db.prepare(`SELECT COUNT(*) as total FROM discussion ${category ? 'WHERE category = ?' : ''}`).bind(...(category ? [category] : [])).first()).total
+		`).bind(...(category ? [category] : []), perPage, perPage * (page - 1)).all<{ user: string, [attr: string]: unknown }>()).results).map(({ user, ...attr }) => ({ user: JSON.parse(user), ...attr })),
+		total: (await c.env.db.prepare(`SELECT COUNT(*) as total FROM discussion ${category ? 'WHERE category = ?' : ''}`).bind(...(category ? [category] : [])).first<{ total: number }>())?.total
 	});
 });
 app.get('/detail/:id{\\d+}', async c => {
-	const env = c.env as any, id = parseInt(c.req.param('id')), { page: page_, perpage } = c.get('reqBody');
+	const id = parseInt(c.req.param('id')), { page: page_, perpage } = c.get('reqBody');
 	const page = Math.max(parseInt(page_ || '1') || 1, 1);
 	const perPage = Math.max(1, Math.min(parseInt(perpage || '20') || 20, 20));
-	const info = await env.db.prepare(`
+	const info = await c.env.db.prepare(`
 		SELECT
 			d.id, d.category, d.title, d.content, d.created_at, d.pin,
 			json_object (
@@ -68,15 +68,15 @@ app.get('/detail/:id{\\d+}', async c => {
 			) AS user
 		FROM discussion d
 		JOIN users u ON d.uid = u.id
-		WHERE d.id = ?`).bind(id).first();
+		WHERE d.id = ?`).bind(id).first<{ id: number, category: string, title: string, content: string, created_at: string, pin: number, user: string }>();
 	if (!info) {
 		return c.json({ exists: false });
 	}
 	return c.json({
 		exists: true,
 		info: { ...info, user: JSON.parse(info.user) },
-		replyCount: (await env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ?').bind(id).first()).total,
-		replies: (await env.db.prepare(`
+		replyCount: (await c.env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ?').bind(id).first<{ total: number }>())?.total,
+		replies: (await c.env.db.prepare(`
 			SELECT
 				d.id, d.content, d.created_at,
 				CASE
@@ -116,7 +116,7 @@ app.get('/detail/:id{\\d+}', async c => {
 			ORDER BY d.created_at
 			LIMIT ?
 			OFFSET ?
-		`).bind(id, perPage, (page - 1) * perPage).all()).results.map(({ user, parent, ...attr }: { id: number, content: string, created_at: string, user: string, parent: string }) => ({
+		`).bind(id, perPage, (page - 1) * perPage).all<{ id: number, content: string, created_at: string, user: string, parent: string }>()).results.map(({ user, parent, ...attr }) => ({
 			user: JSON.parse(user),
 			parent: parent === null ? null : JSON.parse(parent),
 			...attr
@@ -124,7 +124,7 @@ app.get('/detail/:id{\\d+}', async c => {
 	});
 });
 app.post('/post', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { category, title, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { category, title, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
@@ -149,50 +149,50 @@ app.post('/post', async c => {
     if (!discussionCategories[category as keyof typeof discussionCategories](currentUser)) {
         return accessDenied(c);
     }
-    const { id } = await env.db.prepare('INSERT INTO discussion (uid, category, title, content) VALUES (?, ?, ?, ?) RETURNING id')
-        .bind(currentUser.id, category, title, content).first();
+    const id = (await c.env.db.prepare('INSERT INTO discussion (uid, category, title, content) VALUES (?, ?, ?, ?) RETURNING id')
+        .bind(currentUser.id, category, title, content).first<{ id: number }>())?.id;
     await processAt(c, content, '/discussion/' + id);
     return c.json({ success: true, id });
 });
 app.post('/delete', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { discussion_id } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { discussion_id } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!discussion_id) {
         return notFound(c);
     }
-    const discussion = await env.db.prepare('SELECT uid FROM discussion WHERE id = ?').bind(discussion_id).first();
+    const discussion = await c.env.db.prepare('SELECT uid FROM discussion WHERE id = ?').bind(discussion_id).first<{ uid: number }>();
     if (!discussion) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== discussion.uid) {
         return accessDenied(c);
     }
-    await env.db.prepare('DELETE FROM discussion_reply WHERE discussion_id = ?').bind(discussion_id).run();
-    await env.db.prepare('DELETE FROM discussion WHERE id = ?').bind(discussion_id).run();
+    await c.env.db.prepare('DELETE FROM discussion_reply WHERE discussion_id = ?').bind(discussion_id).run();
+    await c.env.db.prepare('DELETE FROM discussion WHERE id = ?').bind(discussion_id).run();
     return c.json({ success: true });
 });
 app.post('/edit', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { discussion_id, title, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { discussion_id, title, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!discussion_id || !title || !content) {
         return contentRequired(c);
     }
-    const discussion = await env.db.prepare('SELECT uid FROM discussion WHERE id = ?').bind(discussion_id).first();
+    const discussion = await c.env.db.prepare('SELECT uid FROM discussion WHERE id = ?').bind(discussion_id).first<{ uid: number }>();
     if (!discussion) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== discussion.uid) {
         return accessDenied(c);
     }
-    await env.db.prepare('UPDATE discussion SET title = ?, content = ? WHERE id = ?').bind(title, content, discussion_id).run();
+    await c.env.db.prepare('UPDATE discussion SET title = ?, content = ? WHERE id = ?').bind(title, content, discussion_id).run();
     return c.json({ success: true });
 });
 app.post('/reply', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { discussion_id, parent_id: parent_id_got, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { discussion_id, parent_id: parent_id_got, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
@@ -208,70 +208,70 @@ app.post('/reply', async c => {
     if (!content) {
         return contentRequired(c);
     }
-    const discussion = await env.db.prepare('SELECT id, uid FROM discussion WHERE id = ?').bind(discussion_id).first();
+    const discussion = await c.env.db.prepare('SELECT id, uid FROM discussion WHERE id = ?').bind(discussion_id).first<{ id: number, uid: number }>();
     if (!discussion) {
         return notFound(c);
     }
     const parent_id_ = parseInt(parent_id_got ?? '');
     const parent_id = Number.isNaN(parent_id_) ? null : parent_id_;
-    const { id } = await env.db.prepare('INSERT INTO discussion_reply (discussion_id, parent_id, uid, content) VALUES (?, ?, ?, ?) RETURNING id').bind(discussion_id, parent_id, currentUser.id, content).first();
+    const id = (await c.env.db.prepare('INSERT INTO discussion_reply (discussion_id, parent_id, uid, content) VALUES (?, ?, ?, ?) RETURNING id').bind(discussion_id, parent_id, currentUser.id, content).first<{ id: number }>())?.id;
     await processAt(c, content, '/discussion/reply/' + id);
     if (parent_id !== null) {
-        const { uid: parent_uid } = parent_id
-            ? await env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(parent_id).first()
-            : await env.db.prepare('SELECT uid FROM discussion WHERE id = ?').bind(discussion_id).first();
+        const parent_uid = (parent_id
+            ? await c.env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(parent_id).first<{ uid: number }>()
+            : await c.env.db.prepare('SELECT uid FROM discussion WHERE id = ?').bind(discussion_id).first<{ uid: number }>())?.uid;
         if (parent_uid !== currentUser.id) {
-            await env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'discussion-reply-replied\', ?)').bind(parent_uid, JSON.stringify({ discussion_id, uid: currentUser.id, parent_id, id })).run();
+            await c.env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'discussion-reply-replied\', ?)').bind(parent_uid, JSON.stringify({ discussion_id, uid: currentUser.id, parent_id, id })).run();
         }
     }
     return c.json({ success: true });
 });
 app.post('/reply/edit', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { reply_id, content } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { reply_id, content } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!reply_id || !content) {
         return contentRequired(c);
     }
-    const reply = await env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(reply_id).first();
+    const reply = await c.env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(reply_id).first<{ uid: number }>();
     if (!reply) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== reply.uid) {
         return accessDenied(c);
     }
-    await env.db.prepare('UPDATE discussion_reply SET content = ? WHERE id = ?').bind(content, reply_id).run();
+    await c.env.db.prepare('UPDATE discussion_reply SET content = ? WHERE id = ?').bind(content, reply_id).run();
     return c.json({ success: true });
 });
 app.post('/reply/delete', async c => {
-    const currentUser = c.get('currentUser'), env = c.env as any, { reply_id } = c.get('reqBody');
+    const currentUser = c.get('currentUser'), { reply_id } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
     }
     if (!reply_id) {
         return notFound(c);
     }
-    const reply = await env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(reply_id).first();
+    const reply = await c.env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(reply_id).first<{ uid: number }>();
     if (!reply) {
         return notFound(c);
     }
     if (currentUser.id !== 1 && currentUser.id !== reply.uid) {
         return accessDenied(c);
     }
-    await env.db.prepare('DELETE FROM discussion_reply WHERE id = ?').bind(reply_id).run();
+    await c.env.db.prepare('DELETE FROM discussion_reply WHERE id = ?').bind(reply_id).run();
     return c.json({ success: true });
 });
 app.get('/reply/redirect', async c => {
-    const env = c.env as any, { id } = c.get('reqBody');
+    const { id } = c.get('reqBody');
     if (!id) {
         return missingParams(c);
     }
-    const reply = await env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(id).first();
+    const reply = await c.env.db.prepare('SELECT uid FROM discussion_reply WHERE id = ?').bind(id).first<{ uid: number }>();
     if (!reply) {
         return c.json({ discussion_id: null });
     }
-	const { discussion_id } = await env.db.prepare('SELECT discussion_id FROM discussion_reply WHERE id = ?').bind(id).first();
-    return c.json({ discussion_id, page: Math.floor((await env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ? AND id < ?').bind(discussion_id, id).first()).total / 10) + 1 });
+	const discussion_id = (await c.env.db.prepare('SELECT discussion_id FROM discussion_reply WHERE id = ?').bind(id).first<{ discussion_id: number }>())?.discussion_id;
+    return c.json({ discussion_id, page: Math.floor(((await c.env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ? AND id < ?').bind(discussion_id, id).first<{ total: number }>())?.total ?? 0) / 10) + 1 });
 });
 export default app;

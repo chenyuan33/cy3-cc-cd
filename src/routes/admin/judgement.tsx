@@ -13,7 +13,6 @@ app.get('/', async (c) => {
     if (!currentUser || !(currentUser.permission & permissionAdmin)) {
         return accessDenied(c);
     }
-    const env = c.env as any;
     const permLabels = (Array.from({ length: permissionCount }, (_, i) => 1 << i) as allPermissions[]).map(bit => ({
         bit,
         label: translations.permission[bit]
@@ -171,7 +170,6 @@ app.post('/toggle', async (c) => {
     if (bit === permissionAdmin && currentUser.id !== 1) {
         return c.json({ success: false, error: translations.admin.judgement.cannotModifyAdmin }, 403);
     }
-    const env = c.env as any;
     const { permission } = await env.db
         .prepare('SELECT permission FROM users WHERE id = ?')
         .bind(targetId)
@@ -218,7 +216,6 @@ app.post('/batch-toggle', async (c) => {
     if (!userIds || !Array.isArray(userIds) || userIds.length === 0 || !bits || !Array.isArray(bits) || bits.length === 0) {
         return c.json({ success: false, error: translations.error.missingParams }, 400);
     }
-    const env = c.env as any;
     let successCount = 0;
     let failCount = 0;
     const results: { userId: number; success: boolean; error?: string }[] = [];

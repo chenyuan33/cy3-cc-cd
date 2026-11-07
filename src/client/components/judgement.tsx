@@ -6,6 +6,7 @@ import type { JSX } from "hono/jsx/jsx-runtime";
 import { permissionCount, type allPermissions } from "../../settings";
 import { Time } from "./time";
 import { User } from "./user";
+import { PermissionChangeList } from "./permissionChangeList";
 
 const getJudgementDisplayMode = () => localStorage.judgementDisplay == 'list' ? 'list' : 'grid';
 const JudgementList: FC<PropsWithChildren<{ displayMode: 'list' | 'grid' }>> = ({ displayMode, children }) => {
@@ -66,14 +67,14 @@ export const Judgements: FC<{ data: judgementInfo[] }> = ({ data }) => {
 		</Card>
 		<JudgementList displayMode={judgementDisplay}>{batchMap.size ? Array.from(batchMap.values()).map(item => {
 			const firstRecord = item.records[0]!;
-			let icon: string, color: string, actionText: JSX.Element, changes: { bit: allPermissions; isGrant: boolean }[] | null = null;
+			let icon: string, color: string, actionText: JSX.Element;
 			const { payload } = firstRecord;
 			switch (firstRecord.type) {
 				case 'permission-changed':
 					const { oldPermission, newPermission } = payload;
 					const changedBits = oldPermission ^ newPermission;
 					if (changedBits === 0) return null;
-					changes = Array.from({ length: permissionCount }, (_, i) => 1 << i).filter(bit => changedBits & bit).map(bit => ({
+					const changes = Array.from({ length: permissionCount }, (_, i) => 1 << i).filter(bit => changedBits & bit).map(bit => ({
 						bit: bit as allPermissions,
 						isGrant: !!(newPermission & bit)
 					}));
@@ -124,17 +125,7 @@ export const Judgements: FC<{ data: judgementInfo[] }> = ({ data }) => {
 						</strong>
 					</div>
 					<div style={{ marginBottom: '8px' }}>{[...new Set(item.records.map(rec => rec.user))].map(user => <User user={user} />)}</div>
-					{firstRecord.type === 'permission-changed' ? <ul style={{ margin: '0 0 8px 0', paddingLeft: '20px' }}>
-						{changes!.map(({ isGrant, bit }) => <li>
-							<span style={{ color: isGrant ? '#52c41a' : '#e74c3c' }}>
-								{isGrant ? t('permission.grant') : t('permission.revoke')}
-							</span>
-							&nbsp;
-							<code>{t(`permission.${bit}`)}</code>
-							&nbsp;
-							{t('permission.name')}
-						</li>)}
-					</ul> : null}
+					{firstRecord.type === 'permission-changed' ? <PermissionChangeList oldPermission={payload.oldPermission} newPermission={payload.newPermission} style={{ margin: '0 0 8px 0', paddingLeft: '20px' }} /> : null}
 					<div style={{ color: 'light-dark(black, #e0e0e0)', fontSize: '0.95em' }}>
 						{item.comment || <span style={{ color: 'light-dark(#999, #666)' }}>{t('noReason')}</span>}
 					</div>
@@ -150,17 +141,7 @@ export const Judgements: FC<{ data: judgementInfo[] }> = ({ data }) => {
 					<td>{[...new Set(item.records.map(rec => rec.user))].map(user => <div style={{ whiteSpace: 'nowrap' }}><User user={user} /></div>)}</td>
 					<td><Time time={item.createdAt} style={{ whiteSpace: 'nowrap' }} /></td>
 					<td><User user={item.operator} style={{ whiteSpace: 'nowrap' }} /></td>
-					<td>{firstRecord.type === 'permission-changed' ? <ul style={{ margin: 0, padding: '0 0 0 10px', whiteSpace: 'nowrap' }}>
-						{changes!.map(({ isGrant, bit }) => <li>
-							<span style={{ color: isGrant ? '#52c41a' : '#e74c3c' }}>
-								{isGrant ? t('permission.grant') : t('permission.revoke')}
-							</span>
-							&nbsp;
-							<code>{t(`permission.${bit}`)}</code>
-							&nbsp;
-							{t('permission.name')}
-						</li>)}
-					</ul> : <span style={{ display: 'flex', justifyContent: 'center' }}>/</span>}</td>
+					<td>{firstRecord.type === 'permission-changed' ? <PermissionChangeList oldPermission={payload.oldPermission} newPermission={payload.newPermission} style={{ margin: 0, padding: '0 0 0 10px', whiteSpace: 'nowrap' }} /> : <span style={{ display: 'flex', justifyContent: 'center' }}>/</span>}</td>
 					<td style={{ whiteSpace: 'nowrap' }}>{item.comment || <span style={{ color: 'light-dark(#999, #666)' }}>{t('noReason')}</span>}</td>
 				</tr>;
 			}

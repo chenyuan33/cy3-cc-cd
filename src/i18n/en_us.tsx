@@ -125,26 +125,23 @@ export default {
 		notification: {
 			name: 'Notification center',
 			types: {
-				'feed-reply': '__USER__\'s __FEED__ replied to __TARGET__.',
-				'discussion-reply-replied': '__USER__\'s __REPLY__ replied to __PARENT_REPLY__ in __DISCUSSION__.',
-				'discussion-reply-deleted-by-discussion-owner': '__USER__ deleted your reply in __DISCUSSION__ created at __REPLY_CREATED_AT__: __REPLY_CONTENT__.',
-				'ticket-reply-replied': '__USER__\'s __REPLY__ replied to __PARENT_REPLY__ in __TICKET__.',
-				'ticket-reply-deleted-by-ticket-owner': '__USER__ deleted your reply in __TICKET__ created at __REPLY_CREATED_AT__: __REPLY_CONTENT__.',
-				'ticket-status-changed': '__TICKET__ status has been set to __STATUS__.',
-				'permission-changed': 'Your permissions have been changed by __OPERATOR__ for the following reason:<blockquote>__COMMENT__</blockquote><ul>__CHANGE_LIST__</ul>',
-				'name-violation': 'Your username has been __SET__ as violating by __OPERATOR__:<blockquote>__COMMENT__</blockquote>',
-				'warn': '__OPERATOR__ has warned you for the following reason:<blockquote>__COMMENT__</blockquote>',
-				'at': '__USER__ mentioned you __LINK__'
+				'feed-reply': '{user}\'s {feed} replied to {target}.',
+				'discussion-reply-replied': '{user}\'s {reply} replied to {parentReply} in {discussion}.',
+				'ticket-reply-replied': '{user}\'s {reply} replied to {parentReply} in {ticket}.',
+				'ticket-status-changed': '{ticket} status has been set to {status}.',
+				'permission-changed': 'Your permissions have been changed by {operator} for the following reason:{comment}{changeList}',
+				'name-violation': 'Your username has been {set} by {operator}:{comment}',
+				'warn': '{operator} has warned you for the following reason:{comment}',
+				'at': '{user} mentioned you {link}',
+				'unknown': 'Unknown notification type'
 			},
 			atHere: 'here',
 			yourFeed: 'your feed',
 			yourDiscussion: 'your discussion',
 			yourTicket: 'your ticket',
 			yourReply: 'your reply',
-			unknownType: 'Unknown notification type',
 			nothing: 'No notifications yet.',
-			nameViolationSet: 'marked',
-			nameViolationUnset: 'unmarked',
+			autoReadAll: 'Automatically mark all messages as read'
 		},
 		profile: {
 			title: '{username}\'s Profile',

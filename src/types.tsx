@@ -38,6 +38,7 @@ export type judgementInfo = {
 	comment: string
 };
 export type AppEnv = {
+	Bindings: Cloudflare.Env,
 	Variables: {
 		reqBody: Record<string, string>;
 		shortLocale: supportedLanguagesShortCodeType;
