@@ -12,7 +12,7 @@ export const renderer = jsxRenderer(async () => {
 			<meta name='viewport' content='width=device-width, initial-scale=1.0' />
 			<ViteClient />
 			<script dangerouslySetInnerHTML={{ __html: 'var data = ' + JSON.stringify({
-				enableAvatar: (c as any).ENABLE_AVATAR ? 1 : 0,
+				enableAvatar: c.env.ENABLE_AVATAR === '1' ? 1 : 0,
 				locale,
 				currentUser: { ...c.get('currentUser'), email: c.get('currentUserEmail') },
 				usingTheme: c.get('usingTheme'),

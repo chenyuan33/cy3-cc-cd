@@ -7,7 +7,6 @@ import { userQuery } from './routes/api/user';
 import { banned, errorJson, notFound } from './routes/errorPages';
 import apisRoutes from './routes/apis';
 import adminRoutes from './routes/admin';
-import fileRoutes from './routes/file';
 import { renderer } from './renderer';
 import { i18nMiddleware, type supportedLanguagesShortCodeType } from './i18n';
 const app = new Hono<AppEnv>();
@@ -37,7 +36,9 @@ app.use(async (c, next) => {
 			const text = await clonedReq.text();
 			c.set('reqBody', Object.fromEntries(new URLSearchParams(text)));
 		} else if (contentType === 'multipart/form-data') {
-			c.set('reqBody', Object.fromEntries(Array.from(await clonedReq.formData()).filter(([_, value]) => typeof value === 'string')) as Record<string, string>);
+			if (parseInt(c.req.header('Content-Length') || '0') <= 1024 * 1024) {
+				c.set('reqBody', Object.fromEntries(Array.from(await clonedReq.formData()).filter(([_, value]) => typeof value === 'string')) as Record<string, string>);
+			}
 		}
 	} else {
 		c.set('reqBody', Object.fromEntries(new URL(c.req.url).searchParams));
@@ -95,7 +96,6 @@ app.get('/private-message', (c) => {
 });
 app.route('/api', apisRoutes);
 app.route('/admin', adminRoutes);
-app.route('/file', fileRoutes);
 app.onError((err, c) => {
 	console.error(err);
 	return errorJson(c, err, 500);

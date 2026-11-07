@@ -42,6 +42,7 @@ import type { userInfo } from '../types';
 import { UserSettingsSecurity } from './pages/user/settings/security';
 import { Chat } from './pages/chat';
 import { UserNotification } from './pages/user/notification';
+import { File } from './pages/file';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -75,6 +76,7 @@ const routes = defineRoutes(route => [
 	route('/theme/create', () => <ThemeCreate key='themeCreate' />),
 	route('/theme/:id{\\d+}', () => <ThemeCreate key='themeDetail' />),
 	route('/chat', () => <Chat key='chat' />),
+	route('/file/:path{.*}', () => <File key='file' />),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {

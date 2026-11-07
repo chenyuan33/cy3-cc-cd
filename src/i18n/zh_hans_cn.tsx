@@ -426,7 +426,7 @@ export default {
     selectConversation: '请选择对话或搜索用户',
     userNotFound: '未找到用户 “{username}”',
 	upload: '上传',
-	userSpace: '用户 __USER__ 的个人空间',
+	userSpace: '用户 {user} 的个人空间',
 	action: '操作',
 	comment: '理由',
 	operationSuccessful: '操作成功',

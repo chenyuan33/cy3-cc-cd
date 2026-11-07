@@ -424,7 +424,7 @@ export default {
     selectConversation: 'Select a conversation',
     userNotFound: 'User "{username}" not found',
 	upload: 'Upload',
-	userSpace: 'User __USER__\'s Personal Space',
+	userSpace: 'User {user}\'s Personal Space',
 	action: 'Action',
 	comment: 'Comment',
 	operationSuccessful: 'Operation successful',
