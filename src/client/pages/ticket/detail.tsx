@@ -215,7 +215,7 @@ export const TicketDetail = () => {
 				<div dangerouslySetInnerHTML={{ __html: replyingContent || '' }} />
 			</blockquote>
 			{currentUser && ((currentUser.permission & permissionAdmin) || data.info.assignee && data.info.assignee.id === currentUser.id) ? <div style={{ marginBottom: '10px' }}>
-				<strong>{t('admin.ticketQuickReply.name')}</strong>
+				<strong>{t('admin.ticketQuickReply')}</strong>
 				&nbsp;
 				<span style={{ display: 'inline-flex', gap: '10px' }}>
 					{data.quickReplies.map(({ title, content }: { title: string, content: string }) => <button onClick={() => replaceSelectionMdEditor('content', content)}>{title}</button>)}

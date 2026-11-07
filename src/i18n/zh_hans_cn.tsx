@@ -287,36 +287,8 @@ export default {
 	},
 	admin: {
 		name: '管理',
-		judgement: {
-			adminJudgementDescription: '点击权限状态（<i class="fa-solid fa-check"></i> / <i class="fa-solid fa-xmark"></i>），填写理由后即可授予或取消权限。',
-			adminJudgementTitle: '权限设置',
-			promptReason: '请输入操作理由（可选）：',
-			confirmGrant: '确定要授予用户 {userId} 的 “{permName}” 权限吗？',
-			confirmRevoke: '确定要撤销用户 {userId} 的 “{permName}” 权限吗？',
-			operationSuccess: '操作成功！',
-			operationFailed: '操作失败：',
-			multipleChanges: '多项变更',
-			cannotModifySelf: '不能修改自己的权限',
-			cannotModifyAdmin: '不能修改管理员权限',
-			onlySuperAdmin: '只有超级管理员可以修改此权限',
-			cannotModify: '此权限不可修改',
-			batchOperation: '批量操作',
-			batchSelectUsers: '请选择至少一个用户',
-			batchConfirm: '确定要对 {count} 个用户执行 {action} “{perms}” 权限吗？',
-			batchSuccess: '批量操作成功：{success} 个成功，{fail} 个失败',
-			batchFailed: '批量操作失败：',
-			batchCommentPlaceholder: '请输入理由（可选）',
-			batchExecute: '执行',
-			batchOperationLabel: '批量操作 ({count} 个用户)',
-			affectedUsers: '受影响用户',
-			batchSelectUsersHint: '勾选表格中的用户，然后选择权限进行批量操作',
-			batchAction: '操作类型',
-			batchSelectPerms: '请选择至少一个权限'
-		},
-		ticketQuickReply: {
-			name: '工单快捷回复',
-			new: '新建'
-		}
+		domainRenew: '域名续期',
+		ticketQuickReply: '工单快捷回复'
 	},
 	error: {
 		somethingWentWrong: '出错了',
@@ -427,6 +399,8 @@ export default {
     userNotFound: '未找到用户 “{username}”',
 	upload: '上传',
 	userSpace: '用户 {user} 的个人空间',
+	new: '新建',
+	language: '语言',
 	action: '操作',
 	comment: '理由',
 	operationSuccessful: '操作成功',

@@ -43,6 +43,11 @@ import { UserSettingsSecurity } from './pages/user/settings/security';
 import { Chat } from './pages/chat';
 import { UserNotification } from './pages/user/notification';
 import { File } from './pages/file';
+import { AdminLayout } from './pages/admin/layout';
+import { Admin } from './pages/admin/home';
+import { AdminDomainRenew } from './pages/admin/domainRenew';
+import { AdminCheckIn } from './pages/admin/checkIn';
+import { AdminTicketQuickReply } from './pages/admin/ticketQuickReply';
 
 const routes = defineRoutes(route => [
 	route('/', () => <Home key='home' />),
@@ -77,6 +82,11 @@ const routes = defineRoutes(route => [
 	route('/theme/:id{\\d+}', () => <ThemeCreate key='themeDetail' />),
 	route('/chat', () => <Chat key='chat' />),
 	route('/file/:path{.*}', () => <File key='file' />),
+	route('/admin', () => <AdminLayout key='admin'><Admin key='adminHome' /></AdminLayout>),
+	route('/admin/home', () => <AdminLayout key='admin'><Admin key='adminHome' /></AdminLayout>),
+	route('/admin/domain-renew', () => <AdminLayout key='admin'><AdminDomainRenew key='adminDomainRenew' /></AdminLayout>),
+	route('/admin/check-in', () => <AdminLayout key='admin'><AdminCheckIn key='adminCheckIn' /></AdminLayout>),
+	route('/admin/ticket-quick-reply', () => <AdminLayout key='admin'><AdminTicketQuickReply key='adminTicketQuickReply' /></AdminLayout>),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {

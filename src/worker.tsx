@@ -5,8 +5,7 @@ import type { themeBasicInfo, AppEnv } from './types';
 import { defaultTheme, permissionVisit } from './settings';
 import { userQuery } from './routes/api/user';
 import { banned, errorJson, notFound } from './routes/errorPages';
-import apisRoutes from './routes/apis';
-import adminRoutes from './routes/admin';
+import apiRoutes from './routes/api';
 import { renderer } from './renderer';
 import { i18nMiddleware, type supportedLanguagesShortCodeType } from './i18n';
 const app = new Hono<AppEnv>();
@@ -94,8 +93,7 @@ app.get('/private-message', (c) => {
 	const suffix = searchParams ? '?' + searchParams : '';
 	return c.redirect('/chat' + suffix, 301);
 });
-app.route('/api', apisRoutes);
-app.route('/admin', adminRoutes);
+app.route('/api', apiRoutes);
 app.onError((err, c) => {
 	console.error(err);
 	return errorJson(c, err, 500);

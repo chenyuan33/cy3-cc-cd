@@ -1,7 +1,8 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../../types";
 import { permissionAdmin, permissionCount } from "../../settings";
-import { accessDenied, missingParams, notFound } from "../errorPages";
+import { accessDenied, contentRequired, missingParams, notFound, titleRequired } from "../errorPages";
+import { userInfoDatas } from "./user";
 
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
@@ -9,6 +10,39 @@ app.use('/*', async (c, next) => {
 		return accessDenied(c);
 	}
 	await next();
+});
+app.get('/domain-renew', async c => c.json(await (await fetch('https://api005.dnshe.com/index.php?m=domain_hub&endpoint=subdomains&action=renew', {
+	method: 'POST',
+	headers: {
+		'X-API-Key': c.env.DNSHE_API_KEY,
+		'X-API-Secret': c.env.DNSHE_API_SECRET,
+		'Content-Type': 'application/json'
+	},
+	body: JSON.stringify({ subdomain_id: c.env.DNSHE_SUBDOMAIN_ID })
+})).json()));
+app.get('/check-in/list', async c => c.json((await c.env.db.prepare('SELECT * FROM checkin_texts').all()).results));
+app.post('/check-in/add', async c => {
+    const { title_en, good_en, bad_en, title_zh, good_zh, bad_zh } = c.get('reqBody');
+    await c.env.db.prepare(`INSERT INTO checkin_texts (title_en, good_en, bad_en, title_zh, good_zh, bad_zh) VALUES (?, ?, ?, ?, ?, ?)`).bind(title_en, good_en, bad_en, title_zh, good_zh, bad_zh).run();
+    return c.redirect('/');
+});
+app.get('/ticket-quick-reply/list', async c => c.json((await c.env.db.prepare(`
+	SELECT
+		t.id, t.title, t.content,
+		json_object ( ${userInfoDatas.map(scheme => `'${scheme}', u.${scheme}`)} ) AS creator
+	FROM ticket_quick_reply t
+	JOIN users u ON t.creator = u.id
+`).all<{ id: number, title: string, content: string, creator: string }>()).results.map(({ id, title, content, creator }) => ({ id, title, content, creator: JSON.parse(creator) }))));
+app.post('/ticket-quick-reply/new', async c => {
+	const { title, content } = c.get('reqBody');
+	if (!title) {
+		return titleRequired(c);
+	}
+	if (!content) {
+		return contentRequired(c);
+	}
+	await c.env.db.prepare('INSERT INTO ticket_quick_reply (title, content, creator) VALUES (?, ?, ?)').bind(title, content, c.get('currentUser')!.id).run();
+	return c.redirect('/admin/ticket-quick-reply');
 });
 app.post('/user/warn', async c => {
 	const reqBody = c.get('reqBody');

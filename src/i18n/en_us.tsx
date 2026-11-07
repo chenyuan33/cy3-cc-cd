@@ -285,36 +285,8 @@ export default {
 	},
 	admin: {
 		name: 'Admin',
-		judgement: {
-			adminJudgementDescription: 'Click permission status (<i class="fa-solid fa-check"></i> / <i class="fa-solid fa-xmark"></i>) and enter a reason to grant or revoke permissions.',
-			adminJudgementTitle: 'Permissions Setting',
-			promptReason: 'Please enter a reason (optional):',
-			confirmGrant: 'Are you sure you want to grant user {userId} the "{permName}" permission?',
-			confirmRevoke: 'Are you sure you want to revoke user {userId} the "{permName}" permission?',
-			operationSuccess: 'Operation successful!',
-			operationFailed: 'Operation failed:',
-			multipleChanges: 'Multiple changes',
-			cannotModifySelf: 'Cannot modify yourself\'s any permission.',
-			cannotModifyAdmin: 'Cannot modify admin permission',
-			onlySuperAdmin: 'Only the super administrator can modify this permission',
-			cannotModify: 'This permission cannot be modified',
-			batchOperation: 'Batch operation',
-			batchSelectUsers: 'Select at least one user',
-			batchConfirm: 'Are you sure you want to {action} "{perms}" permission for {count} users?',
-			batchSuccess: 'Batch operation completed: {success} succeeded, {fail} failed',
-			batchFailed: 'Batch operation failed:',
-			batchCommentPlaceholder: 'Enter reason (optional)',
-			batchExecute: 'Execute',
-			batchOperationLabel: 'Batch operation ({count} users)',
-			affectedUsers: 'Affected users',
-			batchSelectUsersHint: 'Check users in the table, then select permissions for batch operation',
-			batchAction: 'Action type',
-			batchSelectPerms: 'Select at least one permission'
-		},
-		ticketQuickReply: {
-			name: 'Quick Replies for Tickets',
-			new: 'New'
-		}
+		domainRenew: 'Domain Renew',
+		ticketQuickReply: 'Quick Replies for Tickets'
 	},
 	error: {
 		somethingWentWrong: 'Something went wrong',
@@ -425,6 +397,8 @@ export default {
     userNotFound: 'User "{username}" not found',
 	upload: 'Upload',
 	userSpace: 'User {user}\'s Personal Space',
+	new: 'New',
+	language: 'Language',
 	action: 'Action',
 	comment: 'Comment',
 	operationSuccessful: 'Operation successful',
