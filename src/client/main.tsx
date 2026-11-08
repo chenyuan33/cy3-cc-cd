@@ -36,207 +36,123 @@ const LazyPage: FC<{ load: () => Promise<Child> }> = ({ load }) => {
 		);
 		return () => { cancelled = true; };
 	}, [load]);
-	return <>{page ?? (error ? <div role='alert'>{error}</div> : <div>{t('loading')}</div>)}</>;
+	return <>{page ?? (error
+		? <div role='alert'>{error}</div>
+		: <div class='page-loading' role='status' aria-label={t('loading')}>
+			<span class='page-loading-title' aria-hidden='true'></span>
+			<span class='page-loading-block' aria-hidden='true'></span>
+			<span class='page-loading-line' aria-hidden='true'></span>
+		</div>
+	)}</>;
 };
 const lazyPage = (load: () => Promise<Child>) => () => <LazyPage load={load} />;
+const lazyComponent = <Component extends FC<{}>>(load: () => Promise<Component>, key: string) =>
+	lazyPage(async () => {
+		const Page = await load();
+		return <Page key={key} />;
+	});
+const lazyLayout = <Layout extends FC<PropsWithChildren<{}>>, Page extends FC<{}>>(
+	loadLayout: () => Promise<Layout>,
+	loadPage: () => Promise<Page>,
+	layoutKey: string,
+	pageKey: string
+) => lazyPage(async () => {
+	const [Layout, Page] = await Promise.all([loadLayout(), loadPage()]);
+	return <Layout key={layoutKey}><Page key={pageKey} /></Layout>;
+});
+const lazySettingsPage = (loadPage: () => Promise<FC<{}>>, pageKey: string) => lazyLayout(
+	() => import('./pages/user/settings/layout').then(module => module.UserSettingsLayout),
+	loadPage,
+	'userSettings',
+	pageKey
+);
+const lazyUserDetailPage = (loadPage: () => Promise<FC<{}>>, pageKey: string) => lazyLayout(
+	() => import('./pages/user/detail/layout').then(module => module.UserDetailLayout),
+	loadPage,
+	'userDetail',
+	pageKey
+);
+const lazyAdminPage = (loadPage: () => Promise<FC<{}>>, pageKey: string) => lazyLayout(
+	() => import('./pages/admin/layout').then(module => module.AdminLayout),
+	loadPage,
+	'admin',
+	pageKey
+);
+
+const loadFeed = () => import('./pages/feed').then(module => module.default);
+const loadThemeCreate = () => import('./pages/theme/create').then(module => module.ThemeCreate);
+const loadUserDetailHome = () => import('./pages/user/detail/home').then(module => module.UserDetailHome);
+const loadSettingsBrowserNotification = () => import('./pages/user/settings/browserNotification').then(module => module.UserSettingsBrowserNotification);
+const loadAdminHome = () => import('./pages/admin/home').then(module => module.Admin);
 
 const routes = defineRoutes(route => [
-	route('/', lazyPage(async () => {
-		const { default: Home } = await import('./pages/home');
-		return <Home key='home' />;
-	})),
-	route('/user/register', lazyPage(async () => {
-		const { Register } = await import('./pages/user/register');
-		return <Register key='userRegister' />;
-	})),
-	route('/user/login', lazyPage(async () => {
-		const { Login } = await import('./pages/user/login');
-		return <Login key='userLogin' />;
-	})),
-	route('/user/settings', lazyPage(async () => {
-		const [{ UserSettingsLayout }, { UserSettingsBrowserNotification }] = await Promise.all([
-			import('./pages/user/settings/layout'),
-			import('./pages/user/settings/browserNotification')
-		]);
-		return <UserSettingsLayout key='userSettings'><UserSettingsBrowserNotification key='userSettingsBrowserNotification' /></UserSettingsLayout>;
-	})),
-	route('/user/settings/browserNotification', lazyPage(async () => {
-		const [{ UserSettingsLayout }, { UserSettingsBrowserNotification }] = await Promise.all([
-			import('./pages/user/settings/layout'),
-			import('./pages/user/settings/browserNotification')
-		]);
-		return <UserSettingsLayout key='userSettings'><UserSettingsBrowserNotification key='userSettingsBrowserNotification' /></UserSettingsLayout>;
-	})),
-	route('/user/settings/username', lazyPage(async () => {
-		const [{ UserSettingsLayout }, { UserSettingsUsername }] = await Promise.all([
-			import('./pages/user/settings/layout'),
-			import('./pages/user/settings/username')
-		]);
-		return <UserSettingsLayout key='userSettings'><UserSettingsUsername key='userSettingsGeneral' /></UserSettingsLayout>;
-	})),
-	route('/user/settings/security', lazyPage(async () => {
-		const [{ UserSettingsLayout }, { UserSettingsSecurity }] = await Promise.all([
-			import('./pages/user/settings/layout'),
-			import('./pages/user/settings/security')
-		]);
-		return <UserSettingsLayout key='userSettings'><UserSettingsSecurity key='userSettingsSecurity' /></UserSettingsLayout>;
-	})),
-	route('/user/notification', lazyPage(async () => {
-		const { UserNotification } = await import('./pages/user/notification');
-		return <UserNotification key='userNotification' />;
-	})),
-	route('/user/:id{\\d+}', lazyPage(async () => {
-		const [{ UserDetailLayout }, { UserDetailHome }] = await Promise.all([
-			import('./pages/user/detail/layout'),
-			import('./pages/user/detail/home')
-		]);
-		return <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>;
-	})),
-	route('/user/:id{\\d+}/home', lazyPage(async () => {
-		const [{ UserDetailLayout }, { UserDetailHome }] = await Promise.all([
-			import('./pages/user/detail/layout'),
-			import('./pages/user/detail/home')
-		]);
-		return <UserDetailLayout key='userDetail'><UserDetailHome key='userDetailHome' /></UserDetailLayout>;
-	})),
-	route('/user/:id{\\d+}/feed', lazyPage(async () => {
-		const [{ UserDetailLayout }, { UserDetailFeed }] = await Promise.all([
-			import('./pages/user/detail/layout'),
-			import('./pages/user/detail/feed')
-		]);
-		return <UserDetailLayout key='userDetail'><UserDetailFeed key='userDetailFeed' /></UserDetailLayout>;
-	})),
-	route('/user/:id{\\d+}/discussion', lazyPage(async () => {
-		const [{ UserDetailLayout }, { UserDetailDiscussion }] = await Promise.all([
-			import('./pages/user/detail/layout'),
-			import('./pages/user/detail/discussion')
-		]);
-		return <UserDetailLayout key='userDetail'><UserDetailDiscussion key='userDetailDiscussion' /></UserDetailLayout>;
-	})),
-	route('/user/:id{\\d+}/theme', lazyPage(async () => {
-		const [{ UserDetailLayout }, { UserDetailTheme }] = await Promise.all([
-			import('./pages/user/detail/layout'),
-			import('./pages/user/detail/theme')
-		]);
-		return <UserDetailLayout key='userDetail'><UserDetailTheme key='userDetailTheme' /></UserDetailLayout>;
-	})),
-	route('/user/:id{\\d+}/judgement', lazyPage(async () => {
-		const [{ UserDetailLayout }, { UserDetailJudgement }] = await Promise.all([
-			import('./pages/user/detail/layout'),
-			import('./pages/user/detail/judgement')
-		]);
-		return <UserDetailLayout key='userDetail'><UserDetailJudgement key='userDetailJudgement' /></UserDetailLayout>;
-	})),
-	route('/user/:id{\\d+}/admin', lazyPage(async () => {
-		const [{ UserDetailLayout }, { UserDetailAdmin }] = await Promise.all([
-			import('./pages/user/detail/layout'),
-			import('./pages/user/detail/admin')
-		]);
-		return <UserDetailLayout key='userDetail'><UserDetailAdmin key='userDetailAdmin' /></UserDetailLayout>;
-	})),
-	route('/feed', lazyPage(async () => {
-		const { default: Feed } = await import('./pages/feed');
-		return <Feed key='feed' />;
-	})),
-	route('/feed/:id{\\d+}', lazyPage(async () => {
-		const { default: Feed } = await import('./pages/feed');
-		return <Feed key='feed' />;
-	})),
-	route('/discussion', lazyPage(async () => {
-		const { DiscussionList } = await import('./pages/discussion/list');
-		return <DiscussionList key='discussionList' />;
-	})),
-	route('/discussion/post', lazyPage(async () => {
-		const { DiscussionPost } = await import('./pages/discussion/post');
-		return <DiscussionPost key='discussionPost' />;
-	})),
-	route('/discussion/:id{\\d+}', lazyPage(async () => {
-		const { DiscussionDetail } = await import('./pages/discussion/detail');
-		return <DiscussionDetail key='discussionDetail' />;
-	})),
-	route('/discussion/reply/:id{\\d+}', lazyPage(async () => {
-		const { DiscussionReplyRedirect } = await import('./pages/discussion/replyRedirect');
-		return <DiscussionReplyRedirect key='discussionReplyRedirect' />;
-	})),
-	route('/ticket', lazyPage(async () => {
-		const { TicketList } = await import('./pages/ticket/list');
-		return <TicketList key='ticketList' />;
-	})),
-	route('/ticket/post', lazyPage(async () => {
-		const { TicketPost } = await import('./pages/ticket/post');
-		return <TicketPost key='ticketPost' />;
-	})),
-	route('/ticket/:id{\\d+}', lazyPage(async () => {
-		const { TicketDetail } = await import('./pages/ticket/detail');
-		return <TicketDetail key='ticketDetail' />;
-	})),
-	route('/ticket/reply/:id{\\d+}', lazyPage(async () => {
-		const { TicketReplyRedirect } = await import('./pages/ticket/replyRedirect');
-		return <TicketReplyRedirect key='ticketReplyRedirect' />;
-	})),
-	route('/ide', lazyPage(async () => {
-		const { IDE } = await import('./pages/ide');
-		return <IDE key='ide' />;
-	})),
-	route('/judgement', lazyPage(async () => {
-		const { Judgement } = await import('./pages/judgement');
-		return <Judgement key='judgement' />;
-	})),
-	route('/theme', lazyPage(async () => {
-		const { ThemeList } = await import('./pages/theme/list');
-		return <ThemeList key='themeList' />;
-	})),
-	route('/theme/create', lazyPage(async () => {
-		const { ThemeCreate } = await import('./pages/theme/create');
-		return <ThemeCreate key='themeCreate' />;
-	})),
-	route('/theme/:id{\\d+}', lazyPage(async () => {
-		const { ThemeCreate } = await import('./pages/theme/create');
-		return <ThemeCreate key='themeDetail' />;
-	})),
-	route('/chat', lazyPage(async () => {
-		const { Chat } = await import('./pages/chat');
-		return <Chat key='chat' />;
-	})),
-	route('/file/:path{.*}', lazyPage(async () => {
-		const { File } = await import('./pages/file');
-		return <File key='file' />;
-	})),
-	route('/admin', lazyPage(async () => {
-		const [{ AdminLayout }, { Admin }] = await Promise.all([
-			import('./pages/admin/layout'),
-			import('./pages/admin/home')
-		]);
-		return <AdminLayout key='admin'><Admin key='adminHome' /></AdminLayout>;
-	})),
-	route('/admin/home', lazyPage(async () => {
-		const [{ AdminLayout }, { Admin }] = await Promise.all([
-			import('./pages/admin/layout'),
-			import('./pages/admin/home')
-		]);
-		return <AdminLayout key='admin'><Admin key='adminHome' /></AdminLayout>;
-	})),
-	route('/admin/domain-renew', lazyPage(async () => {
-		const [{ AdminLayout }, { AdminDomainRenew }] = await Promise.all([
-			import('./pages/admin/layout'),
-			import('./pages/admin/domainRenew')
-		]);
-		return <AdminLayout key='admin'><AdminDomainRenew key='adminDomainRenew' /></AdminLayout>;
-	})),
-	route('/admin/check-in', lazyPage(async () => {
-		const [{ AdminLayout }, { AdminCheckIn }] = await Promise.all([
-			import('./pages/admin/layout'),
-			import('./pages/admin/checkIn')
-		]);
-		return <AdminLayout key='admin'><AdminCheckIn key='adminCheckIn' /></AdminLayout>;
-	})),
-	route('/admin/ticket-quick-reply', lazyPage(async () => {
-		const [{ AdminLayout }, { AdminTicketQuickReply }] = await Promise.all([
-			import('./pages/admin/layout'),
-			import('./pages/admin/ticketQuickReply')
-		]);
-		return <AdminLayout key='admin'><AdminTicketQuickReply key='adminTicketQuickReply' /></AdminLayout>;
-	})),
+	route('/', lazyComponent(() => import('./pages/home').then(module => module.default), 'home')),
+	route('/user/register', lazyComponent(() => import('./pages/user/register').then(module => module.Register), 'userRegister')),
+	route('/user/login', lazyComponent(() => import('./pages/user/login').then(module => module.Login), 'userLogin')),
+	route('/user/settings', lazySettingsPage(loadSettingsBrowserNotification, 'userSettingsBrowserNotification')),
+	route('/user/settings/browserNotification', lazySettingsPage(loadSettingsBrowserNotification, 'userSettingsBrowserNotification')),
+	route('/user/settings/username', lazySettingsPage(
+		() => import('./pages/user/settings/username').then(module => module.UserSettingsUsername),
+		'userSettingsGeneral'
+	)),
+	route('/user/settings/security', lazySettingsPage(
+		() => import('./pages/user/settings/security').then(module => module.UserSettingsSecurity),
+		'userSettingsSecurity'
+	)),
+	route('/user/notification', lazyComponent(() => import('./pages/user/notification').then(module => module.UserNotification), 'userNotification')),
+	route('/user/:id{\\d+}', lazyUserDetailPage(loadUserDetailHome, 'userDetailHome')),
+	route('/user/:id{\\d+}/home', lazyUserDetailPage(loadUserDetailHome, 'userDetailHome')),
+	route('/user/:id{\\d+}/feed', lazyUserDetailPage(
+		() => import('./pages/user/detail/feed').then(module => module.UserDetailFeed),
+		'userDetailFeed'
+	)),
+	route('/user/:id{\\d+}/discussion', lazyUserDetailPage(
+		() => import('./pages/user/detail/discussion').then(module => module.UserDetailDiscussion),
+		'userDetailDiscussion'
+	)),
+	route('/user/:id{\\d+}/theme', lazyUserDetailPage(
+		() => import('./pages/user/detail/theme').then(module => module.UserDetailTheme),
+		'userDetailTheme'
+	)),
+	route('/user/:id{\\d+}/judgement', lazyUserDetailPage(
+		() => import('./pages/user/detail/judgement').then(module => module.UserDetailJudgement),
+		'userDetailJudgement'
+	)),
+	route('/user/:id{\\d+}/admin', lazyUserDetailPage(
+		() => import('./pages/user/detail/admin').then(module => module.UserDetailAdmin),
+		'userDetailAdmin'
+	)),
+	route('/feed', lazyComponent(loadFeed, 'feed')),
+	route('/feed/:id{\\d+}', lazyComponent(loadFeed, 'feed')),
+	route('/discussion', lazyComponent(() => import('./pages/discussion/list').then(module => module.DiscussionList), 'discussionList')),
+	route('/discussion/post', lazyComponent(() => import('./pages/discussion/post').then(module => module.DiscussionPost), 'discussionPost')),
+	route('/discussion/:id{\\d+}', lazyComponent(() => import('./pages/discussion/detail').then(module => module.DiscussionDetail), 'discussionDetail')),
+	route('/discussion/reply/:id{\\d+}', lazyComponent(() => import('./pages/discussion/replyRedirect').then(module => module.DiscussionReplyRedirect), 'discussionReplyRedirect')),
+	route('/ticket', lazyComponent(() => import('./pages/ticket/list').then(module => module.TicketList), 'ticketList')),
+	route('/ticket/post', lazyComponent(() => import('./pages/ticket/post').then(module => module.TicketPost), 'ticketPost')),
+	route('/ticket/:id{\\d+}', lazyComponent(() => import('./pages/ticket/detail').then(module => module.TicketDetail), 'ticketDetail')),
+	route('/ticket/reply/:id{\\d+}', lazyComponent(() => import('./pages/ticket/replyRedirect').then(module => module.TicketReplyRedirect), 'ticketReplyRedirect')),
+	route('/ide', lazyComponent(() => import('./pages/ide').then(module => module.IDE), 'ide')),
+	route('/judgement', lazyComponent(() => import('./pages/judgement').then(module => module.Judgement), 'judgement')),
+	route('/theme', lazyComponent(() => import('./pages/theme/list').then(module => module.ThemeList), 'themeList')),
+	route('/theme/create', lazyComponent(loadThemeCreate, 'themeCreate')),
+	route('/theme/:id{\\d+}', lazyComponent(loadThemeCreate, 'themeDetail')),
+	route('/chat', lazyComponent(() => import('./pages/chat').then(module => module.Chat), 'chat')),
+	route('/file/:path{.*}', lazyComponent(() => import('./pages/file').then(module => module.File), 'file')),
+	route('/admin', lazyAdminPage(loadAdminHome, 'adminHome')),
+	route('/admin/home', lazyAdminPage(loadAdminHome, 'adminHome')),
+	route('/admin/domain-renew', lazyAdminPage(
+		() => import('./pages/admin/domainRenew').then(module => module.AdminDomainRenew),
+		'adminDomainRenew'
+	)),
+	route('/admin/check-in', lazyAdminPage(
+		() => import('./pages/admin/checkIn').then(module => module.AdminCheckIn),
+		'adminCheckIn'
+	)),
+	route('/admin/ticket-quick-reply', lazyAdminPage(
+		() => import('./pages/admin/ticketQuickReply').then(module => module.AdminTicketQuickReply),
+		'adminTicketQuickReply'
+	)),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {
