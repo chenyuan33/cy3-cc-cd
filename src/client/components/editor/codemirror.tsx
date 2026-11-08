@@ -3,6 +3,7 @@ import { isLightMode } from "../../utils/isLightMode";
 import type { LanguageSupport } from "@codemirror/language";
 import type { EditorView, ViewUpdate } from "@codemirror/view";
 import type { Compartment } from "@codemirror/state";
+import { CodeMirrorEditors } from "./codemirrorUtils";
 import { markdown } from '@codemirror/lang-markdown';
 import { python } from '@codemirror/lang-python';
 import { javascript } from '@codemirror/lang-javascript';
@@ -16,7 +17,6 @@ export const CodeMirrorLanguages = {
 	cpp: cpp(),
 	c: cpp()
 };
-export const CodeMirrorEditors: { editor: EditorView, themeCompartment: Compartment }[] = [];
 const CodeMirrorMap = new Map<string, EditorView>();
 const langCompartmentMap = new Map<string, Compartment>();
 export const wrapSelectionCodeMirror = async (view: EditorView, prefix: string, suffix: string) => {
