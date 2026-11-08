@@ -165,3 +165,7 @@ dist
 .env*
 !.env.example
 .wrangler/
+
+# wrangler type
+
+worker-configuration.d.ts

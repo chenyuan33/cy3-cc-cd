@@ -150,7 +150,7 @@ app.get('/detail/:id/theme', async c => {
 			LIMIT ?
 			OFFSET ?
 		`).bind(id, perPage, (page - 1) * perPage).all<{ user: string, [attr: string]: unknown }>()).results).map(({ user, ...attr }) => ({ user: JSON.parse(user), ...attr })),
-		total: (await c.env.db.prepare('SELECT COUNT(*) AS total FROM discussion WHERE uid = ?').bind(id).first())?.total
+		total: (await c.env.db.prepare('SELECT COUNT(*) AS total FROM theme WHERE uid = ?').bind(id).first())?.total
 	});
 });
 app.get('/detail/:id/judgement', async c => {
@@ -389,7 +389,7 @@ app.post('/notification/read-all', async c => {
 	if (!currentUser) {
 		return loginRequired(c);
 	}
-	await c.env.db.prepare('UPDATE notification SET read = 1 WHERE read = 0').bind().run();
+	await c.env.db.prepare('UPDATE notification SET read = 1 WHERE uid = ? AND read = 0').bind(currentUser.id).run();
 	return c.json({ success: true });
 });
 app.get('/search', async c => {

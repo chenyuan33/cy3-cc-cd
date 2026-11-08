@@ -5,6 +5,12 @@ import { accessDenied, loginRequired, notFound } from "../errorPages";
 import { permissionFile } from "../../settings";
 import { DOMParser } from '@xmldom/xmldom';
 
+const validatePath = (path: string) => {
+	if (path.includes('..')) {
+		throw new Error('Invalid path');
+	}
+	return decodeURIComponent(path).split('/').map(encodeURIComponent).join('/');
+};
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
 	const currentUser = c.get('currentUser');
@@ -17,7 +23,7 @@ app.use('/*', async (c, next) => {
 	await next();
 });
 app.get('/get/:path{.*}', async c => {
-	const path = decodeURIComponent(c.req.param('path')).split('/').map(encodeURIComponent).join('/');
+	const path = validatePath(c.req.param('path'));
 	const aws = new AwsClient({
 		accessKeyId: c.env.B2_APPLICATION_KEY_ID,
 		secretAccessKey: c.env.B2_SECRET_ACCESS_KEY,
@@ -39,8 +45,9 @@ app.get('/get/:path{.*}', async c => {
 });
 app.get('/list/:path{.*}', async c => {
 	const currentUser = c.get('currentUser')!;
-	const path = decodeURIComponent(c.req.param('path')).split('/').map(encodeURIComponent).join('/'), currentPage = parseInt(c.get('reqBody').page || '1') || 1;
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
+	const path = validatePath(c.req.param('path'));
+	const currentPage = parseInt(c.get('reqBody').page || '1') || 1;
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) || !path.endsWith('/')) {
 		return accessDenied(c);
 	}
 	const aws = new AwsClient({
@@ -85,14 +92,18 @@ app.get('/list/:path{.*}', async c => {
 });
 app.post('/upload', async c => {
 	const currentUser = c.get('currentUser')!;
+	const body = await c.req.parseBody();
+	const path = validatePath(body.path as string || '');
+	const file = body.file as File;
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
+		return accessDenied(c);
+	}
 	const aws = new AwsClient({
 		accessKeyId: c.env.B2_APPLICATION_KEY_ID,
 		secretAccessKey: c.env.B2_SECRET_ACCESS_KEY,
 		service: 's3',
 		region: c.env.B2_REGION
 	});
-	const body = await c.req.parseBody();
-	const path = decodeURIComponent(body.path as string || '').split('/').map(encodeURIComponent).join('/'), file = body.file as File;
 	if (typeof path !== 'string') {
 		return notFound(c);
 	}
@@ -116,14 +127,18 @@ app.post('/upload', async c => {
 	return c.json({ success: true });
 });
 app.post('/delete/:key{.+}', async c => {
-	const key = c.req.param('key');
+	const currentUser = c.get('currentUser')!;
+	const path = validatePath(c.req.param('key'));
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
+		return accessDenied(c);
+	}
 	const aws = new AwsClient({
 		accessKeyId: c.env.B2_APPLICATION_KEY_ID,
 		secretAccessKey: c.env.B2_SECRET_ACCESS_KEY,
 		service: 's3',
 		region: c.env.B2_REGION
 	});
-	const res = await aws.fetch(new URL(`${c.env.B2_ENDPOINT}/${c.env.B2_BUCKET_NAME}/${key}`).toString(), { method: 'DELETE' });
+	const res = await aws.fetch(new URL(`${c.env.B2_ENDPOINT}/${c.env.B2_BUCKET_NAME}/${path}`).toString(), { method: 'DELETE' });
 	if (!res.ok) {
 		return res;
 	}

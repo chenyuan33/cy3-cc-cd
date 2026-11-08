@@ -6,6 +6,9 @@ import en_us from "../../i18n/en_us";
 import { userInfoDatas } from "./user";
 
 const app = new Hono<AppEnv>();
+const isHexColor = (color: string | undefined) => color && /^#([0-9A-Fa-f]{3}|[0-9A-Fa-f]{4}|[0-9A-Fa-f]{6}|[0-9A-Fa-f]{8})$/.test(color);
+const isPositiveInteger = (numStr: string) => /^\d+$/.test(numStr);
+const isValidSafeUrl = (url: string | undefined) => url && validator.isURL(url, { require_protocol: true, protocols: ['http', 'https'] }) && !/[()"'\s]/.test(url);
 app.get('/list', async c => {
 	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
 	const perPage = Math.min(20, Math.max(parseInt(c.get('reqBody').perPage || '20') || 20, 20));
@@ -61,20 +64,24 @@ app.on('post', ['/create', '/save/:id{\\d+}'], async c => {
 	}
 	const bgImageSizeValidValues = ['auto', 'cover', 'contain', 'custom'];
 	const bgImageSizeCustomValidUnits = Object.keys(en_us.theme.lengthUnits);
-	if (!name || !light_fgcolor || !dark_fgcolor || !editor || !['CodeMirror', 'MonacoEditor'].includes(editor) || (useBgImage ? (false
-		|| !light_bgimage || !validator.isURL(light_bgimage, { require_protocol: true })
-		|| !dark_bgimage || !validator.isURL(dark_bgimage, { require_protocol: true })
-		|| !bgImageSizeX || !bgImageSizeValidValues.includes(bgImageSizeX)
-		|| bgImageSizeX === 'custom' && (false
-			|| !bgImageSizeXCustom || !(parseInt(bgImageSizeXCustom) >= 0)
-			|| !bgImageSizeXCustomUnit || !bgImageSizeCustomValidUnits.includes(bgImageSizeXCustomUnit)
-		)
-		|| !bgImageSizeY || !bgImageSizeValidValues.includes(bgImageSizeY)
-		|| bgImageSizeY === 'custom' && (false
-			|| !bgImageSizeYCustom || !(parseInt(bgImageSizeYCustom) >= 0)
-			|| !bgImageSizeYCustomUnit || !bgImageSizeCustomValidUnits.includes(bgImageSizeYCustomUnit)
-		)
-	) : (!light_bgcolor || !dark_bgcolor))) {
+	if (
+		!name || 
+		!editor || !['CodeMirror', 'MonacoEditor'].includes(editor) || 
+		!isHexColor(light_fgcolor) || !isHexColor(dark_fgcolor) || 
+		(useBgImage ? (
+			!isValidSafeUrl(light_bgimage) || !isValidSafeUrl(dark_bgimage) ||
+			!bgImageSizeX || !bgImageSizeValidValues.includes(bgImageSizeX) ||
+			(bgImageSizeX === 'custom' && (
+				!bgImageSizeXCustom || !isPositiveInteger(bgImageSizeXCustom) ||
+				!bgImageSizeXCustomUnit || !bgImageSizeCustomValidUnits.includes(bgImageSizeXCustomUnit)
+			)) ||
+			!bgImageSizeY || !bgImageSizeValidValues.includes(bgImageSizeY) ||
+			(bgImageSizeY === 'custom' && (
+				!bgImageSizeYCustom || !isPositiveInteger(bgImageSizeYCustom) ||
+				!bgImageSizeYCustomUnit || !bgImageSizeCustomValidUnits.includes(bgImageSizeYCustomUnit)
+			))
+		) : !isHexColor(light_bgcolor) || !isHexColor(dark_bgcolor))
+	) {
 		return missingParams(c);
 	}
 	if (id) {

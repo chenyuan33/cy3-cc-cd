@@ -1,5 +1,5 @@
 import { User } from "../user";
-import { useEffect, useRef, useState, type FC } from "hono/jsx";
+import { useEffect, useRef, type FC } from "hono/jsx";
 import { tString } from "../../i18n";
 import { render } from "hono/jsx/dom";
 
@@ -19,7 +19,7 @@ const inlineMdToHtml = (md: string) => {
 		.replaceAll(/>/g, '&gt;')
 		.replaceAll(/"/g, '&quot;')
         .replaceAll(/(?<!`)(`+)(.*?)\1(?!`)/g, (_, __, code) => {
-            codes.push(code.replaceAll(/&/g, '&amp;').replaceAll(/</g, '&lt;').replaceAll(/>/g, '&gt;').replaceAll(/"/g, '&quot;'));
+            codes.push(code);
             return `\x00CODE_${codes.length - 1}\x00`;
         })
         .replaceAll(/\\(.)/g, (_, sign) => {
