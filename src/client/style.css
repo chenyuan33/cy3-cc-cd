@@ -1,0 +1,366 @@
+/**
+ * Thanks for cqm (https://cy3.cc.cd/user/8) and chenyuan3 (https://cy3.cc.cd/user/1) made the style.
+ */
+
+/* Global & Basic */
+* {
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+:root {
+    --is-dark: light-dark(black, white);
+}
+
+body {
+    position: absolute;
+    left: 70px;
+    right: 0;
+}
+
+.page-loading {
+	padding: 20px;
+}
+
+.page-loading-title,
+.page-loading-block,
+.page-loading-line {
+	display: block;
+	background: light-dark(#eee, #333);
+	border-radius: 8px;
+	animation: page-loading-pulse 1.5s ease-in-out infinite;
+}
+
+.page-loading-title {
+	width: 30%;
+	height: 24px;
+	margin-bottom: 20px;
+}
+
+.page-loading-block {
+	width: 100%;
+	height: 120px;
+	margin-bottom: 10px;
+}
+
+.page-loading-line {
+	width: 65%;
+	height: 16px;
+}
+
+@keyframes page-loading-pulse {
+	50% {
+		opacity: 0.5;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.page-loading-title,
+	.page-loading-block,
+	.page-loading-line {
+		animation: none;
+	}
+}
+
+a {
+    color: light-dark(#0066cc, #66b2ff);
+    text-decoration: none;
+}
+
+a:hover,
+nav a:hover {
+    color: light-dark(#cc0000, #ff6666);
+    text-decoration: underline;
+}
+
+img {
+	max-width: 100%;
+}
+
+hr {
+    position: relative;
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid light-dark(#e0e0e0, #333333);
+}
+
+.description {
+	font-size: smaller;
+	color: light-dark(gray, lightgray);
+}
+
+[data-vis="-1"] {
+	visibility: hidden;
+	position: absolute;
+}
+[data-vis="1"] {
+	visibility: visible;
+	position: relative;
+}
+
+/* Navbar */
+nav {
+    width: 40px;
+    transition: width 0.3s ease;
+}
+
+nav:hover {
+    width: 170px;
+}
+
+nav>p {
+    height: 23px;
+}
+
+.sidebarTitle {
+    position: absolute;
+    left: 50px;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+
+nav:hover .sidebarTitle {
+    opacity: 1;
+}
+
+nav, header {
+    color: light-dark(#333333, #e0e0e0);
+}
+
+/* Cards */
+textarea {
+    background-color: light-dark(white, #242424);
+}
+
+.card {
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 10px;
+    background-color: light-dark(#ffffff26, #14141e99);
+}
+
+blockquote {
+    margin: 20px 0;
+    padding: 10px 20px;
+    border-left: 5px solid;
+    background-color: light-dark(#f0f0f0, #2a2a2a);
+}
+
+details {
+    margin: 5px;
+    padding: 5px;
+    border: solid;
+    border-radius: 5px;
+}
+
+details[open]>summary {
+    margin-bottom: 5px;
+    border-bottom-style: dotted;
+    border-radius: 5px;
+}
+
+/* Dialogs */
+
+.dialog {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	position: fixed;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
+.dialog-bg {
+	background-color: black;
+	position: fixed;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	opacity: 0.5;
+}
+
+.dialog-main {
+	position: fixed;
+	border: solid;
+	border-radius: 10px;
+	background-color: light-dark(white, black);
+	padding: 50px;
+	max-height: 80%;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 20px;
+}
+
+.dialog-close-btn {
+	position: absolute;
+	top: 30px;
+	right: 20px;
+	cursor: pointer;
+}
+
+.dialog-buttons {
+	text-align: center;
+	display: flex;
+	gap: 10px;
+}
+
+/* Code Blocks */
+pre {
+    overflow: auto;
+}
+
+pre,
+code:not(pre code) {
+    padding: 5px;
+    border-radius: 5px;
+    background-color: light-dark(#f0f0f0, #2a2a2a);
+}
+
+/* Tables */
+table {
+	border-collapse: collapse;
+}
+
+thead tr {
+	border-bottom: solid 2px;
+}
+
+tbody tr {
+	border-bottom: solid 1px gray;
+}
+
+[data-markdown] table {
+	border: solid 1px;
+	border-spacing: 0;
+}
+
+[data-markdown] th,
+[data-markdown] td {
+	border: solid 1px;
+}
+
+th,
+td {
+	padding: 5px;
+}
+
+/* Forms & Interactive */
+button,
+input[type="submit"] {
+    padding: 5px;
+    border: solid 1px;
+    border-radius: 5px;
+    background-color: unset;
+}
+
+button:hover {
+    cursor: pointer;
+}
+
+button:disabled:hover {
+    cursor: not-allowed;
+}
+
+.dangerousButton {
+    color: white;
+    background-color: red;
+    border-color: light-dark(black, white);
+}
+
+.dangerousLink {
+    color: red;
+}
+
+button,
+select,
+.selector-main,
+.selector-option,
+input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]) {
+    padding: 12px 16px;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    color: light-dark(#333333, #e0e0e0);
+    background-color: light-dark(#ffffff, #2c2c2c);
+    border: 1px solid light-dark(#e0e0e0, #444444);
+}
+
+button,
+select,
+.selector-main,
+input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]) {
+    border-radius: 8px;
+    outline: none;
+    box-sizing: border-box;
+}
+
+input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"])::placeholder {
+    color: light-dark(#aaa, #777777);
+    opacity: 1;
+}
+
+button:hover,
+select:hover,
+.selector-main:hover,
+input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]):hover {
+    border-color: light-dark(#c0c0c0, #555555);
+}
+
+button:focus,
+select:focus,
+.selector-main:focus,
+input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]):focus {
+    border-color: #4a90e2;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.15);
+}
+
+button:disabled,
+select:disabled,
+option:disabled,
+input:not([type="checkbox"], [type="color"], [type="hidden"], [type="image"], [type="radio"], [type="range"]):disabled {
+    color: light-dark(#999999, #666666);
+    background-color: light-dark(#f5f5f5, #222222);
+    border-color: light-dark(#dddddd, #333333);
+    cursor: not-allowed;
+}
+
+/* Selector */
+
+.selector-main {
+	cursor: pointer;
+}
+
+.selector-options-div {
+	display: none;
+	cursor: pointer;
+	position: absolute;
+	margin-top: 12px;
+	margin-right: 0;
+	margin-bottom: -12px;
+	margin-left: -16px;
+	z-index: 1;
+	width: max-content;
+}
+
+.selector-option {
+	padding: 10px;
+}
+
+/* Frosted Glass */
+
+@container style(--use-frosted-glass: 1) {
+	nav, header, .card {
+		backdrop-filter: blur(20px) saturate(180%);
+		-webkit-backdrop-filter: blur(20px) saturate(180%);
+		border-right: 1px solid light-dark(#ffffff60, #ffffff14);
+		box-shadow: 0 8px 32px light-dark(#00000019, #00000066);
+	}
+}
+
+@container style(--use-frosted-glass: 0) {
+	nav, header, .card {
+		background-color: light-dark(#ffffff, #14141e);
+	}
+}

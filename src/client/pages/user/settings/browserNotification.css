@@ -1,0 +1,7 @@
+.notAllowedSettings {
+	color: gray;
+}
+
+.notAllowedSettings:hover {
+	cursor: not-allowed;
+}

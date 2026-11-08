@@ -9,7 +9,7 @@
     // See also https://aka.ms/tsconfig/module
     "module": "esnext",
     "target": "esnext",
-    "types": ["node", "@cloudflare/workers-types"],
+    "types": ["node", "./worker-configuration.d.ts"],
     // For nodejs:
     // "lib": ["esnext"],
     // "types": ["node"],

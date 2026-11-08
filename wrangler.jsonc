@@ -3,6 +3,7 @@
 	"main": "src/worker.tsx",
 	"workers_dev": true,
 	"preview_urls": true,
+	"compatibility_flags": ["nodejs_compat"],
 	"compatibility_date": "2026-06-13",
 	"routes": [
 		{
@@ -20,6 +21,10 @@
 			"previews_enabled": false
 		}
 	],
+	"vars": {
+		"DNSHE_API_KEY": "cfsd_e3e7df615a4499ecbe44170636766b42",
+		"DNSHE_SUBDOMAIN_ID": "1544844327"
+	},
 	"d1_databases": [
 		{
 			"binding": "db",
@@ -37,17 +42,68 @@
 			}
 		}
 	],
-	"vars": {
-		"DNSHE_API_KEY": "cfsd_e3e7df615a4499ecbe44170636766b42",
-		"DNSHE_SUBDOMAIN_ID": "1544844327"
-	},
 	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1,
+		"issues": {
+			"enabled": false
+		},
 		"logs": {
 			"enabled": true,
-			"invocation_logs": true
+			"head_sampling_rate": 1,
+			"invocation_logs": true,
+			"persist": true
+		},
+		"traces": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"persist": true
 		}
 	},
 	"assets": {
-		"directory": "./assets"
+		"directory": "./public",
+		"not_found_handling": "single-page-application",
+		"run_worker_first": [ "/api/*", "/ws/*" ]
+	},
+	"previews": {
+		"vars": {
+			"DNSHE_API_KEY": "cfsd_e3e7df615a4499ecbe44170636766b42",
+			"DNSHE_SUBDOMAIN_ID": "1544844327"
+		},
+		"d1_databases": [
+			{
+				"binding": "db",
+				"database_name": "cy3",
+				"database_id": "4f4f7505-ad2f-4a85-ae23-00a5012e2b6f"
+			}
+		],
+		"ratelimits": [
+			{
+				"name": "rateLimiter",
+				"namespace_id": "1",
+				"simple": {
+					"limit": 5,
+					"period": 60
+				}
+			}
+		],
+		"observability": {
+			"enabled": true,
+			"head_sampling_rate": 1,
+			"issues": {
+				"enabled": false
+			},
+			"logs": {
+				"enabled": true,
+				"head_sampling_rate": 1,
+				"invocation_logs": true,
+				"persist": true
+			},
+			"traces": {
+				"enabled": true,
+				"head_sampling_rate": 1,
+				"persist": true
+			}
+		}
 	}
 }

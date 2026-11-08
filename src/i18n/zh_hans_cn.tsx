@@ -1,0 +1,412 @@
+import type en_us_translations from "./en_us";
+
+export default {
+	browserNotification: {
+		title: {
+			notification: '新通知',
+			privateMessage: {
+				detail: '{sender} 向您发了一条新私信',
+				summary: '新私信'
+			}
+		},
+		body: {
+			notification: '你有一条新的通知，快去看看吧！',
+			privateMessage: {
+				detail: '你有一条 {sender} 发送的新私信，快去看看吧！',
+				summary: '你有一条新的私信，快去看看吧！'
+			}
+		}
+	},
+	serverConnectStatus: {
+		connecting: '正在连接服务器',
+		connected: '已连接至服务器',
+		failed: '连接服务器失败',
+	},
+	renderer: {
+		noscript: '请不要禁用脚本，否则网页将会出现问题。',
+		theme: '切换浅色/深色模式'
+	},
+	md: {
+		strong: '加粗',
+		italic: '斜体',
+		delete: '删除线'
+	},
+	loading: '加载中……',
+	home: {
+		name: '首页',
+		checkIn: {
+			name: '签到',
+			resetTime: '你可以在 {date} 进行下一次签到。',
+			button: '点击签到',
+			good: '宜：',
+			bad: '忌：',
+			everythingGood: '万事皆宜',
+			everythingBad: '万事不顺',
+			count: '你已经签到了 {count} 次。',
+			referenceOnly: '仅供娱乐',
+			status: {
+				'-3': '大凶',
+				'-2': '凶',
+				'-1': '小凶',
+				'0': '中平',
+				'1': '小吉',
+				'2': '中吉',
+				'3': '大吉',
+			},
+			afterLogin: `{login}后即可签到`,
+			alreadyCheckedIn: '你今天已经签到过了'
+		},
+		recentDiscussions: '近期讨论',
+		recentAnnouncements: '近期公告',
+	},
+	userInfo: {
+		username: '用户名',
+		password: '密码',
+		email: '邮箱',
+		uid: '用户编号',
+		registeredAt: '注册时间',
+	},
+	user: {
+		user: '用户',
+		register: '注册',
+		registerUsernameLength: '用户名必须在 3 到 30 个字符之间。',
+		registerUsernameExists: '用户名不能已存在。',
+		login: '登录',
+		registerToLogin: '已有账号？{link}',
+		registerToLoginLink: '前往登录！',
+		loginToRegister: '没有账号？{link}',
+		loginToRegisterLink: '注册一个！',
+		confirmPassword: '确认密码',
+		passwordNotMatch: '密码不匹配。',
+		settings: {
+			name: '用户设置',
+			browserNotification: {
+				name: '浏览器通知设置',
+				permissionDenied: '功能被关闭，当前无法使用此功能。请前往浏览器设置中允许此网站的通知权限再来这里设置。',
+				permissionUngranted: '功能未被允许，当前无法使用此功能。请按此按钮并允许此网站的通知权限：',
+				permissionRequest: '请求通知权限',
+				notification: {
+					label: '通知中心',
+					detail: '完整内容',
+					summary: '仅显示有新通知',
+					no: '不通知'
+				},
+				privateMessage: {
+					label: '私信',
+					detail: '完整内容',
+					senderOnly: '仅显示发送者',
+					summary: '仅显示有新私信',
+					no: '不通知'
+				}
+			},
+			username: {
+				name: '用户名设置',
+				changeColorLight: '浅色模式下的用户名颜色',
+				changeColorDark: '深色模式下的用户名颜色'
+			},
+			security: {
+				name: '安全设置',
+				changePassword: {
+					name: '更改密码',
+					old: '旧密码',
+					new: '新密码',
+					confirm: '确认新密码',
+					doesNotMatch: '新密码不匹配！',
+					changeConfirm: '确定修改密码吗？',
+					changedSuccessfully: '密码修改成功'
+				},
+				changeEmail: {
+					name: '更改邮箱',
+					current: '您当前的邮箱是 {email}',
+					currentUnset: '暂未设置邮箱',
+					verify: '在十分钟内使用邮箱 {email} 发送一封邮件给 <a href="mailto:verify@cqiming.com">verify@cqiming.com</a>，主题任意，正文<strong>必须</strong>为（不能有多余信息）以下数字，发送完成后请<strong>先等待十秒使缓存刷新后</strong>点击验证。',
+					verifySuccessfully: '邮箱已成功绑定'
+				}
+			}
+		},
+		notification: {
+			name: '通知中心',
+			types: {
+				'feed-reply': '{user} 的{feed}回复了{target}。',
+				'discussion-reply-replied': '{user} 在{discussion}中的{reply}回复了{parentReply}。',
+				'ticket-reply-replied': '{user} 在{ticket}中的{reply}回复了{parentReply}。',
+				'ticket-status-changed': '{ticket}的状态被设为了{status}。',
+				'permission-changed': '您的权限已因以下理由被 {operator} 变更：{comment}{changeList}',
+				'name-violation': '您的用户名已因以下理由被 {operator} {set}：{comment}',
+				'warn': '{operator} 已因以下理由警告了你：{comment}',
+				'at': '{user} 在 {link} 提到了你。',
+				'unknown': '未知通知类型'
+			},
+			atHere: '这里',
+			yourFeed: '你的动态',
+			yourDiscussion: '你的讨论',
+			yourTicket: '你的工单',
+			yourReply: '你的回复',
+			nothing: '暂时没有通知。',
+			autoReadAll: '自动将所有消息设为已读'
+		},
+		profile: {
+			title: '{username} 的个人主页',
+			home: '个人主页',
+			feed: '发布的动态',
+			discussion: '发布的讨论',
+			theme: '创建的主题',
+			judgement: '处罚记录',
+			admin: '管理'
+		},
+		tag: 'Tag',
+		tagAdmin: '管理员',
+		unknown: '未知用户',
+		usernameViolation: '违规用户名 {uid}',
+		toggleUsernameViolation: '切换用户名违规状态',
+	},
+	chat: {
+		name: '私信',
+		recent: '近期消息'
+	},
+    feed: '动态',
+    feeds: '动态',
+	discussion: {
+		name: '讨论',
+		post: '发布讨论',
+		categoryName: {
+			announcement: '公告',
+			general: '灌水',
+			academic: '学术',
+		},
+		itemDescription: '{user} · {category} · {createdAt}',
+		replyItemDescription: '{user} · {createdAt}'
+	},
+	ticket: {
+		name: '工单',
+		post: {
+			name: '发布工单',
+			similar: '创建工单之前不妨先看看以下可能相似的工单：'
+		},
+		categoryName: {
+			suggestion: '建议',
+			bugReport: 'Bug 反馈',
+			userReport: '举报用户',
+			checkinAdd: '添加签到类型',
+			other: '其他',
+		},
+		statusName: {
+			new: '待处理',
+			inProgress: '处理中',
+			pending: '挂起',
+			infoNeeded: '已回复，请补充',
+			resolved: '已完成',
+			closed: '已关闭'
+		},
+		itemDescription: '{user} · {category} · {createdAt} · {status} · 处理者：{assignee}',
+		replyItemDescription: '{user} · {createdAt}',
+		setStatusTo: '工单状态已被设为 {status}',
+		setAssigneeTo: '工单处理者已被设为 {assignee}',
+		setStatus: '将工单状态设为',
+		setAssignee: '将工单处理者设为'
+	},
+	ide: {
+		name: '在线 IDE',
+		noLanguageSupported: '没有任何可用的编程语言。'
+	},
+	onlineJudge: {
+		stdin: '标准输入',
+		stdout: '标准输出',
+		stderr: '标准错误',
+		run: '运行',
+		language: '语言',
+		timeLimit: '时间限制',
+		memoryLimit: '空间限制',
+		expectedOutput: '预期输出',
+		actualOutput: '实际输出',
+		judgeResult: {
+			Judging: '评测中',
+			Compilation_Error: '编译错误',
+			Accepted: '通过',
+			Wrong_Answer: '答案错误',
+			Runtime_Error: '运行时错误',
+			Time_Limit_Exceeded: '时间超限',
+			Memory_Limit_Exceeded: '空间超限'
+		},
+	},
+	judgement: {
+		name: '万象更新',
+		description: '此处公布近期涉及到用户权限（即封号、禁言等）和违规用户名状态的变更的管理日志，以提升管理流程透明度，以及引起用户警示。',
+		noRecords: '暂无操作记录。',
+	},
+	file: {
+		name: '文件上传',
+		goToFolder: '创建或进入目录：',
+		fileName: '文件名',
+		size: '大小 / 字节',
+		folderEmpty: '目录为空。'
+	},
+	theme: {
+		name: '主题',
+		notFound: '主题未找到',
+		list: '主题商店',
+		themeColor: '主题颜色',
+		themeName: '主题名称',
+		numberOfUsers: '使用人数',
+		create: '创建主题',
+		edit: '编辑主题',
+		saveAsNew: '另存为新主题',
+		reset: '重置主题',
+		useBgImage: '使用背景图片',
+		editor: '设置使用的编辑器',
+		bgImageRepeat: {
+			x: '背景图片横向重复',
+			y: '背景图片纵向重复'
+		},
+		bgImageSize: {
+			x: '背景图片宽度',
+			y: '背景图片高度',
+			auto: '自动',
+			cover: '覆盖',
+			contain: '包含',
+			custom: '自定义'
+		},
+		bgImageSizeCustom: {
+			x: '自定义背景图片宽度',
+			y: '自定义背景图片高度'
+		},
+		lengthUnits: {
+			px: '像素',
+			em: 'em',
+			rem: 'rem',
+			'%': '百分比',
+			vw: '视口宽度',
+			vh: '视口高度'
+		},
+		useFrostedGlass: '使用毛玻璃效果',
+		lightTheme: '浅色主题',
+		darkTheme: '深色主题',
+		fgcolor: '前景颜色',
+		bgcolor: '背景颜色',
+		bgimage: '背景图片'
+	},
+	admin: {
+		name: '管理',
+		domainRenew: '域名续期',
+		ticketQuickReply: '工单快捷回复'
+	},
+	error: {
+		somethingWentWrong: '出错了',
+		missingParams: '参数缺失',
+		alreadyLoggedIn: '您已经登录了。',
+		notLoggedIn: '未登录',
+		loginRequired: '请先<a href="/user/login">登录</a>。',
+		emailVerifyRequired: '请先进行<a href="/user/settings">邮箱验证</a>。',
+		banned: '您已被封禁',
+		muted: '您已被禁言',
+		categoryNotFound: '板块未找到',
+		statusNotFound: '状态未找到',
+		accessDenied: '无权限。',
+		notFound: '页面未找到。',
+		usernameRequired: '用户名是必填的',
+		passwordRequired: '密码是必填的',
+		emailRequired: '邮箱是必填的',
+		categoryRequired: '板块不能为空',
+		titleRequired: '标题不能为空',
+		contentRequired: '内容是必填的',
+		invalidPassword: '密码错误',
+		invalidEmail: '邮箱不合法',
+		noSuchUsername: '没有这样的用户名。',
+		emailUsed: '此邮箱已被使用。',
+		verifyFailed: '验证失败',
+	},
+	id: '编号',
+    title: '标题',
+    content: '内容',
+	creator: '创建者',
+	operator: '操作者',
+	category: '板块',
+    categories: '板块',
+    status: '状态',
+    allCategories: '所有板块',
+    allStatuses: '所有状态',
+	nothing: '这里还没有内容。',
+	noReplies: '暂时还没有回复。',
+	go: '跳转',
+	filter: '筛选',
+	send: '发送',
+	post: '发布',
+	postAfterLogin: '{link}后发布',
+	postAfterEmailVerify: '{link}后发布',
+	reply: '回复',
+	replyAfterLogin: '{link}后回复',
+	replyAfterEmailVerify: '{link}后回复',
+	replyTo: '回复于：',
+	afterLoginLink: '登录',
+	afterEmailVerifyLink: '邮箱验证',
+	postSuccessfully: '发布成功',
+	next: '下一步',
+	edit: '编辑',
+	save: '保存',
+	ok: '确定',
+	cancel: '取消',
+	warn: '警告',
+	readStatus: {
+		read: '已读',
+		unread: '未读',
+		markRead: '标记为已读',
+		markUnread: '标记为未读',
+		markReadAll: '全部标记为已读'
+	},
+	permission: {
+		name: '权限',
+		granted: '授予权限',
+		revoked: '撤销权限',
+		changed: '变更权限',
+		grantPermission: '授予权限',
+		revokePermission: '撤销权限',
+		grant: '授予',
+		revoke: '撤销',
+		'1': '进入主站',
+		'2': '自由发言',
+		'4': '进入后台',
+		'8': '使用私信',
+		'16': '使用文件上传功能'
+	},
+	usernameViolation: {
+		set: '设为违规用户名',
+		unset: '取消违规用户名',
+		setted: '被设为违规用户名',
+		unsetted: '被取消违规用户名'
+	},
+    goToPage: '跳转到页码',
+    replies: '回复',
+    viewDetail: '查看详情',
+    verify: '验证',
+    reason: '理由',
+    noReason: '未填写理由',
+    copiedSuccessfully: '复制成功',
+    searchUsernameOrUid: '搜索用户名或用户编号',
+	userNotExists: '用户未找到',
+	currentChoice: '当前选择：',
+    none: '无',
+    doNotModify: '不修改',
+    delete: '删除',
+    deleteConfirm: '确定要删除吗？删除后将无法找回！',
+    createdAt: '创建时间',
+	updatedAt: '更新时间',
+	operations: '操作',
+	apply: '应用',
+    setPin: '设置置顶量',
+	setPinSuccessfully: '置顶量设置成功',
+    deleted: '已删除',
+    selectConversation: '请选择对话或搜索用户',
+    userNotFound: '未找到用户 “{username}”',
+	upload: '上传',
+	userSpace: '用户 {user} 的个人空间',
+	new: '新建',
+	language: '语言',
+	action: '操作',
+	comment: '理由',
+	operationSuccessful: '操作成功',
+	deletedSuccessful: '删除成功',
+	appliedSuccessful: '应用成功',
+	createdSuccessful: '创建成功',
+	savedSuccessful: '保存成功',
+	sendedSuccessful: '发送成功'
+} satisfies typeof en_us_translations;

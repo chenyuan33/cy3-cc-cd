@@ -8,7 +8,8 @@
   </a>
   <img alt="Language" src="https://img.shields.io/badge/language-TypeScript%20JSX-blue" />
   <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white" />
-  <img alt="Hono" src="https://img.shields.io/badge/Hono-e36002?logo=hono&logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/Frontend-Vite-9135ff?logo=vite&logoColor=white" />
+  <img alt="Hono" src="https://img.shields.io/badge/Backend-Hono-e36002?logo=hono&logoColor=white" />
   <img alt="Database" src="https://img.shields.io/badge/database-Cloudflare%20D1-brightgreen?style=flat&logo=sqlite" />
   <img alt="Website" src="https://img.shields.io/badge/website-cy3.cc.cd-blue" />
 </p>
@@ -50,6 +51,7 @@
 	``` bash
 	cp .env.example .env
 	node -e "const fs=require('fs'),crypto=require('crypto');const secret=crypto.randomBytes(32).toString('hex');let env=fs.readFileSync('.env','utf8');env=env.replace(/^SECRET=.*$/m, `SECRET=${secret}`);fs.writeFileSync('.env',env);"
+	npm run cf-typegen
 	```
 4. 初始化数据库（若只是更新，可以只运行更新部分的 sql 文件内容）
 	``` bash

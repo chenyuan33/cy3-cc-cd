@@ -8,7 +8,8 @@
   </a>
   <img alt="Language" src="https://img.shields.io/badge/language-TypeScript%20JSX-blue" />
   <img alt="Cloudflare Workers" src="https://img.shields.io/badge/Cloudflare%20Workers-F38020?logo=cloudflare&logoColor=white" />
-  <img alt="Hono" src="https://img.shields.io/badge/Hono-e36002?logo=hono&logoColor=white" />
+  <img alt="Vite" src="https://img.shields.io/badge/Frontend-Vite-9135ff?logo=vite&logoColor=white" />
+  <img alt="Hono" src="https://img.shields.io/badge/Backend-Hono-e36002?logo=hono&logoColor=white" />
   <img alt="Database" src="https://img.shields.io/badge/database-Cloudflare%20D1-brightgreen?style=flat&logo=sqlite" />
   <img alt="Website" src="https://img.shields.io/badge/website-cy3.cc.cd-blue" />
 </p>
@@ -38,29 +39,30 @@ A website deployed on Cloudflare Workers.
 ## Local Development
 
 1. Clone the repository
-   ```bash
+   ``` bash
    git clone https://github.com/chenyuan33/cy3-cc-cd.git
    cd cy3-cc-cd
    ```
 2. Install dependencies
-   ```bash
+   ``` bash
    npm install
    ```
 3. Configure environment
-   ```bash
+   ``` bash
    cp .env.example .env
    node -e "const fs=require('fs'),crypto=require('crypto');const secret=crypto.randomBytes(32).toString('hex');let env=fs.readFileSync('.env','utf8');env=env.replace(/^SECRET=.*$/m, `SECRET=${secret}`);fs.writeFileSync('.env',env);"
+   npm run cf-typegen
    ```
 4. Initialize the database (if you are only updating, you can just run the SQL from the update section)
-   ```bash
+   ``` bash
    npx wrangler d1 execute <database-name> --local --file=database_init.sql
    ```
 5. Start the development server
-   ```bash
+   ``` bash
    npm run dev
    ```
    or
-   ```bash
+   ``` bash
    npm run start
    ```
 6. Register an admin account
