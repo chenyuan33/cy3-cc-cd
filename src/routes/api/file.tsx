@@ -6,7 +6,7 @@ import { permissionFile } from "../../settings";
 import { DOMParser } from '@xmldom/xmldom';
 
 const validatePath = (path: string) => {
-	if (path.includes('..')) {
+	if (decodeURIComponent(path).includes('..')) {
 		throw new Error('Invalid path');
 	}
 	return decodeURIComponent(path).split('/').map(encodeURIComponent).join('/');
@@ -47,7 +47,7 @@ app.get('/list/:path{.*}', async c => {
 	const currentUser = c.get('currentUser')!;
 	const path = validatePath(c.req.param('path'));
 	const currentPage = parseInt(c.get('reqBody').page || '1') || 1;
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) || !path.endsWith('/')) {
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/') || !path.endsWith('/')) {
 		return accessDenied(c);
 	}
 	const aws = new AwsClient({
@@ -95,7 +95,7 @@ app.post('/upload', async c => {
 	const body = await c.req.parseBody();
 	const path = validatePath(body.path as string || '');
 	const file = body.file as File;
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/') && path.endsWith('/')) {
 		return accessDenied(c);
 	}
 	const aws = new AwsClient({
@@ -107,7 +107,7 @@ app.post('/upload', async c => {
 	if (typeof path !== 'string') {
 		return notFound(c);
 	}
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id)) {
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/')) {
 		return accessDenied(c);
 	}
 	if (!file) {
@@ -129,7 +129,7 @@ app.post('/upload', async c => {
 app.post('/delete/:key{.+}', async c => {
 	const currentUser = c.get('currentUser')!;
 	const path = validatePath(c.req.param('key'));
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
+	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/') || path.endsWith('/')) {
 		return accessDenied(c);
 	}
 	const aws = new AwsClient({

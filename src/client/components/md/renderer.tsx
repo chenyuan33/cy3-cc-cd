@@ -184,7 +184,7 @@ export const mdToHtml = (md: string) => {
         if (state === 'codeBlock') {
             if (trimed === '```') {
                 const codeContent = codeBlockLines.join('\n');
-                const langClass = codeBlockLang ? ` class="language-${codeBlockLang}"` : '';
+                const langClass = codeBlockLang ? ` class="language-${codeBlockLang.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')}"` : '';
                 html += `<pre><code${langClass}>${codeContent.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')}</code></pre>`;
                 state = 'normal';
                 codeBlockLang = '';
