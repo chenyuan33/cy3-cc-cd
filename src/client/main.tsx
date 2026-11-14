@@ -135,6 +135,10 @@ const routes = defineRoutes(route => [
 				return () => Promise.resolve(NotFound);
 		}
 	}} />),
+	route('/problem', lazyPage(() => import('./pages/problem/list').then(module => module.ProblemList))),
+	route('/problem/post', lazyPage(() => import('./pages/problem/post').then(module => module.ProblemPost))),
+	route('/problem/:id{\\d+}', lazyPage(() => import('./pages/problem/detail').then(module => module.ProblemDetail))),
+	route('/problem/:id{\\d+}/edit', lazyPage(() => import('./pages/problem/edit').then(module => module.ProblemEdit))),
 	route('/feed', lazyPage(() => import('./pages/feed').then(module => module.default))),
 	route('/feed/:id{\\d+}', lazyPage(() => import('./pages/feed').then(module => module.default))),
 	route('/discussion', lazyPage(() => import('./pages/discussion/list').then(module => module.DiscussionList))),
@@ -442,6 +446,10 @@ const Nav: FC<{}> = () => {
 		<p><A href='/'>
 			<i class='fa-solid fa-house'></i>
 			<span class='sidebarTitle'>{t('home.name')}</span>
+		</A></p>
+		<p><A href='/problem'>
+			<i class='fa-solid fa-book'></i>
+			<span class='sidebarTitle'>{t('problem.list')}</span>
 		</A></p>
 		<p><A href='/feed'>
 			<i class='fa-solid fa-rss'></i>

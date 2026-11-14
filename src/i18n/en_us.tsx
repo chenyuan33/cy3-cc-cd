@@ -158,6 +158,15 @@ export default {
 		usernameViolation: 'Violating username {uid}',
 		toggleUsernameViolation: 'Toggle username violation status'
 	},
+	problem: {
+		list: 'Problem List',
+		id: 'Problem ID',
+		title: 'Problem Title',
+		content: 'Description',
+		post: 'Post Problem',
+		edit: 'Edit Problem',
+		back: 'Back to Problem'
+	},
 	chat: {
 		name: 'Private messages',
 		recent: 'Recent messages',

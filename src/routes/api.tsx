@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import adminRoutes from './api/admin';
 import userRoutes, { userInfoDatas } from './api/user';
+import problemRoutes from './api/problem';
 import feedRoutes from './api/feed';
 import discussionRoutes, { type discussionCategoriesType } from './api/discussion';
 import ticketRoutes from './api/ticket';
@@ -77,6 +78,7 @@ app.get('/home', async c => {
 app.route('/websocket', websocketRotues);
 app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
+app.route('/problem', problemRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);

@@ -126,7 +126,7 @@ app.post('/upload', async c => {
 	}
 	return c.json({ success: true });
 });
-app.post('/delete/:key{.+}', async c => {
+app.delete('/delete/:key{.+}', async c => {
 	const currentUser = c.get('currentUser')!;
 	const path = validatePath(c.req.param('key'));
 	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/') || path.endsWith('/')) {

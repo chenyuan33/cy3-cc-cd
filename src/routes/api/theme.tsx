@@ -132,7 +132,7 @@ app.post('/apply/:id{\\d+}', async c => {
 	await c.env.db.prepare('UPDATE users SET using_theme = ? WHERE id = ?').bind(id, currentUser.id).run();
 	return c.json({ success: true });
 });
-app.post('/delete/:id{\\d+}', async c => {
+app.delete('/delete/:id{\\d+}', async c => {
 	const currentUser = c.get('currentUser');
 	if (!currentUser) {
 		return loginRequired(c);

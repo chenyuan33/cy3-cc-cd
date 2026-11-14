@@ -81,7 +81,7 @@ export const DiscussionDetail = () => {
 							discussionEditRef.current.dataset.vis = (-(discussionEditRef.current.dataset.vis || -1)).toString();
 						}
 					}}>{t('edit')}</button>
-					<DeleteButton href='/api/discussion/delete' arg={{ discussion_id: id }} redirect='/discussion' />
+					<DeleteButton href='/api/discussion/delete' arg={{ discussion_id: id.toString() }} redirect='/discussion' />
 				</>}
 			</div>
 			<h1>{data.info.pin ? <i class='fa-solid fa-thumbtack' style={{ color: 'gold' }}></i> : <></>}{data.info.title}</h1>
@@ -140,7 +140,7 @@ export const DiscussionDetail = () => {
 							}
 						}
 					}}>{t('edit')}</button>
-					<DeleteButton href='/api/discussion/reply/delete' arg={{ reply_id: id }} redirect='' onSuccess={loadData} />
+					<DeleteButton href='/api/discussion/reply/delete' arg={{ reply_id: id.toString() }} redirect='' onSuccess={loadData} />
 				</>}
 			</div>
 			<p class='description' ref={(el: HTMLElement | null) => {

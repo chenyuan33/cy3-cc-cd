@@ -160,6 +160,15 @@ export default {
 		usernameViolation: '违规用户名 {uid}',
 		toggleUsernameViolation: '切换用户名违规状态',
 	},
+	problem: {
+		list: '题目列表',
+		id: '题目编号',
+		title: '题目名称',
+		content: '题目描述',
+		post: '创建题目',
+		edit: '编辑题目',
+		back: '返回题目'
+	},
 	chat: {
 		name: '私信',
 		recent: '近期消息'

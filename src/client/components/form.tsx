@@ -10,12 +10,13 @@ import type { userInfo } from "../../types";
 
 export const Form: FC<PropsWithChildren<{
 	[x: string]: any,
+	method?: 'get' | 'post' | 'put' | 'delete',
 	onSubmit?: (evt: Event, formData: FormData, submitter: HTMLElement | null) => boolean | void | Promise<boolean | void>,
 	onSuccess?: (data: any, formData: FormData, submitter: HTMLElement | null) => void,
 	onError?: (error: unknown, formData: FormData, submitter: HTMLElement | null) => void,
 	alignInput?: string,
 	ref?: RefObject<HTMLFormElement> | ((x: HTMLFormElement | null) => void)
-}>> = ({ children, onSubmit, onSuccess, onError, alignInput, ref, ...props }) => {
+}>> = ({ children, onSubmit, onSuccess, onError, alignInput, ref, method: methodProp, ...props }) => {
 	return <form ref={ref} style={{ '--align-input': alignInput ?? '200px' }} {...props} onSubmit={async evt => {
 		evt.preventDefault();
 		const form = evt.currentTarget as HTMLFormElement;
@@ -24,7 +25,7 @@ export const Form: FC<PropsWithChildren<{
 			return;
 		}
 		const action = button.getAttribute('formaction') || form.action;
-		const method = button.getAttribute('formmethod') || form.method;
+		const method = button.getAttribute('formmethod') || methodProp || form.method;
 		button.dataset.submitted = 'true';
 		button.disabled = true;
 		const formData = new FormData(form);
@@ -34,7 +35,7 @@ export const Form: FC<PropsWithChildren<{
 				button.dataset.submitted = 'false';
 				return;
 			}
-			if (!method || method === 'get') {
+			if (!method || method === 'get' || method === 'delete') {
 				button.disabled = false;
 				button.dataset.submitted = 'false';
 				const url = new URL(action, location.href);
