@@ -117,7 +117,7 @@ app.post('/user/permission-set', async c => {
     await c.env.db.prepare('INSERT INTO judgement (uid, type, payload, batch_id, comment, operator) VALUES (?, \'permission-changed\', ?, NULL, ?, ?)')
         .bind(uid, JSON.stringify({ oldPermission, newPermission }), reqBody.comment || null, c.get('currentUser')!.id ).run();
     await c.env.db.prepare('INSERT INTO notification (uid, type, payload) VALUES (?, \'permission-changed\', ?)')
-        .bind(uid, JSON.stringify({ comment: reqBody.comment || null, oldPermission, newPermission })).run();
+        .bind(uid, JSON.stringify({ comment: reqBody.comment || null, oldPermission, newPermission, operator: c.get('currentUser')!.id })).run();
 	return c.json({ success: true });
 });
 app.post('/discussion/set-pin', async c => {

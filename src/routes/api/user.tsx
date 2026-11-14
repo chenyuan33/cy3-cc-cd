@@ -30,10 +30,7 @@ const login = async (uid: number, c: ContextType) => {
 };
 app.on('post', ['/register', '/login', '/change-username', '/change-password', '/change-email', '/change-email/verify'], (c, next) => rateLimit(c.env.rateLimiter, c => c.req.header('cf-connecting-ip') ?? '')(c, next));
 export const userInfoDatas = ['id', 'name', 'created_at', 'permission', 'username_violation', 'name_color_light', 'name_color_dark', 'tag'];
-export const userQuery = async (user: number, c: ContextType) => await c.env.db
-		.prepare(`SELECT ${userInfoDatas.join()} FROM users WHERE id = ?`)
-		.bind(user)
-		.first<userInfo>();
+export const userQuery = async (user: number, c: ContextType) => user ? await c.env.db.prepare(`SELECT ${userInfoDatas.join()} FROM users WHERE id = ?`).bind(user).first<userInfo>() : null;
 app.get('/query/:uid{\\d+}', async c => c.json(await userQuery(parseInt(c.req.param('uid')), c)));
 app.post('/register', async c => {
 	const reqBody = c.get('reqBody');
@@ -328,11 +325,11 @@ app.get('/notification', async c => {
 								id: payload.id
 							};
 						case 'ticket-status-changed':
-							return {
-								ticket_id: payload.ticket_id,
-								ticket_name: (await c.env.db.prepare('SELECT title FROM ticket WHERE id = ?').bind(payload.ticket_id).first<{ title: string }>())?.title,
-								status: payload.status
-							};
+						// 	return {
+						// 		ticket_id: payload.ticket_id,
+						// 		ticket_name: (await c.env.db.prepare('SELECT title FROM ticket WHERE id = ?').bind(payload.ticket_id).first<{ title: string }>())?.title,
+						// 		status: payload.status
+						// 	};
 						case 'permission-changed':
 							return {
 								comment: payload.comment,
