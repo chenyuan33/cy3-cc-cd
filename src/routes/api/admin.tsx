@@ -24,7 +24,7 @@ app.get('/check-in/list', async c => c.json((await c.env.db.prepare('SELECT * FR
 app.post('/check-in/add', async c => {
     const { title_en, good_en, bad_en, title_zh, good_zh, bad_zh } = c.get('reqBody');
     await c.env.db.prepare(`INSERT INTO checkin_texts (title_en, good_en, bad_en, title_zh, good_zh, bad_zh) VALUES (?, ?, ?, ?, ?, ?)`).bind(title_en, good_en, bad_en, title_zh, good_zh, bad_zh).run();
-    return c.redirect('/');
+    return c.json({ success: true });
 });
 app.get('/ticket-quick-reply/list', async c => c.json((await c.env.db.prepare(`
 	SELECT
@@ -42,7 +42,7 @@ app.post('/ticket-quick-reply/new', async c => {
 		return contentRequired(c);
 	}
 	await c.env.db.prepare('INSERT INTO ticket_quick_reply (title, content, creator) VALUES (?, ?, ?)').bind(title, content, c.get('currentUser')!.id).run();
-	return c.redirect('/admin/ticket-quick-reply');
+	return c.json({ success: true });
 });
 app.post('/user/warn', async c => {
 	const reqBody = c.get('reqBody');

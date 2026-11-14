@@ -54,7 +54,7 @@ export const TicketList = () => {
 			]} onChange={() => filterFormRef.current?.requestSubmit()} />
 			<FormSelect key={'status-' + status} id='status' name='status' label={t('status')} options={[
 				{ value: '', label: t('allStatuses'), selected: !status },
-				...(ticketStatus.map(key => ({ value: key, label: <TicketStatus status={key} />, selected: status === key })))
+				...(ticketStatus.map(key => ({ value: key, label: <TicketStatus status={key} unlinkable />, selected: status === key })))
 			]} onChange={() => filterFormRef.current?.requestSubmit()} />
 			<button type='submit'>{t('filter')}</button>
 		</Form>

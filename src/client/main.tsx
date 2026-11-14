@@ -1,6 +1,5 @@
-import { defineRoutes, Router } from '@w3cj/ruta';
+import { defineRoutes, Router, useLocation } from '@w3cj/ruta';
 import { render, useEffect, useState, type FC, type PropsWithChildren } from 'hono/jsx/dom';
-import type { Child } from 'hono/jsx';
 import { t, tString } from './i18n';
 import { permissionAdmin } from '../settings';
 import { getDisplayUsernameString, User } from './components/user';
@@ -15,8 +14,8 @@ import { isLightMode } from './utils/isLightMode';
 import { ThemeLoader } from './components/themeLoader';
 import type { userInfo } from '../types';
 
-const LazyPage: FC<{ load: () => Promise<Child> }> = ({ load }) => {
-	const [page, setPage] = useState<Child | null>(null);
+const LazyPage: FC<{ load: () => Promise<FC<{}>> }> = ({ load }) => {
+	const [Page, setPage] = useState<FC<{}> | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	useEffect(() => {
 		let cancelled = false;
@@ -34,125 +33,140 @@ const LazyPage: FC<{ load: () => Promise<Child> }> = ({ load }) => {
 				}
 			}
 		);
-		return () => { cancelled = true; };
+		return () => {
+			cancelled = true;
+		};
 	}, [load]);
-	return <>{page ?? (error
-		? <div role='alert'>{error}</div>
-		: <div class='page-loading' role='status' aria-label={t('loading')}>
+	if (Page) {
+		return <Page />;
+	}
+	if (error) {
+		return <div role='alert'>{error}</div>;
+	}
+	return <div class='page-loading' role='status' aria-label={t('loading')}>
+		<span class='page-loading-title' aria-hidden='true'></span>
+		<span class='page-loading-block' aria-hidden='true'></span>
+		<span class='page-loading-line' aria-hidden='true'></span>
+	</div>;
+};
+type RouteLayout = FC<PropsWithChildren<{}>>;
+const LayoutRoute: FC<{
+	loadLayout: () => Promise<RouteLayout>,
+	resolvePage: (location: string) => () => Promise<FC<{}>>
+}> = ({ loadLayout, resolvePage }) => {
+	const { location } = useLocation();
+	const [Layout, setLayout] = useState<RouteLayout | null>(null);
+	const [error, setError] = useState<string | null>(null);
+	useEffect(() => {
+		let cancelled = false;
+		loadLayout().then(
+			loadedLayout => {
+				if (!cancelled) {
+					setLayout(() => loadedLayout);
+				}
+			},
+			error => {
+				if (!cancelled) {
+					const message = error instanceof Error ? error.message : String(error);
+					setError(message);
+					toast(message, 'error');
+				}
+			}
+		);
+		return () => {
+			cancelled = true;
+		};
+	}, [loadLayout]);
+	if (error) {
+		return <div role='alert'>{error}</div>;
+	}
+	if (!Layout) {
+		return <div class='page-loading' role='status' aria-label={t('loading')}>
 			<span class='page-loading-title' aria-hidden='true'></span>
 			<span class='page-loading-block' aria-hidden='true'></span>
 			<span class='page-loading-line' aria-hidden='true'></span>
-		</div>
-	)}</>;
+		</div>;
+	}
+	const Page = resolvePage(location);
+	return <Layout><div key={location}><LazyPage load={Page} /></div></Layout>;
 };
-const lazyPage = (load: () => Promise<Child>) => () => <LazyPage load={load} />;
-const lazyComponent = <Component extends FC<{}>>(load: () => Promise<Component>, key: string) =>
-	lazyPage(async () => {
-		const Page = await load();
-		return <Page key={key} />;
-	});
-const lazyLayout = <Layout extends FC<PropsWithChildren<{}>>, Page extends FC<{}>>(
-	loadLayout: () => Promise<Layout>,
-	loadPage: () => Promise<Page>,
-	layoutKey: string,
-	pageKey: string
-) => lazyPage(async () => {
-	const [Layout, Page] = await Promise.all([loadLayout(), loadPage()]);
-	return <Layout key={layoutKey}><Page key={pageKey} /></Layout>;
-});
-const lazySettingsPage = (loadPage: () => Promise<FC<{}>>, pageKey: string) => lazyLayout(
-	() => import('./pages/user/settings/layout').then(module => module.UserSettingsLayout),
-	loadPage,
-	'userSettings',
-	pageKey
-);
-const lazyUserDetailPage = (loadPage: () => Promise<FC<{}>>, pageKey: string) => lazyLayout(
-	() => import('./pages/user/detail/layout').then(module => module.UserDetailLayout),
-	loadPage,
-	'userDetail',
-	pageKey
-);
-const lazyAdminPage = (loadPage: () => Promise<FC<{}>>, pageKey: string) => lazyLayout(
-	() => import('./pages/admin/layout').then(module => module.AdminLayout),
-	loadPage,
-	'admin',
-	pageKey
-);
-
-const loadFeed = () => import('./pages/feed').then(module => module.default);
-const loadThemeCreate = () => import('./pages/theme/create').then(module => module.ThemeCreate);
-const loadUserDetailHome = () => import('./pages/user/detail/home').then(module => module.UserDetailHome);
-const loadSettingsBrowserNotification = () => import('./pages/user/settings/browserNotification').then(module => module.UserSettingsBrowserNotification);
-const loadAdminHome = () => import('./pages/admin/home').then(module => module.Admin);
-
+const lazyPage = (load: () => Promise<FC<{}>>) => () => {
+	const { location } = useLocation();
+	return <LazyPage key={location} load={load} />;
+};
 const routes = defineRoutes(route => [
-	route('/', lazyComponent(() => import('./pages/home').then(module => module.default), 'home')),
-	route('/user/register', lazyComponent(() => import('./pages/user/register').then(module => module.Register), 'userRegister')),
-	route('/user/login', lazyComponent(() => import('./pages/user/login').then(module => module.Login), 'userLogin')),
-	route('/user/settings', lazySettingsPage(loadSettingsBrowserNotification, 'userSettingsBrowserNotification')),
-	route('/user/settings/browserNotification', lazySettingsPage(loadSettingsBrowserNotification, 'userSettingsBrowserNotification')),
-	route('/user/settings/username', lazySettingsPage(
-		() => import('./pages/user/settings/username').then(module => module.UserSettingsUsername),
-		'userSettingsGeneral'
-	)),
-	route('/user/settings/security', lazySettingsPage(
-		() => import('./pages/user/settings/security').then(module => module.UserSettingsSecurity),
-		'userSettingsSecurity'
-	)),
-	route('/user/notification', lazyComponent(() => import('./pages/user/notification').then(module => module.UserNotification), 'userNotification')),
-	route('/user/:id{\\d+}', lazyUserDetailPage(loadUserDetailHome, 'userDetailHome')),
-	route('/user/:id{\\d+}/home', lazyUserDetailPage(loadUserDetailHome, 'userDetailHome')),
-	route('/user/:id{\\d+}/feed', lazyUserDetailPage(
-		() => import('./pages/user/detail/feed').then(module => module.UserDetailFeed),
-		'userDetailFeed'
-	)),
-	route('/user/:id{\\d+}/discussion', lazyUserDetailPage(
-		() => import('./pages/user/detail/discussion').then(module => module.UserDetailDiscussion),
-		'userDetailDiscussion'
-	)),
-	route('/user/:id{\\d+}/theme', lazyUserDetailPage(
-		() => import('./pages/user/detail/theme').then(module => module.UserDetailTheme),
-		'userDetailTheme'
-	)),
-	route('/user/:id{\\d+}/judgement', lazyUserDetailPage(
-		() => import('./pages/user/detail/judgement').then(module => module.UserDetailJudgement),
-		'userDetailJudgement'
-	)),
-	route('/user/:id{\\d+}/admin', lazyUserDetailPage(
-		() => import('./pages/user/detail/admin').then(module => module.UserDetailAdmin),
-		'userDetailAdmin'
-	)),
-	route('/feed', lazyComponent(loadFeed, 'feed')),
-	route('/feed/:id{\\d+}', lazyComponent(loadFeed, 'feed')),
-	route('/discussion', lazyComponent(() => import('./pages/discussion/list').then(module => module.DiscussionList), 'discussionList')),
-	route('/discussion/post', lazyComponent(() => import('./pages/discussion/post').then(module => module.DiscussionPost), 'discussionPost')),
-	route('/discussion/:id{\\d+}', lazyComponent(() => import('./pages/discussion/detail').then(module => module.DiscussionDetail), 'discussionDetail')),
-	route('/discussion/reply/:id{\\d+}', lazyComponent(() => import('./pages/discussion/replyRedirect').then(module => module.DiscussionReplyRedirect), 'discussionReplyRedirect')),
-	route('/ticket', lazyComponent(() => import('./pages/ticket/list').then(module => module.TicketList), 'ticketList')),
-	route('/ticket/post', lazyComponent(() => import('./pages/ticket/post').then(module => module.TicketPost), 'ticketPost')),
-	route('/ticket/:id{\\d+}', lazyComponent(() => import('./pages/ticket/detail').then(module => module.TicketDetail), 'ticketDetail')),
-	route('/ticket/reply/:id{\\d+}', lazyComponent(() => import('./pages/ticket/replyRedirect').then(module => module.TicketReplyRedirect), 'ticketReplyRedirect')),
-	route('/ide', lazyComponent(() => import('./pages/ide').then(module => module.IDE), 'ide')),
-	route('/judgement', lazyComponent(() => import('./pages/judgement').then(module => module.Judgement), 'judgement')),
-	route('/theme', lazyComponent(() => import('./pages/theme/list').then(module => module.ThemeList), 'themeList')),
-	route('/theme/create', lazyComponent(loadThemeCreate, 'themeCreate')),
-	route('/theme/:id{\\d+}', lazyComponent(loadThemeCreate, 'themeDetail')),
-	route('/chat', lazyComponent(() => import('./pages/chat').then(module => module.Chat), 'chat')),
-	route('/file/:path{.*}', lazyComponent(() => import('./pages/file').then(module => module.File), 'file')),
-	route('/admin', lazyAdminPage(loadAdminHome, 'adminHome')),
-	route('/admin/home', lazyAdminPage(loadAdminHome, 'adminHome')),
-	route('/admin/domain-renew', lazyAdminPage(
-		() => import('./pages/admin/domainRenew').then(module => module.AdminDomainRenew),
-		'adminDomainRenew'
-	)),
-	route('/admin/check-in', lazyAdminPage(
-		() => import('./pages/admin/checkIn').then(module => module.AdminCheckIn),
-		'adminCheckIn'
-	)),
-	route('/admin/ticket-quick-reply', lazyAdminPage(
-		() => import('./pages/admin/ticketQuickReply').then(module => module.AdminTicketQuickReply),
-		'adminTicketQuickReply'
-	)),
+	route('/', lazyPage(() => import('./pages/home').then(module => module.default))),
+	route('/user/register', lazyPage(() => import('./pages/user/register').then(module => module.Register))),
+	route('/user/login', lazyPage(() => import('./pages/user/login').then(module => module.Login))),
+	route('/user/settings/:section{browserNotification|username|security}?', () => <LayoutRoute loadLayout={() => import('./pages/user/settings/layout').then(module => module.UserSettingsLayout)} resolvePage={location => {
+		switch (location) {
+			case '/user/settings':
+			case '/user/settings/browserNotification':
+				return () => import('./pages/user/settings/browserNotification').then(module => module.UserSettingsBrowserNotification);
+			case '/user/settings/username':
+				return () => import('./pages/user/settings/username').then(module => module.UserSettingsUsername);
+			case '/user/settings/security':
+				return () => import('./pages/user/settings/security').then(module => module.UserSettingsSecurity);
+			default:
+				return () => Promise.resolve(NotFound);
+		}
+	}} />),
+	route('/user/notification', lazyPage(() => import('./pages/user/notification').then(module => module.UserNotification))),
+	route('/user/:id{\\d+}/:tab{home|feed|discussion|theme|judgement|admin}?', () => <LayoutRoute loadLayout={() => import('./pages/user/detail/layout').then(module => module.UserDetailLayout)} resolvePage={location => {
+		if (/^\/user\/\d+\/?$/.test(location)) {
+			return () => import('./pages/user/detail/home').then(module => module.UserDetailHome);
+		}
+		switch (location.split('/').at(-1)) {
+			case undefined:
+			case '':
+			case 'home':
+				return () => import('./pages/user/detail/home').then(module => module.UserDetailHome);
+			case 'feed':
+				return () => import('./pages/user/detail/feed').then(module => module.UserDetailFeed);
+			case 'discussion':
+				return () => import('./pages/user/detail/discussion').then(module => module.UserDetailDiscussion);
+			case 'theme':
+				return () => import('./pages/user/detail/theme').then(module => module.UserDetailTheme);
+			case 'judgement':
+				return () => import('./pages/user/detail/judgement').then(module => module.UserDetailJudgement);
+			case 'admin':
+				return () => import('./pages/user/detail/admin').then(module => module.UserDetailAdmin);
+			default:
+				return () => Promise.resolve(NotFound);
+		}
+	}} />),
+	route('/feed', lazyPage(() => import('./pages/feed').then(module => module.default))),
+	route('/feed/:id{\\d+}', lazyPage(() => import('./pages/feed').then(module => module.default))),
+	route('/discussion', lazyPage(() => import('./pages/discussion/list').then(module => module.DiscussionList))),
+	route('/discussion/post', lazyPage(() => import('./pages/discussion/post').then(module => module.DiscussionPost))),
+	route('/discussion/:id{\\d+}', lazyPage(() => import('./pages/discussion/detail').then(module => module.DiscussionDetail))),
+	route('/discussion/reply/:id{\\d+}', lazyPage(() => import('./pages/discussion/replyRedirect').then(module => module.DiscussionReplyRedirect))),
+	route('/ticket', lazyPage(() => import('./pages/ticket/list').then(module => module.TicketList))),
+	route('/ticket/post', lazyPage(() => import('./pages/ticket/post').then(module => module.TicketPost))),
+	route('/ticket/:id{\\d+}', lazyPage(() => import('./pages/ticket/detail').then(module => module.TicketDetail))),
+	route('/ticket/reply/:id{\\d+}', lazyPage(() => import('./pages/ticket/replyRedirect').then(module => module.TicketReplyRedirect))),
+	route('/ide', lazyPage(() => import('./pages/ide').then(module => module.IDE))),
+	route('/judgement', lazyPage(() => import('./pages/judgement').then(module => module.Judgement))),
+	route('/theme', lazyPage(() => import('./pages/theme/list').then(module => module.ThemeList))),
+	route('/theme/create', lazyPage(() => import('./pages/theme/create').then(module => module.ThemeCreate))),
+	route('/theme/:id{\\d+}', lazyPage(() => import('./pages/theme/create').then(module => module.ThemeCreate))),
+	route('/chat', lazyPage(() => import('./pages/chat').then(module => module.Chat))),
+	route('/file/:path{.*}', lazyPage(() => import('./pages/file').then(module => module.File))),
+	route('/admin/:section{home|domain-renew|check-in|ticket-quick-reply}?', () => <LayoutRoute loadLayout={() => import('./pages/admin/layout').then(module => module.AdminLayout)} resolvePage={location => {
+		switch (location) {
+			case '/admin':
+			case '/admin/home':
+				return () => import('./pages/admin/home').then(module => module.Admin);
+			case '/admin/domain-renew':
+				return () => import('./pages/admin/domainRenew').then(module => module.AdminDomainRenew);
+			case '/admin/check-in':
+				return () => import('./pages/admin/checkIn').then(module => module.AdminCheckIn);
+			case '/admin/ticket-quick-reply':
+				return () => import('./pages/admin/ticketQuickReply').then(module => module.AdminTicketQuickReply);
+			default:
+				return () => Promise.resolve(NotFound);
+		}
+	}} />),
 	route('*', NotFound)
 ]);
 declare module "@w3cj/ruta" {
@@ -463,13 +477,27 @@ const Nav: FC<{}> = () => {
 		</A></p>
 	</nav>;
 };
+const routeContainerKey = (location: string) => {
+	if (location === '/admin' || location.startsWith('/admin/')) {
+		return 'admin';
+	}
+	if (location === '/user/settings' || location.startsWith('/user/settings/')) {
+		return 'userSettings';
+	}
+	const userDetail = /^\/user\/(\d+)(?:\/|$)/.exec(location);
+	if (userDetail) {
+		return `userDetail-${userDetail[1]}`;
+	}
+	return location;
+};
 const App: FC<{}> = () => {
 	const usingTheme = useUsingTheme();
+	const { location } = useLocation();
 	return <>
 		<ThemeLoader theme={usingTheme} root='body' />
 		<Header />
 		<Nav />
-		<main style={{ paddingTop: '50px' }}><Router routes={routes} /></main>
+		<main key={routeContainerKey(location)} style={{ paddingTop: '50px' }}><Router routes={routes} /></main>
 		<ToastContainer />
 	</>
 };

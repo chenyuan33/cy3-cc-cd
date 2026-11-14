@@ -5,6 +5,7 @@ import type { userInfo } from "../../../types";
 import { setTitle } from "../../utils/setTitle";
 import { t, tString } from "../../i18n";
 import { User } from "../../components/user";
+import { toast } from "../../components/toast";
 
 export const AdminTicketQuickReply = () => {
 	const [data, setData] = useState<{ id: number, title: string, content: string, creator: userInfo }[] | null>(null);
@@ -14,7 +15,10 @@ export const AdminTicketQuickReply = () => {
 	}, []);
 	const Add = () => <details style={{ position: 'relative' }}>
 		<summary>{t('new')}</summary>
-		<Form action='/admin/ticket-quick-reply/new' method='post'>
+		<Form action='/api/admin/ticket-quick-reply/new' method='post' onSuccess={() => {
+			toast(t('createdSuccessful'), 'success');
+			reload();
+		}}>
 			<FormInput type='text' id='title' name='title' label={t('title')} required />
 			<FormInput type='text' id='content' name='content' label={t('content')} required />
 			<button type='submit'>{t('new')}</button>

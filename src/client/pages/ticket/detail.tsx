@@ -230,7 +230,7 @@ export const TicketDetail = () => {
 				{currentUser && ((currentUser.permission & permissionAdmin) || data.info.assignee && data.info.assignee.id === currentUser.id) ? <>
 					<FormSelect name='set_status' label={t('ticket.setStatus')} options={[
 						{ value: '', label: t('doNotModify'), selected: true },
-						...ticketStatus.map(status => ({ value: status, label: <TicketStatus status={status} /> }))
+						...ticketStatus.map(status => ({ value: status, label: <TicketStatus status={status} unlinkable /> }))
 					]} />
 					<FormUserSearch name='set_assignee' label={t('ticket.setAssignee')} />
 				</> : null}
