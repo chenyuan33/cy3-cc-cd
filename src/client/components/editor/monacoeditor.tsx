@@ -201,6 +201,6 @@ export const MonacoEditor: FC<{
 			class={className}
 			style={{ height, width: '100%' }}
 		/>
-		<input type="hidden" name={name} required={required} ref={inputRef} value={initialCode} />
+		<input type="hidden" name={name} required={required} ref={inputRef} defaultValue={initialCode} />
 	</div>;
 };

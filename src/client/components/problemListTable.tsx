@@ -1,7 +1,6 @@
 import type { FC } from "hono/jsx";
 import type { userInfo } from "../../types";
 import { t } from "../i18n";
-import { A } from "./a";
 import { Time } from "./time";
 import { User } from "./user";
 import { ProblemName } from "./problemName";

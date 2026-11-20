@@ -80,7 +80,8 @@ app.get('/ide-judge', upgradeWebSocket((c: ContextType) => ({ // https://apidoc.
 app.get('/record/:id', upgradeWebSocket((c: ContextType) => ({
 	async onMessage(evt, ws) {
 		try {
-			if (c.get('currentUser') && typeof evt.data === 'string') {
+			const currentUser = c.get('currentUser');
+			if (currentUser && typeof evt.data === 'string') {
 				const raw = await c.env.db.prepare(`
 					SELECT
 						r.id, r.created_at, r.status, r.score, r.time_ms, r.detail, r.lang, r.code,
@@ -93,8 +94,8 @@ app.get('/record/:id', upgradeWebSocket((c: ContextType) => ({
 					JOIN users u ON r.uid = u.id
 					JOIN problem p ON r.pid = p.id
 					JOIN users pu ON p.uid = pu.id
-					WHERE r.id = ?
-				`).bind(c.req.param('id')).first<{
+					WHERE r.id = ? AND (r.uid = ? OR ? = 1)
+				`).bind(c.req.param('id'), currentUser.id, currentUser.id === 1 ? 1 : 0).first<{
 					id: number,
 					created_at: string,
 					status: string,

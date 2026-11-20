@@ -90,7 +90,7 @@ export const RecordDetail = () => {
 						<th>{t('status')}</th>
 						<th>{t('time')}</th>
 					</tr></thead>
-					<tbody>{data.record.detail.map(({ status, time_ms, case: caseId }) => <tr>
+					<tbody>{data.record.detail.map(({ status, time_ms, case: caseId }) => <tr key={caseId}>
 						<td>#{caseId}</td>
 						<td>{status}</td>
 						<td>{toTimeDurationString(time_ms)}</td>

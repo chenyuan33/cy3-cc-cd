@@ -1,9 +1,9 @@
 import { useEffect, useState } from "hono/jsx";
-import type { userInfo } from "../../../types";
 import { subscribeUrlChange } from "../../utils/urlSearch";
 import { t, tString } from "../../i18n";
 import { Card } from "../../components/card";
 import { ProblemListTable } from "../../components/problemListTable";
+import { Pages } from "../../components/pages";
 import { setTitle } from "../../utils/setTitle";
 import { A } from "../../components/a";
 import type { ProblemBasicInfo } from "../../../routes/api/problem";
@@ -43,5 +43,6 @@ export const ProblemList = () => {
 		<h1>{t('problem.list')}</h1>
 		<p><A href='/problem/post'>{t('problem.post')}</A></p>
 		{problems.problems.length ? <ProblemListTable problems={problems.problems} /> : <h2 style={{ textAlign: 'center' }}>{t('nothing')}</h2>}
+		<Pages currentPage={page} totalPage={Math.ceil(problems.total / 20)} />
 	</Card>;
 };

@@ -179,6 +179,6 @@ export const CodeMirrorEditor: FC<{
 	}, [id, className, name, required, initialCode, height, lang, readOnly]);
 	return <div style={{ overflow: 'hidden', ...style }} id={id} class={className}>
 		<div ref={containerRef} style={{ height }}></div>
-		<input type='hidden' name={name} required={required} ref={inputRef} value={initialCode} />
+		<input type='hidden' name={name} required={required} ref={inputRef} defaultValue={initialCode} />
 	</div>;
 }

@@ -54,13 +54,16 @@ export const getFileText = async(env: Env, _path: string) => {
 };
 app.get('/get/:path{.*}', async c => {
 	const path = validatePath(c.req.param('path'));
+	if (/^problem\//.test(path) && !await isPathOwner(c, path)) {
+		return accessDenied(c);
+	}
 	const aws = new AwsClient({
 		accessKeyId: c.env.B2_APPLICATION_KEY_ID,
 		secretAccessKey: c.env.B2_SECRET_ACCESS_KEY,
 		service: 's3',
 		region: c.env.B2_REGION
 	});
-	c.header('Cache-Control', 'public, max-age=3600, must-revalidate');
+	c.header('Cache-Control', /^problem\//.test(path) ? 'private, no-store' : 'public, max-age=3600, must-revalidate');
 	const response = await aws.fetch(new URL(`${c.env.B2_ENDPOINT}/${c.env.B2_BUCKET_NAME}/${path}`).toString());
 	if (!response.ok) {
 		return response;
