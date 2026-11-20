@@ -14,9 +14,12 @@ import { Time } from "../../components/time";
 import { toTimeDurationString } from "../../../utils/timeDuration";
 import { Editor } from "../../components/editor/editor";
 import { programmingLangsToDisplay, programmingLangsToEditorLangs } from "../../../settings";
+import { useCurrentUser } from "../../utils/currentUser";
+import { FetchButton } from "../../components/button";
+import { toast } from "../../components/toast";
 
 export const RecordDetail = () => {
-	const id = parseInt(useParams<'/record/:id'>().id || '0');
+	const id = parseInt(useParams<'/record/:id'>().id || '0'), currentUser = useCurrentUser();
 	const [data, setData] = useState<{ success: false, message: string } | { success: true, record: {
 		id: number,
 		created_at: string,
@@ -37,12 +40,16 @@ export const RecordDetail = () => {
 		user: userInfo,
 		problem: ProblemBasicInfo
 	} } | null>(null);
-	useEffect(() => {
-		let cancelled = false;
-		const wsurl = new URL('/api/websocket/record/' + id, location.href);
-		wsurl.protocol = wsurl.protocol === 'https:' ? 'wss:' : 'ws:';
-		const ws = new WebSocket(wsurl.toString());
-		let interval: ReturnType<typeof setInterval>;
+	const wsurl = new URL('/api/websocket/record/' + id, location.href);
+	wsurl.protocol = wsurl.protocol === 'https:' ? 'wss:' : 'ws:';
+	let cancelled = false;
+	let ws: WebSocket | undefined;
+	let interval: ReturnType<typeof setInterval>;
+	const loadws = () => {
+		if (ws) {
+			return;
+		}
+		ws = new WebSocket(wsurl.toString());
 		ws.addEventListener('message', async ev => {
 			const data = JSON.parse(ev.data);
 			if (!cancelled) {
@@ -51,11 +58,15 @@ export const RecordDetail = () => {
 			if (!data.success || !['Waiting', 'Judging'].includes(data.record.status)) {
 				cancelled = true;
 				clearInterval(interval);
+				ws = undefined;
 			}
 		})
 		ws.addEventListener('open', () => {
-			interval = setInterval(() => ws.send(''), 1000);
+			interval = setInterval(() => ws?.send(''), 1000);
 		});
+	};
+	useEffect(() => {
+		loadws();
 		return () => {
 			cancelled = true;
 			clearInterval(interval);
@@ -82,6 +93,10 @@ export const RecordDetail = () => {
 				{ label: t('score'), value: data.record.score?.toString() ?? t('none') },
 				{ label: t('time'), value: data.record.time_ms ? toTimeDurationString(data.record.time_ms) : t('none') },
 			]} />
+			{currentUser && currentUser.id === 1 ? <FetchButton href={`/api/record/${id}/rejudge`} redirect='' text={t('record.rejudge')} onSuccess={() => {
+				toast(t('operationSuccessful'), 'success');
+				loadws();
+			}} /> : null}
 		</Card>}>
 			{data.record.detail && data.record.detail.length ? <Card>
 				<table>

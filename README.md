@@ -65,6 +65,7 @@ A website deployed on Cloudflare Workers.
    ``` bash
    npm run start
    ```
+   To test queue-based judging locally, run `npm run dev:queues`. It builds the Worker first, then starts Wrangler's local Queue consumer; check the terminal for consumer logs after submitting.
 6. Register an admin account
    After registering the first user, run `UPDATE users SET permission = permission | 4 WHERE id = 1` to grant admin privileges to the user with `uid = 1`.
 

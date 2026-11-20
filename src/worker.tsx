@@ -182,7 +182,7 @@ export default {
 					.run();
 			} catch (error) {
 				console.error(`Failed to judge record ${recordId}:`, error);
-				await env.db.prepare('UPDATE record SET status = \'Judging Failed\', score = NULL, time_ms = NULL, detail = NULL WHERE id = ?')
+				await env.db.prepare('UPDATE record SET status = \'Unknown Error\', score = NULL, time_ms = NULL, detail = NULL WHERE id = ?')
 					.bind(recordId)
 					.run();
 				throw error;

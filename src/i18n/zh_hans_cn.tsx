@@ -177,7 +177,8 @@ export default {
 		manageTheFilesForThisProblem: '管理该题文件'
 	},
 	record: {
-		name: '评测记录'
+		name: '评测记录',
+		rejudge: '重测'
 	},
 	chat: {
 		name: '私信',

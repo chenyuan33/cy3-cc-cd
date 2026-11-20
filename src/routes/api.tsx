@@ -9,6 +9,7 @@ import fileRoutes from './api/file';
 import themeRoutes from './api/theme';
 import chatRoutes from './api/chat';
 import websocketRotues from './api/websocket';
+import recordRoutes from './api/record';
 import type { AppEnv, judgementType } from '../types';
 import { loginRequired } from './errorPages';
 import { getI18n } from '../i18n';
@@ -77,6 +78,7 @@ app.get('/home', async c => {
 });
 app.route('/websocket', websocketRotues);
 app.route('/admin', adminRoutes);
+app.route('/record', recordRoutes);
 app.route('/user', userRoutes);
 app.route('/problem', problemRoutes);
 app.route('/feed', feedRoutes);

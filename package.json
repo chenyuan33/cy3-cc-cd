@@ -5,6 +5,7 @@
 	"private": true,
 	"scripts": {
 		"dev": "vite",
+		"dev:queues": "vite build && wrangler dev",
 		"build": "vite build",
 		"preview": "vite preview",
 		"deploy": "vite build && wrangler deploy",

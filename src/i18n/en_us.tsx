@@ -175,7 +175,8 @@ export default {
 		manageTheFilesForThisProblem: 'Manage the files for this problem'
 	},
 	record: {
-		name: 'Record Detail'
+		name: 'Record Detail',
+		rejudge: 'Rejudge'
 	},
 	chat: {
 		name: 'Private messages',

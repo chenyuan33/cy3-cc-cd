@@ -65,6 +65,7 @@
 	``` bash
 	npm run start
 	```
+	需要测试本地队列判题时，运行 `npm run dev:queues`。该命令先构建 Worker，再通过 Wrangler 的本地 Queue consumer 运行；提交后可在终端查看消费日志。
 6. 注册管理员账号
 	注册完第一个用户后，运行 `UPDATE users SET permission = permission | 4 WHERE id = 1` 给 uid 为 1 的用户管理员权限。
 
