@@ -8,6 +8,7 @@ import { banned, errorJson, notFound } from './routes/errorPages';
 import apiRoutes from './routes/api';
 import { renderer } from './renderer';
 import { i18nMiddleware, type supportedLanguagesShortCodeType } from './i18n';
+import { getFileText } from './routes/api/file';
 const app = new Hono<AppEnv>();
 app.use(languageDetector({
 	supportedLanguages: ['en', 'en_us', 'zh', 'zh_cn', 'zh_hans', 'zh_hans_cn'],
@@ -104,4 +105,88 @@ app.notFound(c => {
 	}
 	return c.render(<></>);
 });
-export default app;
+export default {
+	fetch: app.fetch,
+	async queue(batch: MessageBatch<{ type: 'judge-record', recordId: number }>, env: Env) {
+		for (const message of batch.messages) {
+			const recordId = message.body.recordId;
+			const record = await env.db.prepare('SELECT status, pid, lang, code FROM record WHERE id = ?')
+				.bind(recordId)
+				.first<{ status: string, pid: number, lang: string, code: string }>();
+			if (!record || (
+				record.status !== 'Waiting' &&
+				!(message.attempts > 1 && ['Judging', 'Judging Failed'].includes(record.status))
+			)) {
+				continue;
+			}
+			try {
+				await env.db.prepare('UPDATE record SET status = \'Judging\' WHERE id = ?')
+					.bind(recordId)
+					.run();
+				const testCases = await env.db.prepare('SELECT input, output FROM problem_testcases WHERE pid = ?')
+					.bind(record.pid)
+					.all<{ input: string, output: string }>()
+					.then(({ results }) => Promise.all(results.map(async ({ input, output }) => ({
+						input: await getFileText(env, `problem/${record.pid}/${input}`),
+						output: await getFileText(env, `problem/${record.pid}/${output}`)
+					}))));
+				if (!testCases.length) {
+					throw new Error('Problem has no test cases');
+				}
+				const response = await fetch('https://judge.cqiming.com/api/v1/judgments/', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						language: record.lang,
+						code: record.code,
+						test_cases: testCases,
+						time_limit_ms: 1000,
+						memory_limit_mb: 512
+					})
+				});
+				if (!response.ok) {
+					throw new Error(`Judge service returned HTTP ${response.status}`);
+				}
+				const result = await response.json<{
+					status: string,
+					passed: number,
+					total: number,
+					results: {
+						status: string,
+						time_ms: number,
+						stdout: string,
+						stderr: string,
+						returncode: number,
+						wall_time_ms: number,
+						case: number
+					}[]
+				}>();
+				if (
+					typeof result.status !== 'string' ||
+					!Number.isFinite(result.passed) ||
+					!Number.isFinite(result.total) ||
+					result.total <= 0 ||
+					!Array.isArray(result.results) ||
+					!result.results.every(item => Number.isFinite(item.time_ms))
+				) {
+					throw new Error('Judge service returned an invalid result');
+				}
+				await env.db.prepare('UPDATE record SET status = ?, score = ?, time_ms = ?, detail = ? WHERE id = ?')
+					.bind(
+						result.status,
+						result.passed / result.total * 100,
+						result.results.reduce((total, item) => total + item.time_ms, 0),
+						JSON.stringify(result.results),
+						recordId
+					)
+					.run();
+			} catch (error) {
+				console.error(`Failed to judge record ${recordId}:`, error);
+				await env.db.prepare('UPDATE record SET status = \'Judging Failed\', score = NULL, time_ms = NULL, detail = NULL WHERE id = ?')
+					.bind(recordId)
+					.run();
+				throw error;
+			}
+		}
+	}
+};

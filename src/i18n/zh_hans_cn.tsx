@@ -161,13 +161,23 @@ export default {
 		toggleUsernameViolation: '切换用户名违规状态',
 	},
 	problem: {
+		name: '题目',
 		list: '题目列表',
 		id: '题目编号',
 		title: '题目名称',
 		content: '题目描述',
 		post: '创建题目',
 		edit: '编辑题目',
-		back: '返回题目'
+		testCasesSettings: '数据设置',
+		back: '返回题目',
+		inputFile: '输入文件',
+		outputFile: '输出文件',
+		addATestCase: '添加一个测试点',
+		removeThisTestCase: '移除该测试点',
+		manageTheFilesForThisProblem: '管理该题文件'
+	},
+	record: {
+		name: '评测记录'
 	},
 	chat: {
 		name: '私信',
@@ -338,6 +348,7 @@ export default {
 	noReplies: '暂时还没有回复。',
 	go: '跳转',
 	filter: '筛选',
+	submit: '提交',
 	send: '发送',
 	post: '发布',
 	postAfterLogin: '{link}后发布',
@@ -412,6 +423,10 @@ export default {
 	language: '语言',
 	action: '操作',
 	comment: '理由',
+	score: '分数',
+	time: '时间',
+	memory: '空间',
+	unknown: '未知',
 	operationSuccessful: '操作成功',
 	deletedSuccessful: '删除成功',
 	appliedSuccessful: '应用成功',

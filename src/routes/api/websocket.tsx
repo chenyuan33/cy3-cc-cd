@@ -3,6 +3,8 @@ import { type AppEnv, type ContextType } from "../../types";
 import { upgradeWebSocket } from "hono/cloudflare-workers";
 import { memoryLimitMax, timeLimitMax } from "../../settings";
 import { userInfoDatas } from "./user";
+import { problemBasicInfoDatas } from "./problem";
+import { getI18n } from "../../i18n";
 
 const app = new Hono<AppEnv>();
 app.get('/', upgradeWebSocket((c: ContextType) => {
@@ -39,7 +41,7 @@ app.get('/', upgradeWebSocket((c: ContextType) => {
 		}
 	};
 }));
-app.get('/ide-judge', upgradeWebSocket(c => ({ // https://apidoc.oj.cqiming.com/
+app.get('/ide-judge', upgradeWebSocket((c: ContextType) => ({ // https://apidoc.oj.cqiming.com/
 	async onMessage(evt, ws) {
 		try {
 			if (c.get('currentUser') && typeof evt.data === 'string') {
@@ -72,6 +74,65 @@ app.get('/ide-judge', upgradeWebSocket(c => ({ // https://apidoc.oj.cqiming.com/
 	},
 	onError(evt, ws) {
 		console.error('An error occurred with WebSocket (Judge): ', evt);
+		ws.close(1011);
+	}
+})));
+app.get('/record/:id', upgradeWebSocket((c: ContextType) => ({
+	async onMessage(evt, ws) {
+		try {
+			if (c.get('currentUser') && typeof evt.data === 'string') {
+				const raw = await c.env.db.prepare(`
+					SELECT
+						r.id, r.created_at, r.status, r.score, r.time_ms, r.detail, r.lang, r.code,
+						json_object ( ${userInfoDatas.map(scheme => `'${scheme}', u.${scheme}`)} ) AS user,
+						json_object (
+							${problemBasicInfoDatas.map(scheme => `'${scheme}', p.${scheme}`)},
+							'user', json_object ( ${userInfoDatas.map(scheme => `'${scheme}', pu.${scheme}`)} )
+						) AS problem
+					FROM record r
+					JOIN users u ON r.uid = u.id
+					JOIN problem p ON r.pid = p.id
+					JOIN users pu ON p.uid = pu.id
+					WHERE r.id = ?
+				`).bind(c.req.param('id')).first<{
+					id: number,
+					created_at: string,
+					status: string,
+					score: number | null,
+					time_ms: number | null,
+					detail: string | null,
+					lang: string,
+					code: string,
+					user: string,
+					problem: string
+				}>();
+				ws.send(JSON.stringify(raw ? (({ detail, user, problem, ...schemes }: {
+					id: number,
+					created_at: string,
+					status: string,
+					score: number | null,
+					time_ms: number | null,
+					detail: string | null,
+					lang: string,
+					code: string,
+					user: string,
+					problem: string
+				}) => ({ success: true, record: {
+					detail: detail ? JSON.parse(detail) : null,
+					user: JSON.parse(user),
+					problem: JSON.parse(problem),
+					...schemes
+				} }))(raw) : { success: false, message: getI18n(c)('error.notFound') }));
+			}
+		} catch (e) {
+			console.error('An error occurred with WebSocket (Record): ', e instanceof Error ? e.message : e);
+		}
+	},
+	onClose(evt, ws) {
+		ws.close();
+	},
+	onError(evt, ws) {
+		console.error('An error occurred with WebSocket (Record): ', evt);
 		ws.close(1011);
 	}
 })));

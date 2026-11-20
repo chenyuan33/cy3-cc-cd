@@ -3,7 +3,9 @@
 	"main": "src/worker.tsx",
 	"workers_dev": true,
 	"preview_urls": true,
-	"compatibility_flags": ["nodejs_compat"],
+	"compatibility_flags": [
+		"nodejs_compat"
+	],
 	"compatibility_date": "2026-06-13",
 	"routes": [
 		{
@@ -32,6 +34,22 @@
 			"database_id": "4f4f7505-ad2f-4a85-ae23-00a5012e2b6f"
 		}
 	],
+	"queues": {
+		"producers": [
+			{
+				"queue": "q",
+				"binding": "queue"
+			}
+		],
+		"consumers": [
+			{
+				"queue": "q",
+				"max_batch_size": 1,
+				"max_batch_timeout": 5,
+				"max_retries": 3
+			}
+		]
+	},
 	"ratelimits": [
 		{
 			"name": "rateLimiter",
@@ -63,7 +81,9 @@
 	"assets": {
 		"directory": "./public",
 		"not_found_handling": "single-page-application",
-		"run_worker_first": [ "/api/*" ]
+		"run_worker_first": [
+			"/api/*"
+		]
 	},
 	"previews": {
 		"vars": {
@@ -73,10 +93,18 @@
 		"d1_databases": [
 			{
 				"binding": "db",
-				"database_name": "cy3",
-				"database_id": "4f4f7505-ad2f-4a85-ae23-00a5012e2b6f"
+				"database_name": "cy3-preview",
+				"database_id": "2c9beda6-6590-41de-b11e-41b8c9417ca8"
 			}
 		],
+		"queues": {
+			"producers": [
+				{
+					"queue": "q-preview",
+					"binding": "queue"
+				}
+			]
+		},
 		"ratelimits": [
 			{
 				"name": "rateLimiter",

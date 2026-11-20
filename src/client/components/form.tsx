@@ -125,8 +125,9 @@ export const FormSelect: FC<{
 	name?: string,
 	label?: string | JSX.Element,
 	options: { value: string, label: string | JSX.Element, selected?: boolean, disabled?: boolean }[],
-	onChange?: () => void
-}> = ({ id, class: className, name, label, options, onChange = () => {} }) => <div class={className} style={{ height: '50px', position: 'relative' }}>
+	onChange?: () => void,
+	ref?: RefObject<HTMLInputElement>
+}> = ({ id, class: className, name, label, options, onChange = () => {}, ref }) => <div class={className} style={{ height: '50px', position: 'relative' }}>
 	{label && <label for={id} style={{ position: 'absolute', left: '10px' }}><strong>{label}</strong></label>}
-	<Select id={id} name={name} style={{ position: 'absolute', left: 'var(--align-input)' }} onChange={onChange} options={options} />
+	<Select id={id} ref={ref} name={name} style={{ position: 'absolute', left: 'var(--align-input)' }} onChange={onChange} options={options} />
 </div>;

@@ -6,6 +6,7 @@ import { Card } from "../../components/card";
 import { ProblemListTable } from "../../components/problemListTable";
 import { setTitle } from "../../utils/setTitle";
 import { A } from "../../components/a";
+import type { ProblemBasicInfo } from "../../../routes/api/problem";
 
 export const ProblemList = () => {
 	const [search, setSearch] = useState(location.search);
@@ -13,14 +14,14 @@ export const ProblemList = () => {
 	const searchParams = new URLSearchParams(search);
 	const page = Math.max(parseInt(searchParams.get('page') || '1') || 1, 1);
 	const [problems, setProblems] = useState<{
-		problems: { id: number, title: string, created_at: string, user: userInfo }[],
+		problems: ProblemBasicInfo[],
 		total: number
 	} | null>(null);
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
 			const data = await (await fetch(`/api/problem?perpage=20&page=${page}`)).json<{
-				problems: { id: number, title: string, created_at: string, user: userInfo }[],
+				problems: ProblemBasicInfo[],
 				total: number
 			}>();
 			if (!cancelled) {

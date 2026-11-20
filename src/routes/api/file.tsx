@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { AwsClient } from "aws4fetch";
-import type { AppEnv } from "../../types";
+import type { AppEnv, ContextType } from "../../types";
 import { accessDenied, loginRequired, notFound } from "../errorPages";
 import { permissionFile } from "../../settings";
 import { DOMParser } from '@xmldom/xmldom';
@@ -10,6 +10,22 @@ const validatePath = (path: string) => {
 		throw new Error('Invalid path');
 	}
 	return decodeURIComponent(path).split('/').map(encodeURIComponent).join('/');
+};
+const isPathOwner = async (c: ContextType, path: string) => {
+	const currentUser = c.get('currentUser');
+	if (!currentUser) {
+		return false;
+	}
+	if (currentUser.id === 1) {
+		return true;
+	}
+	if (/^user\//.test(path)) {
+		return path.match(/^user\/(\d+)\//)?.[1] === String(currentUser.id);
+	}
+	if (/^problem\//.test(path)) {
+		return (await c.env.db.prepare('SELECT uid FROM problem WHERE id = ?').bind(path.match(/^problem\/(\d+)\//)?.[1]).first<{ uid: number }>())?.uid === currentUser.id;
+	}
+	return false;
 };
 const app = new Hono<AppEnv>();
 app.use('/*', async (c, next) => {
@@ -22,6 +38,20 @@ app.use('/*', async (c, next) => {
 	}
 	await next();
 });
+export const getFileText = async(env: Env, _path: string) => {
+	const path = validatePath(_path);
+	const aws = new AwsClient({
+		accessKeyId: env.B2_APPLICATION_KEY_ID,
+		secretAccessKey: env.B2_SECRET_ACCESS_KEY,
+		service: 's3',
+		region: env.B2_REGION
+	});
+	const response = await aws.fetch(new URL(`${env.B2_ENDPOINT}/${env.B2_BUCKET_NAME}/${path}`).toString());
+	if (!response.ok) {
+		throw new Error(`Failed to fetch test case file (HTTP ${response.status})`);
+	}
+	return response.text();
+};
 app.get('/get/:path{.*}', async c => {
 	const path = validatePath(c.req.param('path'));
 	const aws = new AwsClient({
@@ -44,10 +74,9 @@ app.get('/get/:path{.*}', async c => {
 	return c.body(response.body as ReadableStream);
 });
 app.get('/list/:path{.*}', async c => {
-	const currentUser = c.get('currentUser')!;
 	const path = validatePath(c.req.param('path'));
 	const currentPage = parseInt(c.get('reqBody').page || '1') || 1;
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/') || !path.endsWith('/')) {
+	if (!await isPathOwner(c, path)) {
 		return accessDenied(c);
 	}
 	const aws = new AwsClient({
@@ -91,11 +120,10 @@ app.get('/list/:path{.*}', async c => {
 	return notFound(c);
 });
 app.post('/upload', async c => {
-	const currentUser = c.get('currentUser')!;
 	const body = await c.req.parseBody();
 	const path = validatePath(body.path as string || '');
 	const file = body.file as File;
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/') && path.endsWith('/')) {
+	if (!await isPathOwner(c, path)) {
 		return accessDenied(c);
 	}
 	const aws = new AwsClient({
@@ -106,9 +134,6 @@ app.post('/upload', async c => {
 	});
 	if (typeof path !== 'string') {
 		return notFound(c);
-	}
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/')) {
-		return accessDenied(c);
 	}
 	if (!file) {
 		return c.json({ error: 'No file uploaded' }, 400);
@@ -127,9 +152,8 @@ app.post('/upload', async c => {
 	return c.json({ success: true });
 });
 app.delete('/delete/:key{.+}', async c => {
-	const currentUser = c.get('currentUser')!;
 	const path = validatePath(c.req.param('key'));
-	if (currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id + '/') || path.endsWith('/')) {
+	if (!await isPathOwner(c, path)) {
 		return accessDenied(c);
 	}
 	const aws = new AwsClient({

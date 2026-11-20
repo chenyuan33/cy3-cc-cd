@@ -1,5 +1,5 @@
-import { useEffect, useRef, useState } from "hono/jsx";
-import { memoryLimitDefault, memoryLimitMax, timeLimitDefault, timeLimitMax } from "../../settings";
+import { useRef, useState } from "hono/jsx";
+import { memoryLimitDefault, memoryLimitMax, programmingLangsToEditorLangs, supportedProgrammingLangs, timeLimitDefault, timeLimitMax } from "../../settings";
 import { Card } from "../components/card";
 import { Editor, getValue, setLang, setValue, type supportedLanguages } from "../components/editor/editor";
 import { Select } from "../components/select";
@@ -8,40 +8,22 @@ import { setTitle } from "../utils/setTitle";
 import { render } from "hono/jsx/dom";
 
 export const IDE = () => {
-	const [langs, setLangs] = useState<{ value: string, label: string }[] | null>(null);
 	const [running, setRunning] = useState(false);
-	useEffect(() => {
-		(async () => setLangs((await (await fetch('/api/support-langs')).json<{ languages: { value: string, label: string }[] }>()).languages))();
-	}, []);
 	const langSelectorRef = useRef<HTMLInputElement>(null);
 	const timeLimitRef = useRef<HTMLInputElement>(null);
 	const memoryLimitRef = useRef<HTMLInputElement>(null);
 	const resultRef = useRef<HTMLSpanElement>(null);
 	const loadLang = () => {
 		if (langSelectorRef.current) {
-			setLang('code', langSelectorRef.current.value as supportedLanguages);
+			setLang('code', programmingLangsToEditorLangs[langSelectorRef.current.value as keyof typeof programmingLangsToEditorLangs]);
 		}
 	};
-	useEffect(loadLang, [langs]);
-	if (!langs) {
-		setTitle(tString('loading') + ' - ' + tString('ide.name'));
-		return <Card>
-			<h1>{t('ide.name')}</h1>
-			<p>{t('loading')}</p>
-		</Card>;
-	}
-	if (!langs.length) {
-		setTitle(tString('error.somethingWentWrong') + ' - ' + tString('ide.name'));
-		return <Card>
-			<h1>{t('error.somethingWentWrong')} - {t('ide.name')}</h1>
-			<p>{t('ide.noLanguageSupported')}</p>
-		</Card>;
-	}
+	loadLang();
 	setTitle(tString('ide.name'));
 	return <Card>
 		<h1>{t('ide.name')}</h1>
 		<div style={{ display: 'flex', gap: '20px' }}>
-			<span><label for='lang'>{t('onlineJudge.language')}&nbsp;</label><Select id='lang' ref={langSelectorRef} options={langs} onChange={loadLang}></Select></span>
+			<span><label for='lang'>{t('onlineJudge.language')}&nbsp;</label><Select id='lang' ref={langSelectorRef} options={supportedProgrammingLangs} onChange={loadLang}></Select></span>
 			<span><label for='time'>{t('onlineJudge.timeLimit')}&nbsp;</label><input id='timeLimit' ref={timeLimitRef} type='number' min='0' max={timeLimitMax} value={timeLimitDefault}></input></span>
 			<span><label for='memory'>{t('onlineJudge.memoryLimit')}&nbsp;</label><input id='memoryLimit' ref={memoryLimitRef} type='number' min='0' max={memoryLimitMax} value={memoryLimitDefault}></input></span>
 		</div>

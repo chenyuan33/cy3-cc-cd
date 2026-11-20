@@ -110,7 +110,6 @@ app.get('/judgement', async c => c.json((await c.env.db.prepare(`
 }>()).results.map(({ payload, user, operator, ...data }) => ({ payload: JSON.parse(payload), user: JSON.parse(user), operator: JSON.parse(operator), ...data }))));
 app.route('/file', fileRoutes);
 app.route('/theme', themeRoutes);
-app.get('/support-langs', async c => c.json(await ((await fetch('https://judge.cqiming.com/languages/')).json())));
 app.post('/check-in', async c => {
     const currentUser = c.get('currentUser');
     if (!currentUser) {

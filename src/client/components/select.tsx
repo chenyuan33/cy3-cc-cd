@@ -8,7 +8,7 @@ export const Select: FC<{
 	style?: CSSProperties | string | undefined,
 	onChange?: () => void,
 	options: { value: string, label: string | JSX.Element, selected?: boolean | undefined, disabled?: boolean | undefined }[],
-	ref?: RefObject<HTMLInputElement>
+	ref?: RefObject<HTMLInputElement> | undefined
 }> = ({ id, name, style, onChange = () => {}, options, ref }) => {
 	if (!options.length) {
 		return <></>;

@@ -11,14 +11,17 @@ import { SidebarLayout } from "../../components/layout/sidebar";
 import { InfoList } from "../../components/infoList";
 import { A } from "../../components/a";
 import { DeleteLink } from "../../components/button";
+import { MdRender } from "../../components/md/renderer";
+import type { ProblemInfo } from "../../../routes/api/problem";
+import { ProblemName } from "../../components/problemName";
 
 export const ProblemDetail = () => {
 	const id = parseInt(useParams<'/problem/:id'>().id || '0'), currentUser = useCurrentUser();
-	const [data, setData] = useState<{ success: false, message: string } | { success: true, problem: { id: number, title: string, content: string, created_at: string, user: userInfo } } | null>(null);
+	const [data, setData] = useState<{ success: false, message: string } | { success: true, problem: ProblemInfo } | null>(null);
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
-			const data = await (await fetch(`/api/problem/${id}`)).json<{ success: false, message: string } | { success: true, problem: { id: number, title: string, content: string, created_at: string, user: userInfo } }>();
+			const data = await (await fetch(`/api/problem/${id}`)).json<{ success: false, message: string } | { success: true, problem: ProblemInfo }>();
 			if (!cancelled) {
 				setData(data);
 			}
@@ -33,18 +36,19 @@ export const ProblemDetail = () => {
 		return <ErrorPage msg={data.message} />;
 	}
 	setTitle(data.problem.title);
-	return <SidebarLayout sidebar={<Card>
-		<InfoList items={[
-			{ label: t('problem.id'), value: data.problem.id.toString() },
-			{ label: t('createdAt'), value: data.problem.created_at },
-			{ label: t('creator'), value: <User user={data.problem.user} /> }
-		]} />
-		{currentUser && (currentUser.id === data.problem.user.id || currentUser.id === 1) ? <>
-			<p><A href={`/problem/${data.problem.id}/edit`}>{t('problem.edit')}</A></p>
-			<p><DeleteLink href={`/api/problem/${data.problem.id}`} redirect='/problem' /></p>
-		</> : null}
-	</Card>}><Card>
-		<h1>{data.problem.title}</h1>
-		<p>{data.problem.content}</p>
-	</Card></SidebarLayout>;
+	return <>
+		<Card><h1><ProblemName problem={data.problem} /></h1></Card>
+		<SidebarLayout sidebar={<Card>
+			<InfoList items={[
+				{ label: t('problem.id'), value: data.problem.id.toString() },
+				{ label: t('createdAt'), value: data.problem.created_at },
+				{ label: t('creator'), value: <User user={data.problem.user} /> }
+			]} />
+			<p><A href={`/problem/${data.problem.id}/submit`}>{t('submit')}</A></p>
+			{currentUser && (currentUser.id === data.problem.user.id || currentUser.id === 1) ? <>
+				<p><A href={`/problem/${data.problem.id}/edit`}>{t('problem.edit')}</A></p>
+				<p><DeleteLink href={`/api/problem/${data.problem.id}`} redirect='/problem' /></p>
+			</> : null}
+		</Card>}><Card><MdRender markdown={data.problem.content} /></Card></SidebarLayout>
+	</>;
 }
