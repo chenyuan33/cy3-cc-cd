@@ -158,6 +158,25 @@ export default {
 		usernameViolation: 'Violating username {uid}',
 		toggleUsernameViolation: 'Toggle username violation status'
 	},
+	problem: {
+		name: 'Problem',
+		list: 'Problem List',
+		id: 'Problem ID',
+		title: 'Problem Title',
+		content: 'Description',
+		post: 'Post Problem',
+		edit: 'Edit Problem',
+		testCasesSettings: 'Data Settings',
+		back: 'Back to Problem',
+		inputFile: 'Input File',
+		outputFile: 'Output File',
+		addATestCase: 'Add a Test Case',
+		removeThisTestCase: 'Remove This Test Case',
+		manageTheFilesForThisProblem: 'Manage the files for this problem'
+	},
+	record: {
+		name: 'Record Detail'
+	},
 	chat: {
 		name: 'Private messages',
 		recent: 'Recent messages',
@@ -327,6 +346,7 @@ export default {
 	noReplies: 'No replies yet.',
 	go: 'Go',
 	filter: 'Filter',
+	submit: 'Submit',
 	send: 'Send',
 	post: 'Post',
 	postAfterLogin: '{link} to post',
@@ -401,6 +421,10 @@ export default {
 	language: 'Language',
 	action: 'Action',
 	comment: 'Comment',
+	score: 'Score',
+	time: 'Time',
+	memory: 'Memory',
+	unknown: 'Unknown',
 	operationSuccessful: 'Operation successful',
 	deletedSuccessful: 'Deleted successful',
 	appliedSuccessful: 'Applied successful',

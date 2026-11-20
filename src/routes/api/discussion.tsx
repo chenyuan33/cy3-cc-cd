@@ -154,7 +154,7 @@ app.post('/post', async c => {
     await processAt(c, content, '/discussion/' + id);
     return c.json({ success: true, id });
 });
-app.post('/delete', async c => {
+app.delete('/delete', async c => {
     const currentUser = c.get('currentUser'), { discussion_id } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);
@@ -244,7 +244,7 @@ app.post('/reply/edit', async c => {
     await c.env.db.prepare('UPDATE discussion_reply SET content = ? WHERE id = ?').bind(content, reply_id).run();
     return c.json({ success: true });
 });
-app.post('/reply/delete', async c => {
+app.delete('/reply/delete', async c => {
     const currentUser = c.get('currentUser'), { reply_id } = c.get('reqBody');
     if (!currentUser) {
         return loginRequired(c);

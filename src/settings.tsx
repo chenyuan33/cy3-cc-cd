@@ -23,3 +23,63 @@ export const defaultTheme = {
 	light_fgcolor: '#333333', light_bgcolor: '#f5f5f5', light_bgimage: '',
 	dark_fgcolor: '#e0e0e0', dark_bgcolor: '#181818', dark_bgimage: ''
 } as const;
+export const supportedProgrammingLangs = [
+	{
+		"value": "python3",
+		"label": "Python 3"
+	},
+	{
+		"value": "js",
+		"label": "JavaScript"
+	},
+	{
+		"value": "cpp14",
+		"label": "C++14"
+	},
+	{
+		"value": "cpp17",
+		"label": "C++17"
+	},
+	{
+		"value": "cpp20",
+		"label": "C++20"
+	},
+	{
+		"value": "cpp23",
+		"label": "C++23"
+	},
+	{
+		"value": "cpp14-o2",
+		"label": "C++14 (-O2)"
+	},
+	{
+		"value": "cpp17-o2",
+		"label": "C++17 (-O2)"
+	},
+	{
+		"value": "cpp20-o2",
+		"label": "C++20 (-O2)"
+	},
+	{
+		"value": "cpp23-o2",
+		"label": "C++23 (-O2)"
+	},
+	{
+		"value": "c",
+		"label": "C"
+	}
+];
+export const programmingLangsToEditorLangs = {
+	'python3': 'py',
+	'js': 'js',
+	'cpp14': 'cpp',
+	'cpp17': 'cpp',
+	'cpp20': 'cpp',
+	'cpp23': 'cpp',
+	'cpp14-o2': 'cpp',
+	'cpp17-o2': 'cpp',
+	'cpp20-o2': 'cpp',
+	'cpp23-o2': 'cpp',
+	'c': 'c'
+} as const;
+export const programmingLangsToDisplay = Object.fromEntries(supportedProgrammingLangs.map(({ value, label }) => [value, label]));

@@ -35,7 +35,7 @@ export const Editor: FC<{
 	required?: boolean,
 	initialCode?: string,
 	height: number | string,
-	lang?: supportedLanguages,
+	lang?: supportedLanguages | undefined,
 	onChange?: (event: editor.IModelContentChangedEvent | ViewUpdate | undefined, content: string) => void,
 	extraKeys?: {
 		id: string,

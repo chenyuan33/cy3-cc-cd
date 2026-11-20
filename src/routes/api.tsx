@@ -1,6 +1,7 @@
 import { Hono } from 'hono';
 import adminRoutes from './api/admin';
 import userRoutes, { userInfoDatas } from './api/user';
+import problemRoutes from './api/problem';
 import feedRoutes from './api/feed';
 import discussionRoutes, { type discussionCategoriesType } from './api/discussion';
 import ticketRoutes from './api/ticket';
@@ -77,6 +78,7 @@ app.get('/home', async c => {
 app.route('/websocket', websocketRotues);
 app.route('/admin', adminRoutes);
 app.route('/user', userRoutes);
+app.route('/problem', problemRoutes);
 app.route('/feed', feedRoutes);
 app.route('/discussion', discussionRoutes);
 app.route('/ticket', ticketRoutes);
@@ -108,7 +110,6 @@ app.get('/judgement', async c => c.json((await c.env.db.prepare(`
 }>()).results.map(({ payload, user, operator, ...data }) => ({ payload: JSON.parse(payload), user: JSON.parse(user), operator: JSON.parse(operator), ...data }))));
 app.route('/file', fileRoutes);
 app.route('/theme', themeRoutes);
-app.get('/support-langs', async c => c.json(await ((await fetch('https://judge.cqiming.com/languages/')).json())));
 app.post('/check-in', async c => {
     const currentUser = c.get('currentUser');
     if (!currentUser) {

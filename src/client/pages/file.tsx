@@ -39,7 +39,7 @@ export const File = () => {
 	if (!currentUser) {
 		return <LoginRequired />;
 	}
-	if (!(currentUser.permission & permissionFile) || currentUser.id !== 1 && !path.startsWith('user/' + currentUser.id) && path.endsWith('/')) {
+	if (!(currentUser.permission & permissionFile)) {
 		return <AccessDenied />;
 	}
 	let currentDir = '/file/';

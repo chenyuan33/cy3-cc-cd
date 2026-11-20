@@ -296,7 +296,7 @@ app.post('/reply/edit', async c => {
     await c.env.db.prepare('UPDATE ticket_reply SET content = ? WHERE id = ?').bind(content, reply_id).run();
     return c.json({ success: true });
 });
-app.post('/reply/delete', async c => {
+app.delete('/reply/delete', async c => {
     const currentUser = c.get('currentUser'), { reply_id } = c.get('reqBody');
     console.log(c.get('reqBody'));
     if (!currentUser) {

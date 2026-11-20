@@ -28,7 +28,7 @@ export const Feed: FC<{ feed: feedInfo, reload: () => void | Promise<void>, show
 			{currentUser && (currentUser.id === 1 || currentUser.id === user.id) ? <>
 				<button type='button' onClick={() => document.getElementById('feed-edit-' + id)!.dataset.vis = (-document.getElementById('feed-edit-' + id)!.dataset.vis!).toString()}>{t('edit')}</button>
 				&nbsp;
-				<DeleteButton href='/api/feed/delete' arg={{ id }} redirect='' onSuccess={reload} />
+				<DeleteButton href='/api/feed/delete' arg={{ id: id.toString() }} redirect='' onSuccess={reload} />
 			</> : <></>}
 		</div>
 		{showParent && parent ? <blockquote>

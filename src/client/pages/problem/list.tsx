@@ -1,0 +1,48 @@
+import { useEffect, useState } from "hono/jsx";
+import { subscribeUrlChange } from "../../utils/urlSearch";
+import { t, tString } from "../../i18n";
+import { Card } from "../../components/card";
+import { ProblemListTable } from "../../components/problemListTable";
+import { Pages } from "../../components/pages";
+import { setTitle } from "../../utils/setTitle";
+import { A } from "../../components/a";
+import type { ProblemBasicInfo } from "../../../routes/api/problem";
+
+export const ProblemList = () => {
+	const [search, setSearch] = useState(location.search);
+	useEffect(subscribeUrlChange(setSearch), []);
+	const searchParams = new URLSearchParams(search);
+	const page = Math.max(parseInt(searchParams.get('page') || '1') || 1, 1);
+	const [problems, setProblems] = useState<{
+		problems: ProblemBasicInfo[],
+		total: number
+	} | null>(null);
+	useEffect(() => {
+		let cancelled = false;
+		(async () => {
+			const data = await (await fetch(`/api/problem?perpage=20&page=${page}`)).json<{
+				problems: ProblemBasicInfo[],
+				total: number
+			}>();
+			if (!cancelled) {
+				setProblems(data);
+			}
+		})();
+		return () => cancelled = true;
+	}, [page]);
+	if (!problems) {
+		setTitle(tString('loading') + ' - ' + tString('problem.list'));
+		return <Card>
+			<h1>{t('problem.list')}</h1>
+			<p><A href='/problem/post'>{t('problem.post')}</A></p>
+			{t('loading')}
+		</Card>;
+	}
+	setTitle(tString('problem.list'));
+	return <Card>
+		<h1>{t('problem.list')}</h1>
+		<p><A href='/problem/post'>{t('problem.post')}</A></p>
+		{problems.problems.length ? <ProblemListTable problems={problems.problems} /> : <h2 style={{ textAlign: 'center' }}>{t('nothing')}</h2>}
+		<Pages currentPage={page} totalPage={Math.ceil(problems.total / 20)} />
+	</Card>;
+};

@@ -141,7 +141,7 @@ app.post('/reply', async c => {
 	}
 	return c.json({ success: true });
 });
-app.post('/delete', async c => {
+app.delete('/delete', async c => {
 	const currentUser = c.get('currentUser'), reqBody = c.get('reqBody');
 	if (!currentUser) {
 		return loginRequired(c);

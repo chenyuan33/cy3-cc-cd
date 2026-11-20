@@ -137,7 +137,7 @@ export const TicketDetail = () => {
 							}
 						}
 					}}>{t('edit')}</button>
-					<DeleteButton href='/api/ticket/reply/delete' arg={{ reply_id: id }} redirect='' onSuccess={loadData} />
+					<DeleteButton href='/api/ticket/reply/delete' arg={{ reply_id: id.toString() }} redirect='' onSuccess={loadData} />
 				</>}
 			</div>
 			<div class='description' ref={(el: HTMLElement | null) => {

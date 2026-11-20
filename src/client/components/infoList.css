@@ -1,0 +1,11 @@
+.info-list-item {
+	border: none;
+	gap: 0.5rem;
+	padding: 0.5rem;
+	border-radius: 0.25rem;
+	transition: background-color 0.2s ease-in-out;
+}
+
+.info-list-value {
+	float: right;
+}

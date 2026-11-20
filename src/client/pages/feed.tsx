@@ -53,7 +53,7 @@ export default () => {
 				{currentUser && (currentUser.id === 1 || currentUser.id === feed.user.id) ? <>
 					<button type='button' onclick={`document.getElementById('feed-edit-${feed_id}').dataset.vis *= -1`}>{t('edit')}</button>
 					&nbsp;
-					<DeleteButton href='/api/feed/delete' arg={{ id: feed_id }} redirect='/feed' />
+					<DeleteButton href='/api/feed/delete' arg={{ id: feed_id.toString() }} redirect='/feed' />
 				</> : <></>}
 				<div><MdRender markdown={feed.content} /></div>
 				{currentUser && (currentUser.id === 1 || currentUser.id === feed.user.id) ? <Form id={'feed-edit-' + feed_id} data-vis='-1' method='post' action='/api/feed/edit' onSuccess={() => {
