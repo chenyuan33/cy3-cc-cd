@@ -175,6 +175,7 @@ export default {
 		manageTheFilesForThisProblem: 'Manage the files for this problem'
 	},
 	record: {
+		list: 'Record List',
 		name: 'Record Detail',
 		rejudge: 'Rejudge'
 	},

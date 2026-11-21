@@ -177,6 +177,7 @@ export default {
 		manageTheFilesForThisProblem: '管理该题文件'
 	},
 	record: {
+		list: '评测记录列表',
 		name: '评测记录',
 		rejudge: '重测'
 	},

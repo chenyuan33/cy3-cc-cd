@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { type AppEnv, type ContextType } from "../../types";
 import { upgradeWebSocket } from "hono/cloudflare-workers";
-import { memoryLimitMax, timeLimitMax } from "../../settings";
+import { memoryLimitMax, permissionAdmin, timeLimitMax } from "../../settings";
 import { userInfoDatas } from "./user";
 import { problemBasicInfoDatas } from "./problem";
 import { getI18n } from "../../i18n";
@@ -94,8 +94,8 @@ app.get('/record/:id', upgradeWebSocket((c: ContextType) => ({
 					JOIN users u ON r.uid = u.id
 					JOIN problem p ON r.pid = p.id
 					JOIN users pu ON p.uid = pu.id
-					WHERE r.id = ? AND (r.uid = ? OR ? = 1)
-				`).bind(c.req.param('id'), currentUser.id, currentUser.id === 1 ? 1 : 0).first<{
+					WHERE r.id = ?
+				`).bind(c.req.param('id')).first<{
 					id: number,
 					created_at: string,
 					status: string,
