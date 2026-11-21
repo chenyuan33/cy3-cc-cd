@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import type { AppEnv } from "../../types";
-import { accessDenied, loginRequired, missingParams } from "../errorPages";
+import { accessDenied, loginRequired, missingParams, notFound } from "../errorPages";
 import validator from "validator";
 import en_us from "../../i18n/en_us";
 import { userInfoDatas } from "./user";
@@ -11,7 +11,7 @@ const isPositiveInteger = (numStr: string) => /^\d+$/.test(numStr);
 const isValidSafeUrl = (url: string | undefined) => url && validator.isURL(url, { require_protocol: true, protocols: ['http', 'https'] }) && !/[()"'\s]/.test(url);
 app.get('/list', async c => {
 	const page = Math.max(parseInt(c.get('reqBody').page || '1') || 1, 1);
-	const perPage = Math.min(20, Math.max(parseInt(c.get('reqBody').perPage || '20') || 20, 20));
+	const perPage = Math.min(1, Math.max(parseInt(c.get('reqBody').perPage || '20') || 20, 20));
 	return c.json({
 		results: (await c.env.db.prepare(`
 			SELECT
@@ -29,7 +29,7 @@ app.get('/list', async c => {
 			LIMIT ?
 			OFFSET ?
 		`).bind(perPage, (page - 1) * perPage).all()).results.map(({ user, ...theme }) => ({ user: JSON.parse(user as string), ...theme })),
-		total: await c.env.db.prepare('SELECT COUNT(*) as total FROM theme').first<{ total: number }>()
+		total: (await c.env.db.prepare('SELECT COUNT(*) as total FROM theme').first<{ total: number }>())?.total
 	});
 });
 app.get('/detail/:id{\\d+}', async c => {
@@ -137,11 +137,14 @@ app.delete('/delete/:id{\\d+}', async c => {
 	if (!currentUser) {
 		return loginRequired(c);
 	}
-	const id = (await c.env.db.prepare('SELECT id FROM theme WHERE id = ?').bind(parseInt(c.req.param('id'))).first())?.id;
-	if (currentUser.id !== 1 && currentUser.id !== id) {
+	const theme = await c.env.db.prepare('SELECT id, uid FROM theme WHERE id = ?').bind(parseInt(c.req.param('id'))).first<{ id: number, uid: number }>();
+	if (!theme) {
+		return notFound(c);
+	}
+	if (currentUser.id !== 1 && currentUser.id !== theme.uid) {
 		return accessDenied(c);
 	}
-	await c.env.db.prepare('DELETE FROM theme WHERE id = ?').bind(id).run();
+	await c.env.db.prepare('DELETE FROM theme WHERE id = ?').bind(theme.id).run();
 	return c.json({ success: true });
 });
 export default app;

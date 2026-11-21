@@ -53,7 +53,7 @@ app.get('/:id{\\d+}/test-cases', async c => {
 	if (!problem) {
 		return notFound(c);
 	}
-	if (problem.uid !== currentUser.id) {
+	if (problem.uid !== currentUser.id && currentUser.id !== 1) {
 		return accessDenied(c);
 	}
 	return c.json({ success: true, test_cases: (await c.env.db.prepare('SELECT input, output FROM problem_testcases WHERE pid = ?').bind(id).all()).results });

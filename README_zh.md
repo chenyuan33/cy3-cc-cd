@@ -50,7 +50,7 @@
 3. 配置环境
 	``` bash
 	cp .env.example .env
-	node -e "const fs=require('fs'),crypto=require('crypto');const secret=crypto.randomBytes(32).toString('hex');let env=fs.readFileSync('.env','utf8');env=env.replace(/^SECRET=.*$/m, `SECRET=${secret}`);fs.writeFileSync('.env',env);"
+	node -e "const fs=require('fs'),crypto=require('crypto');const secret=crypto.randomBytes(32).toString('hex');let env=fs.readFileSync('.env','utf8');env=env.replace(/^JWT_SECRET=.*$/m, 'JWT_SECRET='+secret);fs.writeFileSync('.env',env);"
 	npm run cf-typegen
 	```
 4. 初始化数据库（若只是更新，可以只运行更新部分的 sql 文件内容）
@@ -60,10 +60,6 @@
 5. 启动开发服务器
 	``` bash
 	npm run dev
-	```
-	或
-	``` bash
-	npm run start
 	```
 	需要测试本地队列判题时，运行 `npm run dev:queues`。该命令先构建 Worker，再通过 Wrangler 的本地 Queue consumer 运行；提交后可在终端查看消费日志。
 6. 注册管理员账号

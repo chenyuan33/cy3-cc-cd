@@ -6,7 +6,7 @@ type i18nKey = i18nKeyMaker<typeof en_us_translations>;
 const locale = typeof window === 'undefined' ? 'en_us' : window.data.locale;
 const rawContent = (value: string | JSX.Element | undefined) => {
 	if (typeof value === 'string') {
-		return <span dangerouslySetInnerHTML={{ __html: value }}></span>;
+		return <span>{value}</span>;
 	}
 	return value;
 };

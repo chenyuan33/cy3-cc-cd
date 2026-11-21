@@ -2,7 +2,7 @@ import { Hono } from 'hono';
 import { jwtVerify } from 'jose';
 import { languageDetector } from 'hono/language';
 import type { themeBasicInfo, AppEnv } from './types';
-import { defaultTheme, permissionVisit } from './settings';
+import { defaultTheme, memoryLimitDefault, permissionVisit, timeLimitDefault } from './settings';
 import { userQuery } from './routes/api/user';
 import { banned, errorJson, notFound } from './routes/errorPages';
 import apiRoutes from './routes/api';
@@ -115,7 +115,7 @@ export default {
 				.first<{ status: string, pid: number, lang: string, code: string }>();
 			if (!record || (
 				record.status !== 'Waiting' &&
-				!(message.attempts > 1 && ['Judging', 'Judging Failed'].includes(record.status))
+				!(message.attempts > 1 && ['Judging', 'Unknown Error'].includes(record.status))
 			)) {
 				continue;
 			}
@@ -140,8 +140,8 @@ export default {
 						language: record.lang,
 						code: record.code,
 						test_cases: testCases,
-						time_limit_ms: 1000,
-						memory_limit_mb: 512
+						time_limit_ms: timeLimitDefault,
+						memory_limit_mb: memoryLimitDefault
 					})
 				});
 				if (!response.ok) {

@@ -10,7 +10,7 @@ export const messages = {
 	zh_cn: zh_hans_cn_translations,
 	zh_hans_cn: zh_hans_cn_translations
 };
-export type supportedLanguagesShortCodeType = 'en' | 'us';
+export type supportedLanguagesShortCodeType = 'en' | 'zh';
 type I18nInstance = ReturnType<typeof createI18n<Context, typeof messages, 'en'>>;
 const i18n: I18nInstance = createI18n({
 	messages,

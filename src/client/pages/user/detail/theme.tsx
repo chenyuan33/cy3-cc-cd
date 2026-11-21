@@ -33,7 +33,7 @@ export const UserDetailTheme = () => {
 	if (data.results.length) {
 		return <>
 			<Card><ThemeListTable themes={data.results} reload={reload} /></Card>
-			<Pages currentPage={page} totalPage={Math.ceil(data.total / 10)} />
+			<Pages currentPage={page} totalPage={Math.ceil(data.total / 20)} />
 		</>;
 	}
 	return <Card style={{ display: 'flex', 'justify-content': 'center' }}><h2>{t('nothing')}</h2></Card>;

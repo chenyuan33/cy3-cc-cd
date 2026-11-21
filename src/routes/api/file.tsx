@@ -126,6 +126,7 @@ app.post('/upload', async c => {
 	const body = await c.req.parseBody();
 	const path = validatePath(body.path as string || '');
 	const file = body.file as File;
+	validatePath(file.name);
 	if (!await isPathOwner(c, path)) {
 		return accessDenied(c);
 	}
@@ -148,7 +149,6 @@ app.post('/upload', async c => {
 			'Content-Type': file.type
 		}
 	});
-	console.log(res);
 	if (!res.ok) {
 		return res;
 	}

@@ -1,10 +1,10 @@
 PRAGMA defer_foreign_keys=TRUE;
 CREATE TABLE IF NOT EXISTS users (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
+    name TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    email TEXT, 
+    email TEXT UNIQUE, 
     email_verify_code INT, 
     email_verify_time TIMESTAMP, 
     username_violation INTEGER NOT NULL DEFAULT 0, 
@@ -170,18 +170,25 @@ CREATE TABLE IF NOT EXISTS theme (
 	editor TEXT,
 	FOREIGN KEY (uid) REFERENCES users(id)
 );
-CREATE INDEX IF NOT EXISTS idx_ticket_created_at ON ticket(created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_ticket_uid_created_at ON ticket(uid, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_ticket_category_created_at ON ticket(category, created_at DESC);
-CREATE INDEX IF NOT EXISTS idx_ticket_uid_category_created_at ON ticket(uid, category, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_feed_parent ON feed(parent_id);
+CREATE INDEX IF NOT EXISTS idx_notification_uid_read_created_at ON notification(uid, read, created_at);
+CREATE INDEX IF NOT EXISTS idx_record_uid ON record(uid);
+CREATE INDEX IF NOT EXISTS idx_theme_uid ON theme(uid);
+CREATE INDEX IF NOT EXISTS idx_problem_testcases_pid ON problem_testcases(pid);
+CREATE INDEX IF NOT EXISTS idx_discussion_reply ON discussion_reply(discussion_id);
 CREATE INDEX IF NOT EXISTS idx_discussion_pin_created_at ON discussion(pin DESC, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_discussion_uid_pin_created_at ON discussion(uid, pin DESC, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_discussion_category_pin_created_at ON discussion(category, pin DESC, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_discussion_uid_category_pin_created_at ON discussion(uid, category, pin DESC, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ticket_created_at ON ticket(created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ticket_uid_created_at ON ticket(uid, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ticket_category_created_at ON ticket(category, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_ticket_uid_category_created_at ON ticket(uid, category, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ticket_status_created_at ON ticket(status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ticket_status_uid_created_at ON ticket(status, uid, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ticket_status_category_created_at ON ticket(status, category, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_ticket_status_uid_category_created_at ON ticket(status, uid, category, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_private_messages_sender_receiver_created_at ON private_messages (sender, receiver, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_private_messages_receiver_read ON private_messages(receiver, read);
 CREATE INDEX IF NOT EXISTS idx_judgement_type ON judgement (type);
 CREATE INDEX IF NOT EXISTS idx_judgement_created_at ON judgement (created_at DESC);

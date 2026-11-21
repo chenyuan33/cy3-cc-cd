@@ -197,7 +197,6 @@ app.post('/post', async c => {
     if (!content) {
         return contentRequired(c);
     }
-    console.log(category, ticketCategories);
     if (!(ticketCategories as readonly string[]).includes(category)) {
         return categoryNotFound(c);
     }
@@ -298,7 +297,6 @@ app.post('/reply/edit', async c => {
 });
 app.delete('/reply/delete', async c => {
     const currentUser = c.get('currentUser'), { reply_id } = c.get('reqBody');
-    console.log(c.get('reqBody'));
     if (!currentUser) {
         return loginRequired(c);
     }
@@ -325,6 +323,6 @@ app.get('/reply/redirect', async c => {
 		return c.json({ ticket_id: null });
 	}
 	const { ticket_id } = await c.env.db.prepare('SELECT ticket_id FROM ticket_reply WHERE id = ?').bind(id).first() ?? { ticket_id: null };
-	return c.json({ ticket_id, page: Math.floor(((await c.env.db.prepare('SELECT COUNT(*) as total FROM ticket_reply WHERE ticket_id = ? AND id < ?').bind(ticket_id, id).first<{ total: number }>())?.total ?? 0) / 10) + 1 });
+	return c.json({ ticket_id, page: Math.floor(((await c.env.db.prepare('SELECT COUNT(*) as total FROM ticket_reply WHERE ticket_id = ? AND id < ?').bind(ticket_id, id).first<{ total: number }>())?.total ?? 0) / 20) + 1 });
 });
 export default app;

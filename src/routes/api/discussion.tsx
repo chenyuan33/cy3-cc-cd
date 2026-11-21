@@ -272,6 +272,6 @@ app.get('/reply/redirect', async c => {
         return c.json({ discussion_id: null });
     }
 	const discussion_id = (await c.env.db.prepare('SELECT discussion_id FROM discussion_reply WHERE id = ?').bind(id).first<{ discussion_id: number }>())?.discussion_id;
-    return c.json({ discussion_id, page: Math.floor(((await c.env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ? AND id < ?').bind(discussion_id, id).first<{ total: number }>())?.total ?? 0) / 10) + 1 });
+    return c.json({ discussion_id, page: Math.floor(((await c.env.db.prepare('SELECT COUNT(*) as total FROM discussion_reply WHERE discussion_id = ? AND id < ?').bind(discussion_id, id).first<{ total: number }>())?.total ?? 0) / 20) + 1 });
 });
 export default app;
